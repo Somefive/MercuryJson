@@ -4,7 +4,8 @@
 #include "tests.hpp"
 
 int main() {
-    // const char * buf = read_file("data/demographic_statistics_by_zipcode.json");
     test_extract_mask();
+    // const char * buf = read_file("data/demographic_statistics_by_zipcode.json");
+    test_extract_warp_mask();
     return 0;
 }
