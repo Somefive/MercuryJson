@@ -1,0 +1,2982 @@
+{
+  "meta" : {
+    "view" : {
+      "id" : "kku6-nxdu",
+      "name" : "Demographic Statistics By Zip Code",
+      "attribution" : "Department of Youth and Community Development (DYCD)",
+      "averageRating" : 0,
+      "category" : "City Government",
+      "createdAt" : 1311775554,
+      "description" : "Demographic statistics broken down by zip code",
+      "displayType" : "table",
+      "downloadCount" : 791042,
+      "hideFromCatalog" : false,
+      "hideFromDataJson" : false,
+      "indexUpdatedAt" : 1536596131,
+      "newBackend" : true,
+      "numberOfComments" : 3,
+      "oid" : 4208790,
+      "provenance" : "official",
+      "publicationAppendEnabled" : false,
+      "publicationDate" : 1372266760,
+      "publicationGroup" : 238846,
+      "publicationStage" : "published",
+      "rowClass" : "",
+      "rowsUpdatedAt" : 1372266747,
+      "rowsUpdatedBy" : "uurm-7z6x",
+      "tableId" : 942474,
+      "totalTimesRated" : 0,
+      "viewCount" : 39816,
+      "viewLastModified" : 1536607326,
+      "viewType" : "tabular",
+      "columns" : [ {
+        "id" : -1,
+        "name" : "sid",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":sid",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "id",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":id",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "position",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":position",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "created_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":created_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_at",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_at",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "updated_meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":updated_meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : -1,
+        "name" : "meta",
+        "dataTypeName" : "meta_data",
+        "fieldName" : ":meta",
+        "position" : 0,
+        "renderTypeName" : "meta_data",
+        "format" : { },
+        "flags" : [ "hidden" ]
+      }, {
+        "id" : 77010810,
+        "name" : "JURISDICTION NAME",
+        "dataTypeName" : "number",
+        "fieldName" : "jurisdiction_name",
+        "position" : 2,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501660,
+        "width" : 304,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "11127.17372881356",
+          "largest" : "20459",
+          "null" : 0,
+          "top" : [ {
+            "item" : "11695",
+            "count" : 20
+          }, {
+            "item" : "11731",
+            "count" : 19
+          }, {
+            "item" : "11798",
+            "count" : 18
+          }, {
+            "item" : "11968",
+            "count" : 17
+          }, {
+            "item" : "12423",
+            "count" : 16
+          }, {
+            "item" : "12428",
+            "count" : 15
+          }, {
+            "item" : "12435",
+            "count" : 14
+          }, {
+            "item" : "12458",
+            "count" : 13
+          }, {
+            "item" : "12466",
+            "count" : 12
+          }, {
+            "item" : "12473",
+            "count" : 11
+          }, {
+            "item" : "12528",
+            "count" : 10
+          }, {
+            "item" : "12701",
+            "count" : 9
+          }, {
+            "item" : "12733",
+            "count" : 8
+          }, {
+            "item" : "12734",
+            "count" : 7
+          }, {
+            "item" : "12737",
+            "count" : 6
+          }, {
+            "item" : "12750",
+            "count" : 5
+          }, {
+            "item" : "12751",
+            "count" : 4
+          }, {
+            "item" : "12754",
+            "count" : 3
+          }, {
+            "item" : "12758",
+            "count" : 2
+          }, {
+            "item" : "12759",
+            "count" : 1
+          } ],
+          "smallest" : "10001",
+          "sum" : "2626013"
+        },
+        "format" : {
+          "precisionStyle" : "standard",
+          "noCommas" : "true",
+          "align" : "right"
+        }
+      }, {
+        "id" : 77010811,
+        "name" : "COUNT PARTICIPANTS",
+        "dataTypeName" : "number",
+        "fieldName" : "count_participants",
+        "position" : 3,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501661,
+        "width" : 316,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.66101694915254",
+          "largest" : "272",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "17",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "27",
+            "count" : 12
+          }, {
+            "item" : "20",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "59",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4168"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010812,
+        "name" : "COUNT FEMALE",
+        "dataTypeName" : "number",
+        "fieldName" : "count_female",
+        "position" : 4,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501662,
+        "width" : 244,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "10.29661016949153",
+          "largest" : "194",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "12",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "4",
+            "count" : 15
+          }, {
+            "item" : "17",
+            "count" : 14
+          }, {
+            "item" : "11",
+            "count" : 13
+          }, {
+            "item" : "7",
+            "count" : 12
+          }, {
+            "item" : "8",
+            "count" : 11
+          }, {
+            "item" : "3",
+            "count" : 10
+          }, {
+            "item" : "6",
+            "count" : 9
+          }, {
+            "item" : "53",
+            "count" : 8
+          }, {
+            "item" : "183",
+            "count" : 7
+          }, {
+            "item" : "66",
+            "count" : 6
+          }, {
+            "item" : "39",
+            "count" : 5
+          }, {
+            "item" : "115",
+            "count" : 4
+          } ],
+          "smallest" : "0",
+          "sum" : "2430"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010813,
+        "name" : "PERCENT FEMALE",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_female",
+        "position" : 5,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501663,
+        "width" : 268,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.2439830508474576",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.5",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "0.33",
+            "count" : 17
+          }, {
+            "item" : "0.67",
+            "count" : 16
+          }, {
+            "item" : "0.13",
+            "count" : 15
+          }, {
+            "item" : "0.71",
+            "count" : 14
+          }, {
+            "item" : "0.63",
+            "count" : 13
+          }, {
+            "item" : "0.57",
+            "count" : 12
+          }, {
+            "item" : "0.8",
+            "count" : 11
+          }, {
+            "item" : "0.6",
+            "count" : 10
+          }, {
+            "item" : "0.56",
+            "count" : 9
+          }, {
+            "item" : "0.7",
+            "count" : 8
+          }, {
+            "item" : "0.55",
+            "count" : 7
+          }, {
+            "item" : "0.49",
+            "count" : 6
+          }, {
+            "item" : "0.43",
+            "count" : 5
+          }, {
+            "item" : "0.05",
+            "count" : 4
+          }, {
+            "item" : "0.09",
+            "count" : 3
+          }, {
+            "item" : "0.04",
+            "count" : 2
+          }, {
+            "item" : "0.46",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "57.58"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010814,
+        "name" : "COUNT MALE",
+        "dataTypeName" : "number",
+        "fieldName" : "count_male",
+        "position" : 6,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501664,
+        "width" : 220,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "7.364406779661017",
+          "largest" : "157",
+          "null" : 0,
+          "top" : [ {
+            "item" : "22",
+            "count" : 20
+          }, {
+            "item" : "16",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "4",
+            "count" : 17
+          }, {
+            "item" : "1",
+            "count" : 16
+          }, {
+            "item" : "2",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "5",
+            "count" : 13
+          }, {
+            "item" : "10",
+            "count" : 12
+          }, {
+            "item" : "3",
+            "count" : 11
+          }, {
+            "item" : "9",
+            "count" : 10
+          }, {
+            "item" : "20",
+            "count" : 9
+          }, {
+            "item" : "27",
+            "count" : 8
+          }, {
+            "item" : "23",
+            "count" : 7
+          }, {
+            "item" : "26",
+            "count" : 6
+          }, {
+            "item" : "8",
+            "count" : 5
+          }, {
+            "item" : "41",
+            "count" : 4
+          }, {
+            "item" : "35",
+            "count" : 3
+          }, {
+            "item" : "19",
+            "count" : 2
+          }, {
+            "item" : "24",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "1738"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010815,
+        "name" : "PERCENT MALE",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_male",
+        "position" : 7,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501665,
+        "width" : 244,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.2010169491525424",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.5",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "0.67",
+            "count" : 18
+          }, {
+            "item" : "1",
+            "count" : 17
+          }, {
+            "item" : "0.33",
+            "count" : 16
+          }, {
+            "item" : "0.88",
+            "count" : 15
+          }, {
+            "item" : "0.29",
+            "count" : 14
+          }, {
+            "item" : "0.37",
+            "count" : 13
+          }, {
+            "item" : "0.43",
+            "count" : 12
+          }, {
+            "item" : "0.2",
+            "count" : 11
+          }, {
+            "item" : "0.4",
+            "count" : 10
+          }, {
+            "item" : "0.44",
+            "count" : 9
+          }, {
+            "item" : "0.3",
+            "count" : 8
+          }, {
+            "item" : "0.45",
+            "count" : 7
+          }, {
+            "item" : "0.51",
+            "count" : 6
+          }, {
+            "item" : "0.57",
+            "count" : 5
+          }, {
+            "item" : "0.95",
+            "count" : 4
+          }, {
+            "item" : "0.91",
+            "count" : 3
+          }, {
+            "item" : "0.96",
+            "count" : 2
+          }, {
+            "item" : "0.54",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "47.44"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010816,
+        "name" : "COUNT GENDER UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_gender_unknown",
+        "position" : 8,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501666,
+        "width" : 340,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010817,
+        "name" : "PERCENT GENDER UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_gender_unknown",
+        "position" : 9,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501667,
+        "width" : 364,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010818,
+        "name" : "COUNT GENDER TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "count_gender_total",
+        "position" : 10,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501668,
+        "width" : 316,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.66101694915254",
+          "largest" : "272",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "17",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "27",
+            "count" : 12
+          }, {
+            "item" : "20",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "59",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4168"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010819,
+        "name" : "PERCENT GENDER TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_gender_total",
+        "position" : 11,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501669,
+        "width" : 340,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "44.49152542372881",
+          "largest" : "100",
+          "null" : 0,
+          "top" : [ {
+            "item" : "100",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          } ],
+          "smallest" : "0",
+          "sum" : "10500"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010820,
+        "name" : "COUNT PACIFIC ISLANDER",
+        "dataTypeName" : "number",
+        "fieldName" : "count_pacific_islander",
+        "position" : 12,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501670,
+        "width" : 364,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.02542372881355932",
+          "largest" : "2",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "6"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010821,
+        "name" : "PERCENT PACIFIC ISLANDER",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_pacific_islander",
+        "position" : 13,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501671,
+        "width" : 388,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.0002966101694915254",
+          "largest" : "0.02",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "0.02",
+            "count" : 19
+          }, {
+            "item" : "0.01",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "0.07"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010822,
+        "name" : "COUNT HISPANIC LATINO",
+        "dataTypeName" : "number",
+        "fieldName" : "count_hispanic_latino",
+        "position" : 14,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501672,
+        "width" : 352,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "1.855932203389831",
+          "largest" : "51",
+          "null" : 0,
+          "top" : [ {
+            "item" : "16",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "9",
+            "count" : 16
+          }, {
+            "item" : "3",
+            "count" : 15
+          }, {
+            "item" : "15",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "22",
+            "count" : 12
+          }, {
+            "item" : "10",
+            "count" : 11
+          }, {
+            "item" : "6",
+            "count" : 10
+          }, {
+            "item" : "7",
+            "count" : 9
+          }, {
+            "item" : "5",
+            "count" : 8
+          }, {
+            "item" : "24",
+            "count" : 7
+          }, {
+            "item" : "21",
+            "count" : 6
+          }, {
+            "item" : "36",
+            "count" : 5
+          }, {
+            "item" : "14",
+            "count" : 4
+          }, {
+            "item" : "51",
+            "count" : 3
+          }, {
+            "item" : "35",
+            "count" : 2
+          }, {
+            "item" : "27",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "438"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010823,
+        "name" : "PERCENT HISPANIC LATINO",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_hispanic_latino",
+        "position" : 15,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501673,
+        "width" : 376,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.07983050847457627",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.36",
+            "count" : 20
+          }, {
+            "item" : "0.03",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "0.33",
+            "count" : 17
+          }, {
+            "item" : "0.53",
+            "count" : 16
+          }, {
+            "item" : "0.43",
+            "count" : 15
+          }, {
+            "item" : "0.56",
+            "count" : 14
+          }, {
+            "item" : "0.14",
+            "count" : 13
+          }, {
+            "item" : "0.2",
+            "count" : 12
+          }, {
+            "item" : "0.69",
+            "count" : 11
+          }, {
+            "item" : "0.13",
+            "count" : 10
+          }, {
+            "item" : "0.6",
+            "count" : 9
+          }, {
+            "item" : "0.54",
+            "count" : 8
+          }, {
+            "item" : "0.59",
+            "count" : 7
+          }, {
+            "item" : "0.39",
+            "count" : 6
+          }, {
+            "item" : "0.19",
+            "count" : 5
+          }, {
+            "item" : "0.46",
+            "count" : 4
+          }, {
+            "item" : "0.61",
+            "count" : 3
+          }, {
+            "item" : "0.47",
+            "count" : 2
+          }, {
+            "item" : "0.67",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "18.84"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010824,
+        "name" : "COUNT AMERICAN INDIAN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_american_indian",
+        "position" : 16,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501674,
+        "width" : 352,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.02118644067796610",
+          "largest" : "2",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "5"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010825,
+        "name" : "PERCENT AMERICAN INDIAN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_american_indian",
+        "position" : 17,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501675,
+        "width" : 376,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.001016949152542373",
+          "largest" : "0.2",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "0.2",
+            "count" : 19
+          }, {
+            "item" : "0.02",
+            "count" : 18
+          }, {
+            "item" : "0.01",
+            "count" : 17
+          } ],
+          "smallest" : "0",
+          "sum" : "0.24"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010826,
+        "name" : "COUNT ASIAN NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "count_asian_non_hispanic",
+        "position" : 18,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501676,
+        "width" : 388,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.5254237288135593",
+          "largest" : "28",
+          "null" : 0,
+          "top" : [ {
+            "item" : "3",
+            "count" : 20
+          }, {
+            "item" : "28",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "0",
+            "count" : 17
+          }, {
+            "item" : "2",
+            "count" : 16
+          }, {
+            "item" : "8",
+            "count" : 15
+          }, {
+            "item" : "9",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "5",
+            "count" : 12
+          }, {
+            "item" : "7",
+            "count" : 11
+          } ],
+          "smallest" : "0",
+          "sum" : "124"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010827,
+        "name" : "PERCENT ASIAN NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_asian_non_hispanic",
+        "position" : 19,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501677,
+        "width" : 412,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.05656779661016949",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.07",
+            "count" : 20
+          }, {
+            "item" : "0.8",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "0",
+            "count" : 17
+          }, {
+            "item" : "0.5",
+            "count" : 16
+          }, {
+            "item" : "0.14",
+            "count" : 15
+          }, {
+            "item" : "0.08",
+            "count" : 14
+          }, {
+            "item" : "0.56",
+            "count" : 13
+          }, {
+            "item" : "0.2",
+            "count" : 12
+          }, {
+            "item" : "0.02",
+            "count" : 11
+          }, {
+            "item" : "0.06",
+            "count" : 10
+          }, {
+            "item" : "0.05",
+            "count" : 9
+          }, {
+            "item" : "0.04",
+            "count" : 8
+          }, {
+            "item" : "0.09",
+            "count" : 7
+          }, {
+            "item" : "0.03",
+            "count" : 6
+          }, {
+            "item" : "0.1",
+            "count" : 5
+          }, {
+            "item" : "0.13",
+            "count" : 4
+          } ],
+          "smallest" : "0",
+          "sum" : "13.35"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010828,
+        "name" : "COUNT WHITE NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "count_white_non_hispanic",
+        "position" : 20,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501678,
+        "width" : 388,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "12.19067796610169",
+          "largest" : "262",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "6",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "2",
+            "count" : 16
+          }, {
+            "item" : "4",
+            "count" : 15
+          }, {
+            "item" : "36",
+            "count" : 14
+          }, {
+            "item" : "13",
+            "count" : 13
+          }, {
+            "item" : "33",
+            "count" : 12
+          }, {
+            "item" : "28",
+            "count" : 11
+          }, {
+            "item" : "32",
+            "count" : 10
+          }, {
+            "item" : "95",
+            "count" : 9
+          }, {
+            "item" : "205",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "39",
+            "count" : 6
+          }, {
+            "item" : "216",
+            "count" : 5
+          }, {
+            "item" : "37",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "18",
+            "count" : 2
+          }, {
+            "item" : "19",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "2877"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010829,
+        "name" : "PERCENT WHITE NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_white_non_hispanic",
+        "position" : 21,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501679,
+        "width" : 412,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.1777542372881356",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.02",
+            "count" : 20
+          }, {
+            "item" : "0.17",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "0.75",
+            "count" : 17
+          }, {
+            "item" : "0.04",
+            "count" : 16
+          }, {
+            "item" : "0.03",
+            "count" : 15
+          }, {
+            "item" : "0.19",
+            "count" : 14
+          }, {
+            "item" : "0.01",
+            "count" : 13
+          }, {
+            "item" : "0.1",
+            "count" : 12
+          }, {
+            "item" : "0.05",
+            "count" : 11
+          }, {
+            "item" : "0.09",
+            "count" : 10
+          }, {
+            "item" : "0.13",
+            "count" : 9
+          }, {
+            "item" : "0.97",
+            "count" : 8
+          }, {
+            "item" : "0.8",
+            "count" : 7
+          }, {
+            "item" : "1",
+            "count" : 6
+          }, {
+            "item" : "0.92",
+            "count" : 5
+          }, {
+            "item" : "0.82",
+            "count" : 4
+          }, {
+            "item" : "0.84",
+            "count" : 3
+          }, {
+            "item" : "0.4",
+            "count" : 2
+          }, {
+            "item" : "0.86",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "41.95"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010830,
+        "name" : "COUNT BLACK NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "count_black_non_hispanic",
+        "position" : 22,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501680,
+        "width" : 388,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "2.233050847457627",
+          "largest" : "60",
+          "null" : 0,
+          "top" : [ {
+            "item" : "21",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "11",
+            "count" : 15
+          }, {
+            "item" : "4",
+            "count" : 14
+          }, {
+            "item" : "15",
+            "count" : 13
+          }, {
+            "item" : "2",
+            "count" : 12
+          }, {
+            "item" : "5",
+            "count" : 11
+          }, {
+            "item" : "10",
+            "count" : 10
+          }, {
+            "item" : "20",
+            "count" : 9
+          }, {
+            "item" : "23",
+            "count" : 8
+          }, {
+            "item" : "18",
+            "count" : 7
+          }, {
+            "item" : "7",
+            "count" : 6
+          }, {
+            "item" : "50",
+            "count" : 5
+          }, {
+            "item" : "47",
+            "count" : 4
+          }, {
+            "item" : "36",
+            "count" : 3
+          }, {
+            "item" : "12",
+            "count" : 2
+          }, {
+            "item" : "6",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "527"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010831,
+        "name" : "PERCENT BLACK NON HISPANIC",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_black_non_hispanic",
+        "position" : 23,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501681,
+        "width" : 412,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.1042372881355932",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.48",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "0.5",
+            "count" : 18
+          }, {
+            "item" : "0.33",
+            "count" : 17
+          }, {
+            "item" : "0.47",
+            "count" : 16
+          }, {
+            "item" : "0.43",
+            "count" : 15
+          }, {
+            "item" : "0.41",
+            "count" : 14
+          }, {
+            "item" : "0.57",
+            "count" : 13
+          }, {
+            "item" : "0.75",
+            "count" : 12
+          }, {
+            "item" : "0.15",
+            "count" : 11
+          }, {
+            "item" : "0.31",
+            "count" : 10
+          }, {
+            "item" : "0.2",
+            "count" : 9
+          }, {
+            "item" : "0.37",
+            "count" : 8
+          }, {
+            "item" : "0.29",
+            "count" : 7
+          }, {
+            "item" : "0.56",
+            "count" : 6
+          }, {
+            "item" : "0.74",
+            "count" : 5
+          }, {
+            "item" : "0.44",
+            "count" : 4
+          }, {
+            "item" : "0.67",
+            "count" : 3
+          }, {
+            "item" : "0.1",
+            "count" : 2
+          }, {
+            "item" : "0.77",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "24.60"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010832,
+        "name" : "COUNT OTHER ETHNICITY",
+        "dataTypeName" : "number",
+        "fieldName" : "count_other_ethnicity",
+        "position" : 24,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501682,
+        "width" : 352,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.6864406779661017",
+          "largest" : "17",
+          "null" : 0,
+          "top" : [ {
+            "item" : "3",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "5",
+            "count" : 16
+          }, {
+            "item" : "7",
+            "count" : 15
+          }, {
+            "item" : "6",
+            "count" : 14
+          }, {
+            "item" : "8",
+            "count" : 13
+          }, {
+            "item" : "17",
+            "count" : 12
+          }, {
+            "item" : "4",
+            "count" : 11
+          } ],
+          "smallest" : "0",
+          "sum" : "162"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010833,
+        "name" : "PERCENT OTHER ETHNICITY",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_other_ethnicity",
+        "position" : 25,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501683,
+        "width" : 376,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.02131355932203390",
+          "largest" : "0.5",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.07",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "0.33",
+            "count" : 18
+          }, {
+            "item" : "0.04",
+            "count" : 17
+          }, {
+            "item" : "0.14",
+            "count" : 16
+          }, {
+            "item" : "0.05",
+            "count" : 15
+          }, {
+            "item" : "0.08",
+            "count" : 14
+          }, {
+            "item" : "0.06",
+            "count" : 13
+          }, {
+            "item" : "0.2",
+            "count" : 12
+          }, {
+            "item" : "0.1",
+            "count" : 11
+          }, {
+            "item" : "0.02",
+            "count" : 10
+          }, {
+            "item" : "0.09",
+            "count" : 9
+          }, {
+            "item" : "0.18",
+            "count" : 8
+          }, {
+            "item" : "0.13",
+            "count" : 7
+          }, {
+            "item" : "0.03",
+            "count" : 6
+          }, {
+            "item" : "0.16",
+            "count" : 5
+          }, {
+            "item" : "0.5",
+            "count" : 4
+          }, {
+            "item" : "0.25",
+            "count" : 3
+          }, {
+            "item" : "0.12",
+            "count" : 2
+          }, {
+            "item" : "0.01",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "5.03"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010834,
+        "name" : "COUNT ETHNICITY UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_ethnicity_unknown",
+        "position" : 26,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501684,
+        "width" : 376,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.1228813559322034",
+          "largest" : "5",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "5",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "4",
+            "count" : 16
+          } ],
+          "smallest" : "0",
+          "sum" : "29"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010835,
+        "name" : "PERCENT ETHNICITY UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_ethnicity_unknown",
+        "position" : 27,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501685,
+        "width" : 400,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.003940677966101695",
+          "largest" : "0.25",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "0.25",
+            "count" : 19
+          }, {
+            "item" : "0.02",
+            "count" : 18
+          }, {
+            "item" : "0.06",
+            "count" : 17
+          }, {
+            "item" : "0.14",
+            "count" : 16
+          }, {
+            "item" : "0.05",
+            "count" : 15
+          }, {
+            "item" : "0.01",
+            "count" : 14
+          } ],
+          "smallest" : "0",
+          "sum" : "0.93"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010836,
+        "name" : "COUNT ETHNICITY TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "count_ethnicity_total",
+        "position" : 28,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501686,
+        "width" : 352,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.66101694915254",
+          "largest" : "272",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "17",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "27",
+            "count" : 12
+          }, {
+            "item" : "20",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "59",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4168"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010837,
+        "name" : "PERCENT ETHNICITY TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_ethnicity_total",
+        "position" : 29,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501687,
+        "width" : 376,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "44.45338983050847",
+          "largest" : "100",
+          "null" : 0,
+          "top" : [ {
+            "item" : "100",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "99",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "10491"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010838,
+        "name" : "COUNT PERMANENT RESIDENT ALIEN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_permanent_resident_alien",
+        "position" : 30,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501688,
+        "width" : 460,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.4449152542372881",
+          "largest" : "10",
+          "null" : 0,
+          "top" : [ {
+            "item" : "2",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "10",
+            "count" : 16
+          }, {
+            "item" : "8",
+            "count" : 15
+          }, {
+            "item" : "6",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          } ],
+          "smallest" : "0",
+          "sum" : "105"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010839,
+        "name" : "PERCENT PERMANENT RESIDENT ALIEN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_permanent_resident_alien",
+        "position" : 31,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501689,
+        "width" : 484,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.02419491525423729",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.05",
+            "count" : 20
+          }, {
+            "item" : "0.06",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "0.5",
+            "count" : 17
+          }, {
+            "item" : "0.33",
+            "count" : 16
+          }, {
+            "item" : "0.11",
+            "count" : 15
+          }, {
+            "item" : "0.14",
+            "count" : 14
+          }, {
+            "item" : "0.08",
+            "count" : 13
+          }, {
+            "item" : "0.07",
+            "count" : 12
+          }, {
+            "item" : "0.04",
+            "count" : 11
+          }, {
+            "item" : "0.29",
+            "count" : 10
+          }, {
+            "item" : "0.02",
+            "count" : 9
+          }, {
+            "item" : "0.09",
+            "count" : 8
+          }, {
+            "item" : "0.2",
+            "count" : 7
+          }, {
+            "item" : "0.1",
+            "count" : 6
+          }, {
+            "item" : "0.03",
+            "count" : 5
+          }, {
+            "item" : "0.01",
+            "count" : 4
+          }, {
+            "item" : "1",
+            "count" : 3
+          }, {
+            "item" : "0.25",
+            "count" : 2
+          } ],
+          "smallest" : "0",
+          "sum" : "5.71"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010840,
+        "name" : "COUNT US CITIZEN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_us_citizen",
+        "position" : 32,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501690,
+        "width" : 292,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.16949152542373",
+          "largest" : "271",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "6",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "3",
+            "count" : 16
+          }, {
+            "item" : "8",
+            "count" : 15
+          }, {
+            "item" : "17",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "20",
+            "count" : 12
+          }, {
+            "item" : "12",
+            "count" : 11
+          }, {
+            "item" : "15",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "25",
+            "count" : 8
+          }, {
+            "item" : "48",
+            "count" : 7
+          }, {
+            "item" : "14",
+            "count" : 6
+          }, {
+            "item" : "36",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "102",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4052"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010841,
+        "name" : "PERCENT US CITIZEN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_us_citizen",
+        "position" : 33,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501691,
+        "width" : 316,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.4186864406779661",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0.95",
+            "count" : 20
+          }, {
+            "item" : "0.94",
+            "count" : 19
+          }, {
+            "item" : "1",
+            "count" : 18
+          }, {
+            "item" : "0",
+            "count" : 17
+          }, {
+            "item" : "0.5",
+            "count" : 16
+          }, {
+            "item" : "0.67",
+            "count" : 15
+          }, {
+            "item" : "0.89",
+            "count" : 14
+          }, {
+            "item" : "0.86",
+            "count" : 13
+          }, {
+            "item" : "0.92",
+            "count" : 12
+          }, {
+            "item" : "0.93",
+            "count" : 11
+          }, {
+            "item" : "0.71",
+            "count" : 10
+          }, {
+            "item" : "0.98",
+            "count" : 9
+          }, {
+            "item" : "0.8",
+            "count" : 8
+          }, {
+            "item" : "0.9",
+            "count" : 7
+          }, {
+            "item" : "0.97",
+            "count" : 6
+          }, {
+            "item" : "0.99",
+            "count" : 5
+          }, {
+            "item" : "0.96",
+            "count" : 4
+          }, {
+            "item" : "0.91",
+            "count" : 3
+          }, {
+            "item" : "0.75",
+            "count" : 2
+          } ],
+          "smallest" : "0",
+          "sum" : "98.81"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010842,
+        "name" : "COUNT OTHER CITIZEN STATUS",
+        "dataTypeName" : "number",
+        "fieldName" : "count_other_citizen_status",
+        "position" : 34,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501692,
+        "width" : 412,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.04661016949152542",
+          "largest" : "2",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "11"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010843,
+        "name" : "PERCENT OTHER CITIZEN STATUS",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_other_citizen_status",
+        "position" : 35,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501693,
+        "width" : 436,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.002076271186440678",
+          "largest" : "0.33",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "0.04",
+            "count" : 19
+          }, {
+            "item" : "0.02",
+            "count" : 18
+          }, {
+            "item" : "0.33",
+            "count" : 17
+          }, {
+            "item" : "0.03",
+            "count" : 16
+          }, {
+            "item" : "0.01",
+            "count" : 15
+          } ],
+          "smallest" : "0",
+          "sum" : "0.49"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010844,
+        "name" : "COUNT CITIZEN STATUS UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_citizen_status_unknown",
+        "position" : 36,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501694,
+        "width" : 436,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010845,
+        "name" : "PERCENT CITIZEN STATUS UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_citizen_status_unknown",
+        "position" : 37,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501695,
+        "width" : 460,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010846,
+        "name" : "COUNT CITIZEN STATUS TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "count_citizen_status_total",
+        "position" : 38,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501696,
+        "width" : 412,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.66101694915254",
+          "largest" : "272",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "17",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "27",
+            "count" : 12
+          }, {
+            "item" : "20",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "59",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4168"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010847,
+        "name" : "PERCENT CITIZEN STATUS TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_citizen_status_total",
+        "position" : 39,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501697,
+        "width" : 436,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "44.48728813559322",
+          "largest" : "100",
+          "null" : 0,
+          "top" : [ {
+            "item" : "100",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "99",
+            "count" : 18
+          } ],
+          "smallest" : "0",
+          "sum" : "10499"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010848,
+        "name" : "COUNT RECEIVES PUBLIC ASSISTANCE",
+        "dataTypeName" : "number",
+        "fieldName" : "count_receives_public_assistance",
+        "position" : 40,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501698,
+        "width" : 484,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "5.974576271186441",
+          "largest" : "155",
+          "null" : 0,
+          "top" : [ {
+            "item" : "20",
+            "count" : 20
+          }, {
+            "item" : "2",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "1",
+            "count" : 17
+          }, {
+            "item" : "9",
+            "count" : 16
+          }, {
+            "item" : "5",
+            "count" : 15
+          }, {
+            "item" : "8",
+            "count" : 14
+          }, {
+            "item" : "3",
+            "count" : 13
+          }, {
+            "item" : "12",
+            "count" : 12
+          }, {
+            "item" : "7",
+            "count" : 11
+          }, {
+            "item" : "19",
+            "count" : 10
+          }, {
+            "item" : "14",
+            "count" : 9
+          }, {
+            "item" : "21",
+            "count" : 8
+          }, {
+            "item" : "17",
+            "count" : 7
+          }, {
+            "item" : "33",
+            "count" : 6
+          }, {
+            "item" : "23",
+            "count" : 5
+          }, {
+            "item" : "4",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "22",
+            "count" : 2
+          }, {
+            "item" : "10",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "1410"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010849,
+        "name" : "PERCENT RECEIVES PUBLIC ASSISTANCE",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_receives_public_assistance",
+        "position" : 41,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501699,
+        "width" : 508,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.1391949152542373",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "0.3",
+            "count" : 18
+          }, {
+            "item" : "0.4",
+            "count" : 17
+          }, {
+            "item" : "0.18",
+            "count" : 16
+          }, {
+            "item" : "0.26",
+            "count" : 15
+          }, {
+            "item" : "0.2",
+            "count" : 14
+          }, {
+            "item" : "0.43",
+            "count" : 13
+          }, {
+            "item" : "0.52",
+            "count" : 12
+          }, {
+            "item" : "0.31",
+            "count" : 11
+          }, {
+            "item" : "0.33",
+            "count" : 10
+          }, {
+            "item" : "0.45",
+            "count" : 9
+          }, {
+            "item" : "0.25",
+            "count" : 8
+          }, {
+            "item" : "0.04",
+            "count" : 7
+          }, {
+            "item" : "0.08",
+            "count" : 6
+          }, {
+            "item" : "0.24",
+            "count" : 5
+          }, {
+            "item" : "0.57",
+            "count" : 4
+          }, {
+            "item" : "0.35",
+            "count" : 3
+          }, {
+            "item" : "0.8",
+            "count" : 2
+          }, {
+            "item" : "0.21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "32.85"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010850,
+        "name" : "COUNT NRECEIVES PUBLIC ASSISTANCE",
+        "dataTypeName" : "number",
+        "fieldName" : "count_nreceives_public_assistance",
+        "position" : 42,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501700,
+        "width" : 496,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "11.68644067796610",
+          "largest" : "206",
+          "null" : 0,
+          "top" : [ {
+            "item" : "33",
+            "count" : 20
+          }, {
+            "item" : "1",
+            "count" : 19
+          }, {
+            "item" : "0",
+            "count" : 18
+          }, {
+            "item" : "2",
+            "count" : 17
+          }, {
+            "item" : "6",
+            "count" : 16
+          }, {
+            "item" : "3",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "8",
+            "count" : 13
+          }, {
+            "item" : "12",
+            "count" : 12
+          }, {
+            "item" : "13",
+            "count" : 11
+          }, {
+            "item" : "14",
+            "count" : 10
+          }, {
+            "item" : "10",
+            "count" : 9
+          }, {
+            "item" : "4",
+            "count" : 8
+          }, {
+            "item" : "28",
+            "count" : 7
+          }, {
+            "item" : "16",
+            "count" : 6
+          }, {
+            "item" : "9",
+            "count" : 5
+          }, {
+            "item" : "5",
+            "count" : 4
+          }, {
+            "item" : "31",
+            "count" : 3
+          }, {
+            "item" : "69",
+            "count" : 2
+          }, {
+            "item" : "11",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "2758"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010851,
+        "name" : "PERCENT NRECEIVES PUBLIC ASSISTANCE",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_nreceives_public_assistance",
+        "position" : 43,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501701,
+        "width" : 520,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0.3058050847457627",
+          "largest" : "1",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "0.7",
+            "count" : 18
+          }, {
+            "item" : "0.6",
+            "count" : 17
+          }, {
+            "item" : "0.82",
+            "count" : 16
+          }, {
+            "item" : "0.74",
+            "count" : 15
+          }, {
+            "item" : "0.8",
+            "count" : 14
+          }, {
+            "item" : "0.57",
+            "count" : 13
+          }, {
+            "item" : "0.48",
+            "count" : 12
+          }, {
+            "item" : "0.69",
+            "count" : 11
+          }, {
+            "item" : "0.67",
+            "count" : 10
+          }, {
+            "item" : "0.55",
+            "count" : 9
+          }, {
+            "item" : "0.75",
+            "count" : 8
+          }, {
+            "item" : "0.96",
+            "count" : 7
+          }, {
+            "item" : "0.92",
+            "count" : 6
+          }, {
+            "item" : "0.76",
+            "count" : 5
+          }, {
+            "item" : "0.43",
+            "count" : 4
+          }, {
+            "item" : "0.65",
+            "count" : 3
+          }, {
+            "item" : "0.2",
+            "count" : 2
+          }, {
+            "item" : "0.79",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "72.17"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010852,
+        "name" : "COUNT PUBLIC ASSISTANCE UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "count_public_assistance_unknown",
+        "position" : 44,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501702,
+        "width" : 472,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010853,
+        "name" : "PERCENT PUBLIC ASSISTANCE UNKNOWN",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_public_assistance_unknown",
+        "position" : 45,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501703,
+        "width" : 496,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "0",
+          "largest" : "0",
+          "null" : 0,
+          "top" : [ {
+            "item" : "0",
+            "count" : 20
+          } ],
+          "smallest" : "0",
+          "sum" : "0"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010854,
+        "name" : "COUNT PUBLIC ASSISTANCE TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "count_public_assistance_total",
+        "position" : 46,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501704,
+        "width" : 448,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "17.66101694915254",
+          "largest" : "272",
+          "null" : 0,
+          "top" : [ {
+            "item" : "1",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          }, {
+            "item" : "2",
+            "count" : 18
+          }, {
+            "item" : "3",
+            "count" : 17
+          }, {
+            "item" : "8",
+            "count" : 16
+          }, {
+            "item" : "17",
+            "count" : 15
+          }, {
+            "item" : "7",
+            "count" : 14
+          }, {
+            "item" : "4",
+            "count" : 13
+          }, {
+            "item" : "27",
+            "count" : 12
+          }, {
+            "item" : "20",
+            "count" : 11
+          }, {
+            "item" : "13",
+            "count" : 10
+          }, {
+            "item" : "5",
+            "count" : 9
+          }, {
+            "item" : "14",
+            "count" : 8
+          }, {
+            "item" : "52",
+            "count" : 7
+          }, {
+            "item" : "59",
+            "count" : 6
+          }, {
+            "item" : "15",
+            "count" : 5
+          }, {
+            "item" : "10",
+            "count" : 4
+          }, {
+            "item" : "11",
+            "count" : 3
+          }, {
+            "item" : "37",
+            "count" : 2
+          }, {
+            "item" : "21",
+            "count" : 1
+          } ],
+          "smallest" : "0",
+          "sum" : "4168"
+        },
+        "format" : { }
+      }, {
+        "id" : 77010855,
+        "name" : "PERCENT PUBLIC ASSISTANCE TOTAL",
+        "dataTypeName" : "number",
+        "fieldName" : "percent_public_assistance_total",
+        "position" : 47,
+        "renderTypeName" : "number",
+        "tableColumnId" : 1501705,
+        "width" : 472,
+        "cachedContents" : {
+          "non_null" : 236,
+          "average" : "44.49152542372881",
+          "largest" : "100",
+          "null" : 0,
+          "top" : [ {
+            "item" : "100",
+            "count" : 20
+          }, {
+            "item" : "0",
+            "count" : 19
+          } ],
+          "smallest" : "0",
+          "sum" : "10500"
+        },
+        "format" : { }
+      } ],
+      "grants" : [ {
+        "inherited" : false,
+        "type" : "viewer",
+        "flags" : [ "public" ]
+      } ],
+      "metadata" : {
+        "rdfSubject" : "0",
+        "rdfClass" : "",
+        "attachments" : [ {
+          "filename" : "demographic_stats_zipcode_breakdowns.xlsx",
+          "assetId" : "2b06c04c-196f-46f3-8398-f3a9f82bee17",
+          "name" : "demographic_stats_zipcode_breakdowns.xlsx"
+        } ],
+        "custom_fields" : {
+          "Update" : {
+            "Automation" : "No",
+            "Date Made Public" : "7/27/2011",
+            "Update Frequency" : "Annually"
+          },
+          "Legislative Compliance" : {
+            "Geo-coding Attached?" : ""
+          },
+          "Dataset Information" : {
+            "Agency" : "Department of Youth and Community Development (DYCD)"
+          }
+        },
+        "rowIdentifier" : "0",
+        "rowLabel" : ""
+      },
+      "owner" : {
+        "id" : "5fuc-pqz2",
+        "displayName" : "NYC OpenData",
+        "profileImageUrlLarge" : "/api/users/5fuc-pqz2/profile_images/LARGE",
+        "profileImageUrlMedium" : "/api/users/5fuc-pqz2/profile_images/THUMB",
+        "profileImageUrlSmall" : "/api/users/5fuc-pqz2/profile_images/TINY",
+        "screenName" : "NYC OpenData",
+        "type" : "interactive",
+        "flags" : [ "mayBeStoriesCoOwner" ]
+      },
+      "query" : { },
+      "rights" : [ "read" ],
+      "tableAuthor" : {
+        "id" : "txun-eb7e",
+        "displayName" : "Albert Webber",
+        "screenName" : "Albert Webber",
+        "type" : "interactive",
+        "flags" : [ "mayBeStoriesCoOwner" ]
+      },
+      "tags" : [ "boundary", "district", "community", "demography", "demographic", "statistic", "youth", "development", "zip", "code", "zip code", "area", "lifelong learning" ],
+      "flags" : [ "default", "restorable", "restorePossibleForType" ]
+    }
+  },
+  "data" : [ [ "row-abpe~s85f-zkcw", "00000000-0000-0000-41DA-9A6AAA84F1B8", 0, 1425769516, null, 1425769516, null, "{ }", "10001", "44", "22", "0.5", "22", "0.5", "0", "0", "44", "100", "0", "0", "16", "0.36", "0", "0", "3", "0.07", "1", "0.02", "21", "0.48", "3", "0.07", "0", "0", "44", "100", "2", "0.05", "42", "0.95", "0", "0", "0", "0", "44", "100", "20", "0.45", "24", "0.55", "0", "0", "44", "100" ]
+, [ "row-hnhe_au83-ufuq", "00000000-0000-0000-EBCC-BEFCF703DB49", 0, 1425769516, null, 1425769516, null, "{ }", "10002", "35", "19", "0.54", "16", "0.46", "0", "0", "35", "100", "0", "0", "1", "0.03", "0", "0", "28", "0.8", "6", "0.17", "0", "0", "0", "0", "0", "0", "35", "100", "2", "0.06", "33", "0.94", "0", "0", "0", "0", "35", "100", "2", "0.06", "33", "0.94", "0", "0", "35", "100" ]
+, [ "row-aupu.kqkr~6w42", "00000000-0000-0000-382E-4A93F24B30E8", 0, 1425769516, null, 1425769516, null, "{ }", "10003", "1", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "1", "100" ]
+, [ "row-3ypa.vj7c~t3pv", "00000000-0000-0000-89DB-2898D8DAA695", 0, 1425769516, null, 1425769516, null, "{ }", "10004", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-nmie.5tpi~5iar", "00000000-0000-0000-569F-174BD81919F7", 0, 1425769516, null, 1425769516, null, "{ }", "10005", "2", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "1", "0.5", "0", "0", "0", "0", "2", "100", "1", "0.5", "1", "0.5", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-y5rb~rt8r~z2p7", "00000000-0000-0000-CB8C-DAE3FC869ADD", 0, 1425769516, null, 1425769516, null, "{ }", "10006", "6", "2", "0.33", "4", "0.67", "0", "0", "6", "100", "0", "0", "2", "0.33", "0", "0", "0", "0", "1", "0.17", "3", "0.5", "0", "0", "0", "0", "6", "100", "0", "0", "6", "1", "0", "0", "0", "0", "6", "100", "0", "0", "6", "1", "0", "0", "6", "100" ]
+, [ "row-yybr-suv6_64pg", "00000000-0000-0000-9D0A-4533E74BE298", 0, 1425769516, null, 1425769516, null, "{ }", "10007", "1", "0", "0", "1", "1", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "1", "1", "0", "0", "0", "0", "1", "100" ]
+, [ "row-t8gz-hnpw_a2w8", "00000000-0000-0000-C298-EAC0C6162813", 0, 1425769516, null, 1425769516, null, "{ }", "10009", "2", "0", "0", "2", "1", "0", "0", "2", "100", "0", "0", "0", "0", "0", "0", "2", "1", "0", "0", "0", "0", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-np9g.a6ij-s4e3", "00000000-0000-0000-450C-989550E386C7", 0, 1425769516, null, 1425769516, null, "{ }", "10010", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-dt5v-brm6~j3w6", "00000000-0000-0000-55D8-6BD6802A55BC", 0, 1425769516, null, 1425769516, null, "{ }", "10011", "3", "2", "0.67", "1", "0.33", "0", "0", "3", "100", "0", "0", "1", "0.33", "0", "0", "0", "0", "0", "0", "1", "0.33", "1", "0.33", "0", "0", "3", "99", "0", "0", "3", "1", "0", "0", "0", "0", "3", "100", "0", "0", "3", "1", "0", "0", "3", "100" ]
+, [ "row-r7dy~mnev.y8g7", "00000000-0000-0000-BC22-0AFA3C966AF9", 0, 1425769516, null, 1425769516, null, "{ }", "10012", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-8u2h-izs6-ewb5", "00000000-0000-0000-91C3-E678214008D1", 0, 1425769516, null, 1425769516, null, "{ }", "10013", "8", "1", "0.13", "7", "0.88", "0", "0", "8", "100", "0", "0", "0", "0", "0", "0", "8", "1", "0", "0", "0", "0", "0", "0", "0", "0", "8", "100", "0", "0", "8", "1", "0", "0", "0", "0", "8", "100", "1", "0.13", "7", "0.88", "0", "0", "8", "100" ]
+, [ "row-3ui9~t5f9~jsgm", "00000000-0000-0000-247C-9C3B3CF2DF3B", 0, 1425769516, null, 1425769516, null, "{ }", "10014", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-rw5d-5d5t~jxys", "00000000-0000-0000-E31D-451F8E0A2707", 0, 1425769516, null, 1425769516, null, "{ }", "10016", "17", "12", "0.71", "5", "0.29", "0", "0", "17", "100", "0", "0", "9", "0.53", "0", "0", "0", "0", "0", "0", "8", "0.47", "0", "0", "0", "0", "17", "100", "0", "0", "17", "1", "0", "0", "0", "0", "17", "100", "9", "0.53", "8", "0.47", "0", "0", "17", "100" ]
+, [ "row-yk6m-afax~t8rs", "00000000-0000-0000-27F7-86CD24AE89CA", 0, 1425769516, null, 1425769516, null, "{ }", "10017", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-xzhw.xbyc.ch8t", "00000000-0000-0000-BBDF-96DF4B730AFE", 0, 1425769516, null, 1425769516, null, "{ }", "10018", "3", "2", "0.67", "1", "0.33", "0", "0", "3", "100", "0", "0", "0", "0", "0", "0", "3", "1", "0", "0", "0", "0", "0", "0", "0", "0", "3", "100", "1", "0.33", "2", "0.67", "0", "0", "0", "0", "3", "100", "0", "0", "3", "1", "0", "0", "3", "100" ]
+, [ "row-t9dv.2wxj.7kqe", "00000000-0000-0000-86F8-12AE997D9342", 0, 1425769516, null, 1425769516, null, "{ }", "10019", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-tbn6~p75f-cyri", "00000000-0000-0000-BB5E-6195A08B8BA3", 0, 1425769516, null, 1425769516, null, "{ }", "10020", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-28d8.gjme~sw2e", "00000000-0000-0000-ED23-D10D52153E21", 0, 1425769516, null, 1425769516, null, "{ }", "10021", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-u2zy~mwas.syg7", "00000000-0000-0000-8E60-C606815696F7", 0, 1425769516, null, 1425769516, null, "{ }", "10022", "1", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "1", "100" ]
+, [ "row-zkks_cnrp.zsqj", "00000000-0000-0000-4A5D-D5EE815EC995", 0, 1425769516, null, 1425769516, null, "{ }", "10023", "7", "5", "0.71", "2", "0.29", "0", "0", "7", "100", "0", "0", "3", "0.43", "0", "0", "1", "0.14", "0", "0", "3", "0.43", "0", "0", "0", "0", "7", "100", "0", "0", "7", "1", "0", "0", "0", "0", "7", "100", "5", "0.71", "2", "0.29", "0", "0", "7", "100" ]
+, [ "row-9eg9_82ud_6hbu", "00000000-0000-0000-0336-BF5BC247BE55", 0, 1425769516, null, 1425769516, null, "{ }", "10024", "4", "4", "1", "0", "0", "0", "0", "4", "100", "0", "0", "0", "0", "0", "0", "0", "0", "3", "0.75", "0", "0", "0", "0", "1", "0.25", "4", "100", "0", "0", "4", "1", "0", "0", "0", "0", "4", "100", "1", "0.25", "3", "0.75", "0", "0", "4", "100" ]
+, [ "row-2h8t-xt5b.xpq2", "00000000-0000-0000-7449-741D5BD644DE", 0, 1425769516, null, 1425769516, null, "{ }", "10025", "27", "17", "0.63", "10", "0.37", "0", "0", "27", "100", "0", "0", "15", "0.56", "0", "0", "0", "0", "0", "0", "11", "0.41", "1", "0.04", "0", "0", "27", "100", "3", "0.11", "24", "0.89", "0", "0", "0", "0", "27", "100", "8", "0.3", "19", "0.7", "0", "0", "27", "100" ]
+, [ "row-86qy~tcvz.xft5", "00000000-0000-0000-471C-40E9343E89BA", 0, 1425769516, null, 1425769516, null, "{ }", "10026", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-hahs.wxhm-bm3j", "00000000-0000-0000-F601-A1DEA96951FC", 0, 1425769516, null, 1425769516, null, "{ }", "10027", "7", "4", "0.57", "3", "0.43", "0", "0", "7", "100", "0", "0", "1", "0.14", "0", "0", "1", "0.14", "0", "0", "4", "0.57", "1", "0.14", "0", "0", "7", "99", "1", "0.14", "6", "0.86", "0", "0", "0", "0", "7", "100", "1", "0.14", "6", "0.86", "0", "0", "7", "100" ]
+, [ "row-2vtj_6vtn_27eq", "00000000-0000-0000-DA35-279BB865C0CB", 0, 1425769516, null, 1425769516, null, "{ }", "10028", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-yn32-ynay_sw5t", "00000000-0000-0000-C1E2-9F71052C6A2A", 0, 1425769516, null, 1425769516, null, "{ }", "10029", "20", "13", "0.65", "7", "0.35", "0", "0", "20", "100", "0", "0", "4", "0.2", "0", "0", "0", "0", "0", "0", "15", "0.75", "1", "0.05", "0", "0", "20", "100", "0", "0", "20", "1", "0", "0", "0", "0", "20", "100", "8", "0.4", "12", "0.6", "0", "0", "20", "100" ]
+, [ "row-szpv.e2wq_ur6x", "00000000-0000-0000-63A3-BC0A16D91E4E", 0, 1425769516, null, 1425769516, null, "{ }", "10030", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-z5dv_wh3f~dgyc", "00000000-0000-0000-516E-C6CD330C74F5", 0, 1425769516, null, 1425769516, null, "{ }", "10031", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7ekv_yxyv~2sdy", "00000000-0000-0000-FAF6-A5080B8FE72B", 0, 1425769516, null, 1425769516, null, "{ }", "10032", "13", "4", "0.31", "9", "0.69", "0", "0", "13", "100", "0", "0", "9", "0.69", "0", "0", "1", "0.08", "0", "0", "2", "0.15", "1", "0.08", "0", "0", "13", "100", "1", "0.08", "12", "0.92", "0", "0", "0", "0", "13", "100", "5", "0.38", "8", "0.62", "0", "0", "13", "100" ]
+, [ "row-e9pn-wtfz~bmt6", "00000000-0000-0000-C620-D82E1114BA00", 0, 1425769516, null, 1425769516, null, "{ }", "10033", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7rcd.ws4x_sigg", "00000000-0000-0000-C885-F5CEB97053D3", 0, 1425769516, null, 1425769516, null, "{ }", "10034", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-9bkp.t2fy_7xhr", "00000000-0000-0000-0C38-AB52509C290F", 0, 1425769516, null, 1425769516, null, "{ }", "10035", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-b3yt_qm8h.eawt", "00000000-0000-0000-4621-35E080D1DB1F", 0, 1425769516, null, 1425769516, null, "{ }", "10036", "2", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "1", "0.5", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "2", "1", "0", "0", "0", "0", "2", "100" ]
+, [ "row-xrvv~ytww.waek", "00000000-0000-0000-B5DC-E9E298EBCBF8", 0, 1425769516, null, 1425769516, null, "{ }", "10037", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cqgf-4aje~8bxg", "00000000-0000-0000-D972-631E7536ECC5", 0, 1425769516, null, 1425769516, null, "{ }", "10038", "16", "11", "0.69", "5", "0.31", "0", "0", "16", "100", "0", "0", "2", "0.13", "0", "0", "9", "0.56", "0", "0", "5", "0.31", "0", "0", "0", "0", "16", "100", "1", "0.06", "15", "0.94", "0", "0", "0", "0", "16", "100", "3", "0.19", "13", "0.81", "0", "0", "16", "100" ]
+, [ "row-egrz.wp8s.2amk", "00000000-0000-0000-9084-4097FBA6BCC6", 0, 1425769516, null, 1425769516, null, "{ }", "10039", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-3cuc.ujyk~eyj8", "00000000-0000-0000-A6DB-7E254468321E", 0, 1425769516, null, 1425769516, null, "{ }", "10040", "5", "4", "0.8", "1", "0.2", "0", "0", "5", "100", "0", "0", "3", "0.6", "0", "0", "1", "0.2", "0", "0", "1", "0.2", "0", "0", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "2", "0.4", "3", "0.6", "0", "0", "5", "100" ]
+, [ "row-cdvu_fwam~yaee", "00000000-0000-0000-B2FF-94A90FA93C1A", 0, 1425769516, null, 1425769516, null, "{ }", "10044", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5msv.vm7i-322p", "00000000-0000-0000-FC1F-34BEBAD3F754", 0, 1425769516, null, 1425769516, null, "{ }", "10045", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-vneg~uz3y_5bhy", "00000000-0000-0000-ED48-FADED9750F96", 0, 1425769516, null, 1425769516, null, "{ }", "10065", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-hktp.4jjh.q2gt", "00000000-0000-0000-C7C7-DB6DFDCB211B", 0, 1425769516, null, 1425769516, null, "{ }", "10115", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-e8pg_28v3.3d5f", "00000000-0000-0000-7401-281D06FAD373", 0, 1425769516, null, 1425769516, null, "{ }", "10119", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-dz5w-wtv2_srk3", "00000000-0000-0000-5EF0-CBDBAA8D17E5", 0, 1425769516, null, 1425769516, null, "{ }", "10128", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-c839_xwvw~ijt3", "00000000-0000-0000-A331-51E5812A3A42", 0, 1425769516, null, 1425769516, null, "{ }", "10154", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-xcuu.u35q~qjg6", "00000000-0000-0000-C47C-48BE690E5C78", 0, 1425769516, null, 1425769516, null, "{ }", "10278", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-55qc-34xn~r875", "00000000-0000-0000-9A0C-4AE05C85300E", 0, 1425769516, null, 1425769516, null, "{ }", "10280", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-48yu.rnnk_3z8u", "00000000-0000-0000-FC6E-87A9525511D6", 0, 1425769516, null, 1425769516, null, "{ }", "10301", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-whcm.7x4j_78kj", "00000000-0000-0000-772D-85131BE5462C", 0, 1425769516, null, 1425769516, null, "{ }", "10302", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-bmwg_8wyj_f2ug", "00000000-0000-0000-1C43-D6BEDB6C45B9", 0, 1425769516, null, 1425769516, null, "{ }", "10303", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-kxzd.njf5_icdc", "00000000-0000-0000-691A-D6F237E46198", 0, 1425769516, null, 1425769516, null, "{ }", "10304", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-kdpf.2bb6_k6sd", "00000000-0000-0000-52C1-FE94E6180E67", 0, 1425769516, null, 1425769516, null, "{ }", "10305", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-jrr4_hpvs.jvfz", "00000000-0000-0000-E916-297993EB7251", 0, 1425769516, null, 1425769516, null, "{ }", "10306", "1", "0", "0", "1", "1", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "1", "100" ]
+, [ "row-p823-rz6t-uhy7", "00000000-0000-0000-8017-36954D06ECE7", 0, 1425769516, null, 1425769516, null, "{ }", "10307", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-yczu.a6zn.a6iy", "00000000-0000-0000-5DD1-AED03962989C", 0, 1425769516, null, 1425769516, null, "{ }", "10309", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-qtta~6gai_gpyb", "00000000-0000-0000-24B6-6AB4D20500FD", 0, 1425769516, null, 1425769516, null, "{ }", "10310", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-4fhw-ntej~4kn4", "00000000-0000-0000-C683-F704C0E9D944", 0, 1425769516, null, 1425769516, null, "{ }", "10312", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-p6us-qnbc-qcgx", "00000000-0000-0000-1C51-7067AE8EFE4B", 0, 1425769516, null, 1425769516, null, "{ }", "10314", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-skwt~cdyc.wa3i", "00000000-0000-0000-1D88-1EEC58FB0B21", 0, 1425769516, null, 1425769516, null, "{ }", "10451", "41", "21", "0.51", "20", "0.49", "0", "0", "41", "100", "0", "0", "22", "0.54", "0", "0", "1", "0.02", "0", "0", "15", "0.37", "2", "0.05", "1", "0.02", "41", "100", "3", "0.07", "38", "0.93", "0", "0", "0", "0", "41", "100", "12", "0.29", "29", "0.71", "0", "0", "41", "100" ]
+, [ "row-tiwd_2uyz_93s7", "00000000-0000-0000-FA51-303573D0C8F7", 0, 1425769516, null, 1425769516, null, "{ }", "10452", "17", "12", "0.71", "5", "0.29", "0", "0", "17", "100", "0", "0", "10", "0.59", "0", "0", "0", "0", "0", "0", "5", "0.29", "1", "0.06", "1", "0.06", "17", "100", "0", "0", "17", "1", "0", "0", "0", "0", "17", "100", "3", "0.18", "14", "0.82", "0", "0", "17", "100" ]
+, [ "row-ubzs~uvxp_tetp", "00000000-0000-0000-5A57-675A890B6714", 0, 1425769516, null, 1425769516, null, "{ }", "10453", "14", "7", "0.5", "7", "0.5", "0", "0", "14", "100", "0", "0", "6", "0.43", "0", "0", "0", "0", "0", "0", "8", "0.57", "0", "0", "0", "0", "14", "100", "2", "0.14", "12", "0.86", "0", "0", "0", "0", "14", "100", "8", "0.57", "6", "0.43", "0", "0", "14", "100" ]
+, [ "row-9cwk-9w7h_tag8", "00000000-0000-0000-48F4-9D78897E84E8", 0, 1425769516, null, 1425769516, null, "{ }", "10454", "18", "8", "0.44", "10", "0.56", "0", "0", "18", "100", "0", "0", "7", "0.39", "0", "0", "1", "0.06", "0", "0", "10", "0.56", "0", "0", "0", "0", "18", "100", "1", "0.06", "17", "0.94", "0", "0", "0", "0", "18", "100", "8", "0.44", "10", "0.56", "0", "0", "18", "100" ]
+, [ "row-hnkk.bu42-7pwk", "00000000-0000-0000-8313-5C444569F045", 0, 1425769516, null, 1425769516, null, "{ }", "10455", "27", "17", "0.63", "10", "0.37", "0", "0", "27", "100", "0", "0", "5", "0.19", "0", "0", "0", "0", "0", "0", "20", "0.74", "2", "0.07", "0", "0", "27", "100", "1", "0.04", "25", "0.93", "1", "0.04", "0", "0", "27", "100", "7", "0.26", "20", "0.74", "0", "0", "27", "100" ]
+, [ "row-84x9-427d~rexq", "00000000-0000-0000-B90F-9EB8F0AEC0DB", 0, 1425769516, null, 1425769516, null, "{ }", "10456", "5", "3", "0.6", "2", "0.4", "0", "0", "5", "100", "0", "0", "3", "0.6", "1", "0.2", "0", "0", "0", "0", "0", "0", "1", "0.2", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "1", "0.2", "4", "0.8", "0", "0", "5", "100" ]
+, [ "row-bsg6-yeqe_pzis", "00000000-0000-0000-96BF-C36A09F1314F", 0, 1425769516, null, 1425769516, null, "{ }", "10457", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-xazr-ufw4.jckj", "00000000-0000-0000-16C3-17D24DFDDB08", 0, 1425769516, null, 1425769516, null, "{ }", "10458", "52", "25", "0.48", "27", "0.52", "0", "0", "52", "100", "0", "0", "24", "0.46", "0", "0", "0", "0", "1", "0.02", "23", "0.44", "3", "0.06", "1", "0.02", "52", "100", "3", "0.06", "48", "0.92", "1", "0.02", "0", "0", "52", "100", "19", "0.37", "33", "0.63", "0", "0", "52", "100" ]
+, [ "row-kb5g-i7nj_uff9", "00000000-0000-0000-E9C1-DC9CF82BFE30", 0, 1425769516, null, 1425769516, null, "{ }", "10459", "7", "5", "0.71", "2", "0.29", "0", "0", "7", "100", "0", "0", "3", "0.43", "0", "0", "0", "0", "0", "0", "4", "0.57", "0", "0", "0", "0", "7", "100", "2", "0.29", "5", "0.71", "0", "0", "0", "0", "7", "100", "3", "0.43", "4", "0.57", "0", "0", "7", "100" ]
+, [ "row-egyi-i996-ud69", "00000000-0000-0000-17BB-9D4BA70CCDF1", 0, 1425769516, null, 1425769516, null, "{ }", "10460", "27", "20", "0.74", "7", "0.26", "0", "0", "27", "100", "0", "0", "9", "0.33", "0", "0", "0", "0", "1", "0.04", "15", "0.56", "2", "0.07", "0", "0", "27", "100", "2", "0.07", "25", "0.93", "0", "0", "0", "0", "27", "100", "14", "0.52", "13", "0.48", "0", "0", "27", "100" ]
+, [ "row-wfph.hcth~dij5", "00000000-0000-0000-28BB-7E70FC1F1A1A", 0, 1425769516, null, 1425769516, null, "{ }", "10461", "49", "26", "0.53", "23", "0.47", "0", "0", "49", "100", "1", "0.02", "21", "0.43", "1", "0.02", "1", "0.02", "1", "0.02", "18", "0.37", "5", "0.1", "1", "0.02", "49", "100", "1", "0.02", "48", "0.98", "0", "0", "0", "0", "49", "100", "21", "0.43", "28", "0.57", "0", "0", "49", "100" ]
+, [ "row-53q7-cs6k-met9", "00000000-0000-0000-56CE-7C73D4AA6BD9", 0, 1425769516, null, 1425769516, null, "{ }", "10462", "3", "2", "0.67", "1", "0.33", "0", "0", "3", "100", "0", "0", "1", "0.33", "0", "0", "0", "0", "0", "0", "2", "0.67", "0", "0", "0", "0", "3", "100", "0", "0", "2", "0.67", "1", "0.33", "0", "0", "3", "100", "3", "1", "0", "0", "0", "0", "3", "100" ]
+, [ "row-5ptq~u7si_3hpz", "00000000-0000-0000-631A-6C62000BFF5E", 0, 1425769516, null, 1425769516, null, "{ }", "10463", "59", "33", "0.56", "26", "0.44", "0", "0", "59", "100", "0", "0", "36", "0.61", "0", "0", "0", "0", "2", "0.03", "18", "0.31", "3", "0.05", "0", "0", "59", "100", "3", "0.05", "54", "0.92", "2", "0.03", "0", "0", "59", "100", "20", "0.34", "39", "0.66", "0", "0", "59", "100" ]
+, [ "row-2nn6~3a2r_5q8q", "00000000-0000-0000-18F8-1D652E00ED95", 0, 1425769516, null, 1425769516, null, "{ }", "10464", "15", "7", "0.47", "8", "0.53", "0", "0", "15", "100", "0", "0", "7", "0.47", "0", "0", "1", "0.07", "0", "0", "7", "0.47", "0", "0", "0", "0", "15", "100", "0", "0", "15", "1", "0", "0", "0", "0", "15", "100", "7", "0.47", "8", "0.53", "0", "0", "15", "100" ]
+, [ "row-gpuq_mftq-rn4a", "00000000-0000-0000-ACA7-4E3A355446D8", 0, 1425769516, null, 1425769516, null, "{ }", "10465", "21", "17", "0.81", "4", "0.19", "0", "0", "21", "100", "0", "0", "14", "0.67", "0", "0", "1", "0.05", "4", "0.19", "2", "0.1", "0", "0", "0", "0", "21", "100", "1", "0.05", "20", "0.95", "0", "0", "0", "0", "21", "100", "5", "0.24", "16", "0.76", "0", "0", "21", "100" ]
+, [ "row-thju.9um4~ry4j", "00000000-0000-0000-098E-BE6570D1DE3F", 0, 1425769516, null, 1425769516, null, "{ }", "10466", "65", "39", "0.6", "26", "0.4", "0", "0", "65", "100", "1", "0.02", "14", "0.22", "0", "0", "0", "0", "0", "0", "50", "0.77", "0", "0", "0", "0", "65", "100", "3", "0.05", "62", "0.95", "0", "0", "0", "0", "65", "100", "17", "0.26", "48", "0.74", "0", "0", "65", "100" ]
+, [ "row-hyn5~8qrn.cz73", "00000000-0000-0000-8527-05366A9F4A33", 0, 1425769516, null, 1425769516, null, "{ }", "10467", "106", "65", "0.61", "41", "0.39", "0", "0", "106", "100", "0", "0", "51", "0.48", "1", "0.01", "4", "0.04", "1", "0.01", "47", "0.44", "2", "0.02", "0", "0", "106", "100", "10", "0.09", "94", "0.89", "2", "0.02", "0", "0", "106", "100", "33", "0.31", "73", "0.69", "0", "0", "106", "100" ]
+, [ "row-tx37-vcrz~ju7x", "00000000-0000-0000-882C-0594E76BBE6E", 0, 1425769516, null, 1425769516, null, "{ }", "10468", "81", "46", "0.57", "35", "0.43", "0", "0", "81", "100", "0", "0", "35", "0.43", "0", "0", "3", "0.04", "0", "0", "36", "0.44", "7", "0.09", "0", "0", "81", "100", "2", "0.02", "79", "0.98", "0", "0", "0", "0", "81", "100", "23", "0.28", "58", "0.72", "0", "0", "81", "100" ]
+, [ "row-bm8j~kwbq~ev8n", "00000000-0000-0000-5CD5-29D8FA2441ED", 0, 1425769516, null, 1425769516, null, "{ }", "10469", "10", "7", "0.7", "3", "0.3", "0", "0", "10", "100", "0", "0", "4", "0.4", "0", "0", "0", "0", "1", "0.1", "5", "0.5", "0", "0", "0", "0", "10", "100", "2", "0.2", "8", "0.8", "0", "0", "0", "0", "10", "100", "4", "0.4", "6", "0.6", "0", "0", "10", "100" ]
+, [ "row-hv9r.wqpk_rgrh", "00000000-0000-0000-1B6B-E24E07A749E5", 0, 1425769516, null, 1425769516, null, "{ }", "10471", "43", "24", "0.56", "19", "0.44", "0", "0", "43", "100", "0", "0", "27", "0.63", "0", "0", "1", "0.02", "2", "0.05", "12", "0.28", "1", "0.02", "0", "0", "43", "100", "2", "0.05", "41", "0.95", "0", "0", "0", "0", "43", "100", "17", "0.4", "26", "0.6", "0", "0", "43", "100" ]
+, [ "row-nxen-2evt_69u4", "00000000-0000-0000-BB46-88CACEB002B9", 0, 1425769516, null, 1425769516, null, "{ }", "10472", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cqwp~pncf-duh5", "00000000-0000-0000-D86A-CC92671F3199", 0, 1425769516, null, 1425769516, null, "{ }", "10473", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-v473.fy2a~vb6t", "00000000-0000-0000-0028-18C6D85F434F", 0, 1425769516, null, 1425769516, null, "{ }", "10474", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-4rvu-vgbw~zk8t", "00000000-0000-0000-4181-695CF761E308", 0, 1425769516, null, 1425769516, null, "{ }", "10475", "20", "12", "0.6", "8", "0.4", "0", "0", "20", "100", "0", "0", "7", "0.35", "0", "0", "0", "0", "1", "0.05", "12", "0.6", "0", "0", "0", "0", "20", "100", "2", "0.1", "18", "0.9", "0", "0", "0", "0", "20", "100", "8", "0.4", "12", "0.6", "0", "0", "20", "100" ]
+, [ "row-5fr8_3vsp.u9yi", "00000000-0000-0000-31B0-F61B0054BFBC", 0, 1425769516, null, 1425769516, null, "{ }", "10514", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-9kfk_d9y8.ubc5", "00000000-0000-0000-1920-E2BADE2F45E4", 0, 1425769516, null, 1425769516, null, "{ }", "10543", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-b6mz~htct.4sp5", "00000000-0000-0000-8198-9FD24740976D", 0, 1425769516, null, 1425769516, null, "{ }", "10553", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7gdx-5dxd-29vc", "00000000-0000-0000-2CD6-74B6C93B3DEE", 0, 1425769516, null, 1425769516, null, "{ }", "10573", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-vski~9fig.rt8x", "00000000-0000-0000-C7F7-9C1B2D1F721C", 0, 1425769516, null, 1425769516, null, "{ }", "10701", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-wfyx.g6eq.rgy6", "00000000-0000-0000-3479-56C5C1969CC5", 0, 1425769516, null, 1425769516, null, "{ }", "10705", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-evnb_itss-netx", "00000000-0000-0000-C9EE-ED3AA1A74D79", 0, 1425769516, null, 1425769516, null, "{ }", "10911", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-yfzc.ec69.wzsf", "00000000-0000-0000-5473-A881E78BBF01", 0, 1425769516, null, 1425769516, null, "{ }", "10965", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-spem-v66e~66w8", "00000000-0000-0000-1E80-A73744DA4717", 0, 1425769516, null, 1425769516, null, "{ }", "10977", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-89gy_wry6.t6pg", "00000000-0000-0000-B471-AF7B419445F1", 0, 1425769516, null, 1425769516, null, "{ }", "11001", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7a3c.6v4r.v4b2", "00000000-0000-0000-606C-0FF931838B1F", 0, 1425769516, null, 1425769516, null, "{ }", "11021", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-scxt_b5q7_nezw", "00000000-0000-0000-73A3-82473749B994", 0, 1425769516, null, 1425769516, null, "{ }", "11050", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ddbz-e8u9~jfhk", "00000000-0000-0000-B381-5DB54F33D97F", 0, 1425769516, null, 1425769516, null, "{ }", "11101", "1", "0", "0", "1", "1", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "1", "100" ]
+, [ "row-g2jj~7u44.w6u7", "00000000-0000-0000-774E-9C9C2A88BFBA", 0, 1425769516, null, 1425769516, null, "{ }", "11102", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5pj6_nsqx~tj77", "00000000-0000-0000-E2CD-C5B56F3F9D3E", 0, 1425769516, null, 1425769516, null, "{ }", "11103", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5wgm.56qh~tncp", "00000000-0000-0000-3809-EBA5863E33A0", 0, 1425769516, null, 1425769516, null, "{ }", "11104", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-xnsj.v84k.9kn2", "00000000-0000-0000-13E2-5530CC191061", 0, 1425769516, null, 1425769516, null, "{ }", "11105", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-fqrd.4n72~9aqm", "00000000-0000-0000-2DF0-2A56453A8C2B", 0, 1425769516, null, 1425769516, null, "{ }", "11106", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-dwq8_u3s5.457h", "00000000-0000-0000-20F8-E118474A963B", 0, 1425769516, null, 1425769516, null, "{ }", "11111", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-mcdy_azdw~7jif", "00000000-0000-0000-A8E3-953774E991CB", 0, 1425769516, null, 1425769516, null, "{ }", "11112", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cnc3.d7ym_sg2k", "00000000-0000-0000-77B9-1565F899F38F", 0, 1425769516, null, 1425769516, null, "{ }", "11201", "11", "6", "0.55", "5", "0.45", "0", "0", "11", "100", "0", "0", "2", "0.18", "0", "0", "1", "0.09", "1", "0.09", "5", "0.45", "2", "0.18", "0", "0", "11", "99", "0", "0", "11", "1", "0", "0", "0", "0", "11", "100", "2", "0.18", "9", "0.82", "0", "0", "11", "100" ]
+, [ "row-yhr5-54rt.cdh6", "00000000-0000-0000-B2C3-E6928892B49C", 0, 1425769516, null, 1425769516, null, "{ }", "11202", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-8vfq-d4ty.6twa", "00000000-0000-0000-C2CD-7DDF23EC9780", 0, 1425769516, null, 1425769516, null, "{ }", "11203", "15", "12", "0.8", "3", "0.2", "0", "0", "15", "100", "0", "0", "2", "0.13", "0", "0", "1", "0.07", "2", "0.13", "8", "0.53", "2", "0.13", "0", "0", "15", "99", "1", "0.07", "14", "0.93", "0", "0", "0", "0", "15", "100", "1", "0.07", "14", "0.93", "0", "0", "15", "100" ]
+, [ "row-nddh-khh8.5rb8", "00000000-0000-0000-4EF3-0DC736489B8C", 0, 1425769516, null, 1425769516, null, "{ }", "11204", "37", "17", "0.46", "20", "0.54", "0", "0", "37", "100", "0", "0", "0", "0", "0", "0", "0", "0", "36", "0.97", "0", "0", "1", "0.03", "0", "0", "37", "100", "1", "0.03", "36", "0.97", "0", "0", "0", "0", "37", "100", "19", "0.51", "18", "0.49", "0", "0", "37", "100" ]
+, [ "row-uzhn_7egm_fguj", "00000000-0000-0000-5054-B46D89B44C81", 0, 1425769516, null, 1425769516, null, "{ }", "11205", "5", "5", "1", "0", "0", "0", "0", "5", "100", "0", "0", "0", "0", "0", "0", "0", "0", "4", "0.8", "0", "0", "1", "0.2", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "3", "0.6", "2", "0.4", "0", "0", "5", "100" ]
+, [ "row-2843.58v4-g6p9", "00000000-0000-0000-AB2A-A91F6556DE6C", 0, 1425769516, null, 1425769516, null, "{ }", "11206", "13", "3", "0.23", "10", "0.77", "0", "0", "13", "100", "0", "0", "0", "0", "0", "0", "0", "0", "13", "1", "0", "0", "0", "0", "0", "0", "13", "100", "0", "0", "13", "1", "0", "0", "0", "0", "13", "100", "9", "0.69", "4", "0.31", "0", "0", "13", "100" ]
+, [ "row-pyhb_uq7i-pi7u", "00000000-0000-0000-008E-A65CCCB3A3B0", 0, 1425769516, null, 1425769516, null, "{ }", "11207", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-qn2k_rzaj-mwez", "00000000-0000-0000-3C67-EB59853EC54A", 0, 1425769516, null, 1425769516, null, "{ }", "11208", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-3keg~9k9m~umye", "00000000-0000-0000-4004-2CCDBC32D480", 0, 1425769516, null, 1425769516, null, "{ }", "11209", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-mb3c-kjvs-68bj", "00000000-0000-0000-B16E-4D5DCA04C17B", 0, 1425769516, null, 1425769516, null, "{ }", "11210", "36", "12", "0.33", "24", "0.67", "0", "0", "36", "100", "0", "0", "0", "0", "0", "0", "0", "0", "33", "0.92", "0", "0", "3", "0.08", "0", "0", "36", "100", "0", "0", "36", "1", "0", "0", "0", "0", "36", "100", "11", "0.31", "25", "0.69", "0", "0", "36", "100" ]
+, [ "row-8cga~ju8z.med5", "00000000-0000-0000-D329-58564344F978", 0, 1425769516, null, 1425769516, null, "{ }", "11211", "34", "31", "0.91", "3", "0.09", "0", "0", "34", "100", "0", "0", "2", "0.06", "0", "0", "1", "0.03", "28", "0.82", "1", "0.03", "2", "0.06", "0", "0", "34", "100", "0", "0", "34", "1", "0", "0", "0", "0", "34", "100", "22", "0.65", "12", "0.35", "0", "0", "34", "100" ]
+, [ "row-szim-5dum.ugrb", "00000000-0000-0000-3E9E-9A48DCC72505", 0, 1425769516, null, 1425769516, null, "{ }", "11212", "10", "8", "0.8", "2", "0.2", "0", "0", "10", "100", "0", "0", "1", "0.1", "0", "0", "1", "0.1", "0", "0", "7", "0.7", "1", "0.1", "0", "0", "10", "100", "1", "0.1", "9", "0.9", "0", "0", "0", "0", "10", "100", "0", "0", "10", "1", "0", "0", "10", "100" ]
+, [ "row-euxa_625w-qujq", "00000000-0000-0000-C30A-1DF0BDA602C2", 0, 1425769516, null, 1425769516, null, "{ }", "11213", "38", "17", "0.45", "21", "0.55", "0", "0", "38", "100", "0", "0", "0", "0", "0", "0", "0", "0", "32", "0.84", "0", "0", "6", "0.16", "0", "0", "38", "100", "1", "0.03", "37", "0.97", "0", "0", "0", "0", "38", "100", "10", "0.26", "28", "0.74", "0", "0", "38", "100" ]
+, [ "row-rpiz-ua5h.svxj", "00000000-0000-0000-BC48-FD6F5A520385", 0, 1425769516, null, 1425769516, null, "{ }", "11214", "10", "7", "0.7", "3", "0.3", "0", "0", "10", "100", "0", "0", "0", "0", "0", "0", "5", "0.5", "4", "0.4", "1", "0.1", "0", "0", "0", "0", "10", "100", "0", "0", "10", "1", "0", "0", "0", "0", "10", "100", "2", "0.2", "8", "0.8", "0", "0", "10", "100" ]
+, [ "row-4bq9-26uh_8hhu", "00000000-0000-0000-213A-E46ADE698128", 0, 1425769516, null, 1425769516, null, "{ }", "11215", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-acai-is4t_mik5", "00000000-0000-0000-83C3-55D78797B7FA", 0, 1425769516, null, 1425769516, null, "{ }", "11216", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-wm42.can8_ftbn", "00000000-0000-0000-8ABF-D30521748AED", 0, 1425769516, null, 1425769516, null, "{ }", "11217", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-d99s~g9ee_cy2d", "00000000-0000-0000-82AB-8BF00FCBAD07", 0, 1425769516, null, 1425769516, null, "{ }", "11218", "111", "97", "0.87", "14", "0.13", "0", "0", "111", "100", "0", "0", "1", "0.01", "0", "0", "3", "0.03", "95", "0.86", "6", "0.05", "6", "0.05", "0", "0", "111", "100", "8", "0.07", "102", "0.92", "1", "0.01", "0", "0", "111", "100", "51", "0.46", "60", "0.54", "0", "0", "111", "100" ]
+, [ "row-qpxy.zk6j-5fe8", "00000000-0000-0000-AB1E-AB89641B9BF3", 0, 1425769516, null, 1425769516, null, "{ }", "11219", "214", "182", "0.85", "32", "0.15", "0", "0", "214", "100", "0", "0", "1", "0", "0", "0", "1", "0", "205", "0.96", "0", "0", "6", "0.03", "1", "0", "214", "99", "2", "0.01", "212", "0.99", "0", "0", "0", "0", "214", "100", "112", "0.52", "102", "0.48", "0", "0", "214", "100" ]
+, [ "row-dxyn.dqn6.szhr", "00000000-0000-0000-7DAE-DB775AF7510D", 0, 1425769516, null, 1425769516, null, "{ }", "11220", "8", "1", "0.13", "7", "0.88", "0", "0", "8", "100", "0", "0", "0", "0", "0", "0", "1", "0.13", "6", "0.75", "0", "0", "1", "0.13", "0", "0", "8", "100", "0", "0", "8", "1", "0", "0", "0", "0", "8", "100", "5", "0.63", "3", "0.38", "0", "0", "8", "100" ]
+, [ "row-7s9h_wp58-rsgn", "00000000-0000-0000-1745-B4599F5E1170", 0, 1425769516, null, 1425769516, null, "{ }", "11221", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5hg7.xgwv.6yif", "00000000-0000-0000-6FEF-0E2AE9AB232D", 0, 1425769516, null, 1425769516, null, "{ }", "11222", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cdiz~d43b.jdjg", "00000000-0000-0000-2B2C-437D0B6D6276", 0, 1425769516, null, 1425769516, null, "{ }", "11223", "109", "53", "0.49", "56", "0.51", "0", "0", "109", "100", "0", "0", "1", "0.01", "0", "0", "7", "0.06", "95", "0.87", "1", "0.01", "5", "0.05", "0", "0", "109", "100", "6", "0.06", "102", "0.94", "1", "0.01", "0", "0", "109", "100", "20", "0.18", "89", "0.82", "0", "0", "109", "100" ]
+, [ "row-5wyh~zb55-78n6", "00000000-0000-0000-A07C-6C98FB84FAB9", 0, 1425769516, null, 1425769516, null, "{ }", "11224", "93", "53", "0.57", "40", "0.43", "0", "0", "93", "100", "0", "0", "14", "0.15", "0", "0", "7", "0.08", "4", "0.04", "60", "0.65", "8", "0.09", "0", "0", "93", "100", "6", "0.06", "86", "0.92", "1", "0.01", "0", "0", "93", "99", "28", "0.3", "65", "0.7", "0", "0", "93", "100" ]
+, [ "row-f6hq_6fi8_rwvf", "00000000-0000-0000-3C14-6DE59509F624", 0, 1425769516, null, 1425769516, null, "{ }", "11225", "52", "52", "1", "0", "0", "0", "0", "52", "100", "0", "0", "0", "0", "0", "0", "0", "0", "52", "1", "0", "0", "0", "0", "0", "0", "52", "100", "0", "0", "52", "1", "0", "0", "0", "0", "52", "100", "22", "0.42", "30", "0.58", "0", "0", "52", "100" ]
+, [ "row-r7s9.et3t.sb74", "00000000-0000-0000-26E5-5DF987EC803D", 0, 1425769516, null, 1425769516, null, "{ }", "11226", "10", "7", "0.7", "3", "0.3", "0", "0", "10", "100", "0", "0", "6", "0.6", "0", "0", "0", "0", "0", "0", "4", "0.4", "0", "0", "0", "0", "10", "100", "0", "0", "10", "1", "0", "0", "0", "0", "10", "100", "4", "0.4", "6", "0.6", "0", "0", "10", "100" ]
+, [ "row-q2ad.q3nu.mnw7", "00000000-0000-0000-8568-2B7C0582435C", 0, 1425769516, null, 1425769516, null, "{ }", "11228", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-28zd.8wx6-4fix", "00000000-0000-0000-F010-8C750D105735", 0, 1425769516, null, 1425769516, null, "{ }", "11229", "52", "32", "0.62", "20", "0.38", "0", "0", "52", "100", "0", "0", "2", "0.04", "0", "0", "5", "0.1", "39", "0.75", "2", "0.04", "3", "0.06", "1", "0.02", "52", "100", "3", "0.06", "49", "0.94", "0", "0", "0", "0", "52", "100", "5", "0.1", "47", "0.9", "0", "0", "52", "100" ]
+, [ "row-ft2f.if8k_w7nf", "00000000-0000-0000-82F1-EF9AD9D7E3BB", 0, 1425769516, null, 1425769516, null, "{ }", "11230", "248", "194", "0.78", "54", "0.22", "0", "0", "248", "100", "0", "0", "1", "0", "0", "0", "7", "0.03", "216", "0.87", "2", "0.01", "17", "0.07", "5", "0.02", "248", "100", "3", "0.01", "245", "0.99", "0", "0", "0", "0", "248", "100", "42", "0.17", "206", "0.83", "0", "0", "248", "100" ]
+, [ "row-4zem~mign.fgwg", "00000000-0000-0000-AEE1-72C6DF868671", 0, 1425769516, null, 1425769516, null, "{ }", "11231", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-e2qc-imt2-hkrb", "00000000-0000-0000-E0E9-ADA9F9089E59", 0, 1425769516, null, 1425769516, null, "{ }", "11232", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-sp2t.e7s8.qbec", "00000000-0000-0000-9F75-8D30B89C36F8", 0, 1425769516, null, 1425769516, null, "{ }", "11233", "14", "6", "0.43", "8", "0.57", "0", "0", "14", "100", "0", "0", "0", "0", "0", "0", "0", "0", "4", "0.29", "9", "0.64", "1", "0.07", "0", "0", "14", "100", "0", "0", "14", "1", "0", "0", "0", "0", "14", "100", "5", "0.36", "9", "0.64", "0", "0", "14", "100" ]
+, [ "row-xdmn_kcp2.z3nc", "00000000-0000-0000-25E7-5D8E0D02B3F4", 0, 1425769516, null, 1425769516, null, "{ }", "11234", "59", "29", "0.49", "30", "0.51", "0", "0", "59", "100", "0", "0", "8", "0.14", "0", "0", "0", "0", "37", "0.63", "10", "0.17", "4", "0.07", "0", "0", "59", "100", "1", "0.02", "58", "0.98", "0", "0", "0", "0", "59", "100", "2", "0.03", "57", "0.97", "0", "0", "59", "100" ]
+, [ "row-jah2_7sqd_fyws", "00000000-0000-0000-2CF7-3B5A318912DA", 0, 1425769516, null, 1425769516, null, "{ }", "11235", "50", "17", "0.34", "33", "0.66", "0", "0", "50", "100", "0", "0", "7", "0.14", "0", "0", "4", "0.08", "36", "0.72", "2", "0.04", "1", "0.02", "0", "0", "50", "100", "1", "0.02", "48", "0.96", "1", "0.02", "0", "0", "50", "100", "4", "0.08", "46", "0.92", "0", "0", "50", "100" ]
+, [ "row-cqb6~z39y-nkvb", "00000000-0000-0000-5EB7-2FDFF7082A74", 0, 1425769516, null, 1425769516, null, "{ }", "11236", "7", "3", "0.43", "4", "0.57", "0", "0", "7", "100", "0", "0", "0", "0", "0", "0", "0", "0", "1", "0.14", "5", "0.71", "0", "0", "1", "0.14", "7", "99", "2", "0.29", "5", "0.71", "0", "0", "0", "0", "7", "100", "0", "0", "7", "1", "0", "0", "7", "100" ]
+, [ "row-gans~iyv8~5p76", "00000000-0000-0000-4880-79977E7D7A2D", 0, 1425769516, null, 1425769516, null, "{ }", "11237", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-yysd.9udq~yqty", "00000000-0000-0000-8545-B0A3D3AD7CD5", 0, 1425769516, null, 1425769516, null, "{ }", "11238", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-p2c6_6vwg_9mq5", "00000000-0000-0000-AFFF-191D15592137", 0, 1425769516, null, 1425769516, null, "{ }", "11239", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-8qe3~patr_swet", "00000000-0000-0000-B63E-2E4A10B69DB1", 0, 1425769516, null, 1425769516, null, "{ }", "11252", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-gtiw-33rw-redq", "00000000-0000-0000-32B7-0B828462C469", 0, 1425769516, null, 1425769516, null, "{ }", "11354", "2", "1", "0.5", "1", "0.5", "0", "0", "2", "100", "0", "0", "1", "0.5", "0", "0", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "2", "100", "2", "1", "0", "0", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-6vt4_gixc.3jpt", "00000000-0000-0000-53FD-9090521ABEE2", 0, 1425769516, null, 1425769516, null, "{ }", "11355", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-g8bn_i48h~f5fk", "00000000-0000-0000-2D96-A5AD2141F304", 0, 1425769516, null, 1425769516, null, "{ }", "11356", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-hgqr.7amh_4uhy", "00000000-0000-0000-76F6-562D6F91E45A", 0, 1425769516, null, 1425769516, null, "{ }", "11357", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ie7f_af6b.2f2y", "00000000-0000-0000-7EB3-A6B4ABF854D5", 0, 1425769516, null, 1425769516, null, "{ }", "11358", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7i5p~ywx8.568i", "00000000-0000-0000-15EE-A1A71097C0E9", 0, 1425769516, null, 1425769516, null, "{ }", "11360", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-qurk~zch8~3qnp", "00000000-0000-0000-CE70-02982E68ABAD", 0, 1425769516, null, 1425769516, null, "{ }", "11361", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-akmu-va44~zz32", "00000000-0000-0000-160B-E365751FB180", 0, 1425769516, null, 1425769516, null, "{ }", "11362", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-7f2q_p8xt.nyrh", "00000000-0000-0000-AEF5-366DC9EC7D7C", 0, 1425769516, null, 1425769516, null, "{ }", "11364", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-mx6e.9sf8~r3bk", "00000000-0000-0000-7790-9C35A55E2FCF", 0, 1425769516, null, 1425769516, null, "{ }", "11365", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ubgb.86ry.qh6r", "00000000-0000-0000-F6A0-D58B83F0781E", 0, 1425769516, null, 1425769516, null, "{ }", "11366", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-rszg.v6d7~c3gt", "00000000-0000-0000-9EDD-441B59DF978E", 0, 1425769516, null, 1425769516, null, "{ }", "11367", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-t2kq_dz6k-4ek6", "00000000-0000-0000-3B53-24B05BAA6676", 0, 1425769516, null, 1425769516, null, "{ }", "11368", "5", "4", "0.8", "1", "0.2", "0", "0", "5", "100", "0", "0", "3", "0.6", "0", "0", "1", "0.2", "1", "0.2", "0", "0", "0", "0", "0", "0", "5", "100", "1", "0.2", "4", "0.8", "0", "0", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "5", "100" ]
+, [ "row-bwxr-uybk~3kbh", "00000000-0000-0000-BDC3-763751074432", 0, 1425769516, null, 1425769516, null, "{ }", "11369", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ukj4~2r42_tubd", "00000000-0000-0000-26C4-44645346FA15", 0, 1425769516, null, 1425769516, null, "{ }", "11370", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-9dhv.r65p~cmmq", "00000000-0000-0000-026B-5FA636E8D589", 0, 1425769516, null, 1425769516, null, "{ }", "11371", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-agd4-v6vg.bt24", "00000000-0000-0000-9F33-187D0F2E9EC5", 0, 1425769516, null, 1425769516, null, "{ }", "11372", "2", "1", "0.5", "1", "0.5", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "1", "0.5", "1", "0.5", "0", "0", "2", "100" ]
+, [ "row-kzr8~88je~5gd9", "00000000-0000-0000-DD47-DE49C92518E2", 0, 1425769516, null, 1425769516, null, "{ }", "11373", "3", "3", "1", "0", "0", "0", "0", "3", "100", "0", "0", "0", "0", "0", "0", "0", "0", "3", "1", "0", "0", "0", "0", "0", "0", "3", "100", "0", "0", "3", "1", "0", "0", "0", "0", "3", "100", "1", "0.33", "2", "0.67", "0", "0", "3", "100" ]
+, [ "row-7i6j_igyw-x9w9", "00000000-0000-0000-213A-6DCC5114A080", 0, 1425769516, null, 1425769516, null, "{ }", "11374", "2", "0", "0", "2", "1", "0", "0", "2", "100", "0", "0", "0", "0", "0", "0", "0", "0", "1", "0.5", "1", "0.5", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-c2jj.4g4h.w7js", "00000000-0000-0000-2BF9-0D5EA685BA0C", 0, 1425769516, null, 1425769516, null, "{ }", "11375", "5", "2", "0.4", "3", "0.6", "0", "0", "5", "100", "0", "0", "2", "0.4", "0", "0", "0", "0", "0", "0", "3", "0.6", "0", "0", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "1", "0.2", "4", "0.8", "0", "0", "5", "100" ]
+, [ "row-mr4k~3a8y.52gm", "00000000-0000-0000-9588-14628DE1D276", 0, 1425769516, null, 1425769516, null, "{ }", "11377", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-53xi-qbxs-a4a2", "00000000-0000-0000-25F8-2AE74530C0C3", 0, 1425769516, null, 1425769516, null, "{ }", "11378", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-qhqz.3cgy_gmqy", "00000000-0000-0000-8BC7-C4106957173E", 0, 1425769516, null, 1425769516, null, "{ }", "11379", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-r4fb-9hmg~ru86", "00000000-0000-0000-43A6-8F8DE1EA9D29", 0, 1425769516, null, 1425769516, null, "{ }", "11385", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-m2ks_e2r5~q5bp", "00000000-0000-0000-3096-CD42515503E7", 0, 1425769516, null, 1425769516, null, "{ }", "11411", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-8pcf-kmag.4bjy", "00000000-0000-0000-2AE2-E5B25B1369B9", 0, 1425769516, null, 1425769516, null, "{ }", "11412", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-iyns~eq73_7t9d", "00000000-0000-0000-85E6-257E2598CADB", 0, 1425769516, null, 1425769516, null, "{ }", "11413", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ad93_x6ay-adqc", "00000000-0000-0000-B8A1-5D94BD3D79DE", 0, 1425769516, null, 1425769516, null, "{ }", "11414", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-4yvf.v2zm_itcw", "00000000-0000-0000-57A8-ED0D7FD18C5F", 0, 1425769516, null, 1425769516, null, "{ }", "11415", "11", "6", "0.55", "5", "0.45", "0", "0", "11", "100", "0", "0", "0", "0", "0", "0", "0", "0", "11", "1", "0", "0", "0", "0", "0", "0", "11", "100", "1", "0.09", "10", "0.91", "0", "0", "0", "0", "11", "100", "5", "0.45", "6", "0.55", "0", "0", "11", "100" ]
+, [ "row-ry4t~zp2q.krwh", "00000000-0000-0000-2CAC-29D5866FF32D", 0, 1425769516, null, 1425769516, null, "{ }", "11416", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-36ay.vgyi~5pvq", "00000000-0000-0000-CFC2-AF7883E5A165", 0, 1425769516, null, 1425769516, null, "{ }", "11417", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-iy25_34z2_kb2r", "00000000-0000-0000-4DDB-0C570B86A7C1", 0, 1425769516, null, 1425769516, null, "{ }", "11418", "4", "2", "0.5", "2", "0.5", "0", "0", "4", "100", "0", "0", "1", "0.25", "0", "0", "0", "0", "0", "0", "1", "0.25", "1", "0.25", "1", "0.25", "4", "100", "0", "0", "4", "1", "0", "0", "0", "0", "4", "100", "1", "0.25", "3", "0.75", "0", "0", "4", "100" ]
+, [ "row-jixf_fuqj-8ks5", "00000000-0000-0000-C9A7-032602C4604A", 0, 1425769516, null, 1425769516, null, "{ }", "11419", "1", "0", "0", "1", "1", "0", "0", "1", "100", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "0", "0", "1", "100", "0", "0", "1", "1", "0", "0", "1", "100" ]
+, [ "row-xhtg_zw9c.3wq9", "00000000-0000-0000-DE54-02F25B8BE17C", 0, 1425769516, null, 1425769516, null, "{ }", "11420", "2", "1", "0.5", "1", "0.5", "0", "0", "2", "100", "0", "0", "1", "0.5", "0", "0", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "2", "1", "0", "0", "0", "0", "2", "100" ]
+, [ "row-36yf-q698~zc9k", "00000000-0000-0000-5169-DACDEBE8F482", 0, 1425769516, null, 1425769516, null, "{ }", "11421", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-jng3.reue~vndg", "00000000-0000-0000-DCA2-F8BE5974860F", 0, 1425769516, null, 1425769516, null, "{ }", "11422", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-d5zn.be8y-pavg", "00000000-0000-0000-C207-5F7C2F35CC20", 0, 1425769516, null, 1425769516, null, "{ }", "11423", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ziyp~c474-n6wm", "00000000-0000-0000-A90D-551BB3501C91", 0, 1425769516, null, 1425769516, null, "{ }", "11424", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-h8rz_jrt2.kzzn", "00000000-0000-0000-8E32-D53C2CD1AFD7", 0, 1425769516, null, 1425769516, null, "{ }", "11425", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-as99_h6yf.pnw9", "00000000-0000-0000-7AC6-901A0E01F7CD", 0, 1425769516, null, 1425769516, null, "{ }", "11426", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5d23-4hc2-sdf6", "00000000-0000-0000-A1AC-3C352C537AAE", 0, 1425769516, null, 1425769516, null, "{ }", "11427", "2", "0", "0", "2", "1", "0", "0", "2", "100", "0", "0", "1", "0.5", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "0", "0", "2", "100", "1", "0.5", "1", "0.5", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-h5dq.wwc5_6nxx", "00000000-0000-0000-331F-C97762D63986", 0, 1425769516, null, 1425769516, null, "{ }", "11428", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-g8ze-e8pz.ay22", "00000000-0000-0000-D363-5EC8EC66CBFA", 0, 1425769516, null, 1425769516, null, "{ }", "11429", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-i67c_zabg.nrxh", "00000000-0000-0000-E5DB-6C0D02F6CD21", 0, 1425769516, null, 1425769516, null, "{ }", "11430", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-jnu2-g6ku-pd9b", "00000000-0000-0000-D392-6ADEDA873626", 0, 1425769516, null, 1425769516, null, "{ }", "11431", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-r6xd~akcy~gjyp", "00000000-0000-0000-C2B0-72339146AD6A", 0, 1425769516, null, 1425769516, null, "{ }", "11432", "2", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "0", "0", "0", "0", "1", "0.5", "0", "0", "1", "0.5", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "0", "0", "2", "100", "0", "0", "2", "1", "0", "0", "2", "100" ]
+, [ "row-6urk~457e.6pg4", "00000000-0000-0000-67E8-1A7F3BF43093", 0, 1425769516, null, 1425769516, null, "{ }", "11433", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-rscm-7ccz_nb9h", "00000000-0000-0000-1185-E8A339B8E41E", 0, 1425769516, null, 1425769516, null, "{ }", "11434", "4", "1", "0.25", "3", "0.75", "0", "0", "4", "100", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "4", "1", "0", "0", "0", "0", "4", "100", "1", "0.25", "3", "0.75", "0", "0", "0", "0", "4", "100", "0", "0", "4", "1", "0", "0", "4", "100" ]
+, [ "row-59hw_hqqm_8uyc", "00000000-0000-0000-E66E-56BE2F336AD8", 0, 1425769516, null, 1425769516, null, "{ }", "11435", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-fxs7-bf6b.bhye", "00000000-0000-0000-511C-394DEB1C23A8", 0, 1425769516, null, 1425769516, null, "{ }", "11436", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-idsv~vtfx~c7fm", "00000000-0000-0000-DB30-68C144FFFA3E", 0, 1425769516, null, 1425769516, null, "{ }", "11439", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cy5k_vd3b_2z6e", "00000000-0000-0000-6B50-5960FA31228A", 0, 1425769516, null, 1425769516, null, "{ }", "11451", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-jcd2-gind-bvpv", "00000000-0000-0000-E6C1-AEB2D800E0A4", 0, 1425769516, null, 1425769516, null, "{ }", "11471", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ukj6.3ech~xbcd", "00000000-0000-0000-7CD6-D014B95EE5BF", 0, 1425769516, null, 1425769516, null, "{ }", "11510", "28", "6", "0.21", "22", "0.79", "0", "0", "28", "100", "0", "0", "6", "0.21", "0", "0", "1", "0.04", "18", "0.64", "2", "0.07", "1", "0.04", "0", "0", "28", "100", "1", "0.04", "27", "0.96", "0", "0", "0", "0", "28", "100", "1", "0.04", "27", "0.96", "0", "0", "28", "100" ]
+, [ "row-evrj-hker_jnn5", "00000000-0000-0000-C31B-3D7B4112BDF1", 0, 1425769516, null, 1425769516, null, "{ }", "11548", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-cass_3dug_ue8s", "00000000-0000-0000-AA89-BF54CBB7C5EE", 0, 1425769516, null, 1425769516, null, "{ }", "11566", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-5cja-bdeb~yagr", "00000000-0000-0000-DA88-DE92BD79C449", 0, 1425769516, null, 1425769516, null, "{ }", "11577", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-dzve_u2ix_hdqp", "00000000-0000-0000-E24C-91F20E53C40B", 0, 1425769516, null, 1425769516, null, "{ }", "11580", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-3ucc~wmpg-z5nj", "00000000-0000-0000-ED6A-C6ECBA39D00E", 0, 1425769516, null, 1425769516, null, "{ }", "11598", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-ycvx_n9tr~zyuv", "00000000-0000-0000-8CDB-9094E1CF0686", 0, 1425769516, null, 1425769516, null, "{ }", "11629", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-69jy.mx6g.eqqe", "00000000-0000-0000-A4FD-E62027FB0403", 0, 1425769516, null, 1425769516, null, "{ }", "11691", "37", "12", "0.32", "25", "0.68", "0", "0", "37", "100", "0", "0", "0", "0", "0", "0", "0", "0", "37", "1", "0", "0", "0", "0", "0", "0", "37", "100", "0", "0", "37", "1", "0", "0", "0", "0", "37", "100", "3", "0.08", "34", "0.92", "0", "0", "37", "100" ]
+, [ "row-vk92_46wa-tak8", "00000000-0000-0000-F185-29F5CFAF1767", 0, 1425769516, null, 1425769516, null, "{ }", "11692", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-r4iq.pw2e_emqx", "00000000-0000-0000-CD63-97DFAA5E34B3", 0, 1425769516, null, 1425769516, null, "{ }", "11693", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-kzxa~g5y8_c4tw", "00000000-0000-0000-D30B-9C30235EC649", 0, 1425769516, null, 1425769516, null, "{ }", "11694", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-da6d_7qzb.3cwh", "00000000-0000-0000-19F4-CFAD4DA19209", 0, 1425769516, null, 1425769516, null, "{ }", "11695", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-nwxz_56v8.73bi", "00000000-0000-0000-66B5-4C8B29EDF6A2", 0, 1425769516, null, 1425769516, null, "{ }", "11731", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-tjmz-v5vs~tevx", "00000000-0000-0000-AC37-DAB5F8DF9F44", 0, 1425769516, null, 1425769516, null, "{ }", "11798", "5", "3", "0.6", "2", "0.4", "0", "0", "5", "100", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "0", "0", "5", "100", "0", "0", "5", "1", "0", "0", "5", "100" ]
+, [ "row-yrxm.wqvr_iym3", "00000000-0000-0000-DDC8-1142E788D89F", 0, 1425769516, null, 1425769516, null, "{ }", "11968", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-d4pq-udci_78yh", "00000000-0000-0000-243F-DC792FBDF4F5", 0, 1425769516, null, 1425769516, null, "{ }", "12423", "21", "1", "0.05", "20", "0.95", "0", "0", "21", "100", "0", "0", "0", "0", "0", "0", "0", "0", "19", "0.9", "0", "0", "1", "0.05", "1", "0.05", "21", "100", "0", "0", "21", "1", "0", "0", "0", "0", "21", "100", "5", "0.24", "16", "0.76", "0", "0", "21", "100" ]
+, [ "row-524p~p26v-ueis", "00000000-0000-0000-7A19-5C272C36F7D2", 0, 1425769516, null, 1425769516, null, "{ }", "12428", "124", "74", "0.6", "50", "0.4", "0", "0", "124", "100", "2", "0.02", "1", "0.01", "0", "0", "0", "0", "117", "0.94", "0", "0", "4", "0.03", "0", "0", "124", "100", "0", "0", "124", "1", "0", "0", "0", "0", "124", "100", "71", "0.57", "53", "0.43", "0", "0", "124", "100" ]
+, [ "row-3wrk_8ixk-4vjj", "00000000-0000-0000-BC76-41122F62C3CB", 0, 1425769516, null, 1425769516, null, "{ }", "12435", "55", "5", "0.09", "50", "0.91", "0", "0", "55", "100", "0", "0", "0", "0", "0", "0", "0", "0", "50", "0.91", "0", "0", "5", "0.09", "0", "0", "55", "100", "0", "0", "55", "1", "0", "0", "0", "0", "55", "100", "19", "0.35", "36", "0.65", "0", "0", "55", "100" ]
+, [ "row-vds4~wj55_ka3v", "00000000-0000-0000-63A3-AC85A08A5515", 0, 1425769516, null, 1425769516, null, "{ }", "12458", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-g29b~z8q5~8r43", "00000000-0000-0000-9321-70AB25A726F8", 0, 1425769516, null, 1425769516, null, "{ }", "12466", "44", "44", "1", "0", "0", "0", "0", "44", "100", "0", "0", "0", "0", "0", "0", "0", "0", "44", "1", "0", "0", "0", "0", "0", "0", "44", "100", "0", "0", "44", "1", "0", "0", "0", "0", "44", "100", "35", "0.8", "9", "0.2", "0", "0", "44", "100" ]
+, [ "row-3xw9~y4cq_uiwj", "00000000-0000-0000-692C-4386D2AD5CF5", 0, 1425769516, null, 1425769516, null, "{ }", "12473", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-vudg-tfrx.kpdn", "00000000-0000-0000-672B-A5387E373596", 0, 1425769516, null, 1425769516, null, "{ }", "12528", "52", "2", "0.04", "50", "0.96", "0", "0", "52", "100", "0", "0", "0", "0", "0", "0", "0", "0", "46", "0.88", "0", "0", "6", "0.12", "0", "0", "52", "100", "1", "0.02", "51", "0.98", "0", "0", "0", "0", "52", "100", "21", "0.4", "31", "0.6", "0", "0", "52", "100" ]
+, [ "row-vt9t~t4hy_kfv5", "00000000-0000-0000-57A6-7576C751C56E", 0, 1425769516, null, 1425769516, null, "{ }", "12701", "87", "49", "0.56", "38", "0.44", "0", "0", "87", "100", "0", "0", "0", "0", "0", "0", "0", "0", "83", "0.95", "0", "0", "2", "0.02", "2", "0.02", "87", "99", "0", "0", "87", "1", "0", "0", "0", "0", "87", "100", "18", "0.21", "69", "0.79", "0", "0", "87", "100" ]
+, [ "row-83ms~n6nc~q2zr", "00000000-0000-0000-395B-5D22E91CD109", 0, 1425769516, null, 1425769516, null, "{ }", "12733", "13", "6", "0.46", "7", "0.54", "0", "0", "13", "100", "0", "0", "0", "0", "0", "0", "0", "0", "13", "1", "0", "0", "0", "0", "0", "0", "13", "100", "0", "0", "13", "1", "0", "0", "0", "0", "13", "100", "2", "0.15", "11", "0.85", "0", "0", "13", "100" ]
+, [ "row-6nat_dqae-ht4r", "00000000-0000-0000-9C1D-CCEF49B0E47A", 0, 1425769516, null, 1425769516, null, "{ }", "12734", "252", "170", "0.67", "82", "0.33", "0", "0", "252", "100", "0", "0", "0", "0", "0", "0", "0", "0", "243", "0.96", "0", "0", "4", "0.02", "5", "0.02", "252", "100", "0", "0", "252", "1", "0", "0", "0", "0", "252", "100", "61", "0.24", "191", "0.76", "0", "0", "252", "100" ]
+, [ "row-zcxa_unjv.24pe", "00000000-0000-0000-7625-D252952E5611", 0, 1425769516, null, 1425769516, null, "{ }", "12737", "35", "34", "0.97", "1", "0.03", "0", "0", "35", "100", "0", "0", "0", "0", "0", "0", "0", "0", "35", "1", "0", "0", "0", "0", "0", "0", "35", "100", "2", "0.06", "33", "0.94", "0", "0", "0", "0", "35", "100", "20", "0.57", "15", "0.43", "0", "0", "35", "100" ]
+, [ "row-xdxv_f79v~h7tg", "00000000-0000-0000-3B92-7A510C64C385", 0, 1425769516, null, 1425769516, null, "{ }", "12750", "37", "36", "0.97", "1", "0.03", "0", "0", "37", "100", "0", "0", "0", "0", "0", "0", "0", "0", "37", "1", "0", "0", "0", "0", "0", "0", "37", "100", "0", "0", "37", "1", "0", "0", "0", "0", "37", "100", "21", "0.57", "16", "0.43", "0", "0", "37", "100" ]
+, [ "row-e7dw_s3wr-8p7v", "00000000-0000-0000-B3C1-DEBD0E8805D3", 0, 1425769516, null, 1425769516, null, "{ }", "12751", "7", "2", "0.29", "5", "0.71", "0", "0", "7", "100", "0", "0", "0", "0", "0", "0", "0", "0", "7", "1", "0", "0", "0", "0", "0", "0", "7", "100", "0", "0", "7", "1", "0", "0", "0", "0", "7", "100", "2", "0.29", "5", "0.71", "0", "0", "7", "100" ]
+, [ "row-hhap~yggj_5y8y", "00000000-0000-0000-5C67-BD406B657EAE", 0, 1425769516, null, 1425769516, null, "{ }", "12754", "134", "64", "0.48", "70", "0.52", "0", "0", "134", "100", "2", "0.01", "0", "0", "0", "0", "0", "0", "127", "0.95", "0", "0", "4", "0.03", "1", "0.01", "134", "100", "1", "0.01", "133", "0.99", "0", "0", "0", "0", "134", "100", "27", "0.2", "107", "0.8", "0", "0", "134", "100" ]
+, [ "row-rxup-ccrb_8zku", "00000000-0000-0000-A1D0-BA54312BC45E", 0, 1425769516, null, 1425769516, null, "{ }", "12758", "82", "50", "0.61", "32", "0.39", "0", "0", "82", "100", "0", "0", "0", "0", "0", "0", "0", "0", "76", "0.93", "0", "0", "6", "0.07", "0", "0", "82", "100", "0", "0", "82", "1", "0", "0", "0", "0", "82", "100", "24", "0.29", "58", "0.71", "0", "0", "82", "100" ]
+, [ "row-v8wi_n7ww.ptri", "00000000-0000-0000-E2B6-98B27EE08964", 0, 1425769516, null, 1425769516, null, "{ }", "12759", "11", "0", "0", "11", "1", "0", "0", "11", "100", "0", "0", "0", "0", "0", "0", "0", "0", "11", "1", "0", "0", "0", "0", "0", "0", "11", "100", "0", "0", "11", "1", "0", "0", "0", "0", "11", "100", "8", "0.73", "3", "0.27", "0", "0", "11", "100" ]
+, [ "row-haiy_ga56-zch6", "00000000-0000-0000-7215-CEA0EFA6C24A", 0, 1425769516, null, 1425769516, null, "{ }", "12763", "11", "11", "1", "0", "0", "0", "0", "11", "100", "0", "0", "0", "0", "0", "0", "0", "0", "11", "1", "0", "0", "0", "0", "0", "0", "11", "100", "0", "0", "11", "1", "0", "0", "0", "0", "11", "100", "8", "0.73", "3", "0.27", "0", "0", "11", "100" ]
+, [ "row-3dep_aate_ii8j", "00000000-0000-0000-36C2-53109E55444F", 0, 1425769516, null, 1425769516, null, "{ }", "12764", "64", "61", "0.95", "3", "0.05", "0", "0", "64", "100", "0", "0", "0", "0", "0", "0", "0", "0", "62", "0.97", "0", "0", "2", "0.03", "0", "0", "64", "100", "0", "0", "64", "1", "0", "0", "0", "0", "64", "100", "5", "0.08", "59", "0.92", "0", "0", "64", "100" ]
+, [ "row-j2cz.88be_dwz8", "00000000-0000-0000-978B-472E4A5449F0", 0, 1425769516, null, 1425769516, null, "{ }", "12768", "63", "1", "0.02", "62", "0.98", "0", "0", "63", "100", "0", "0", "0", "0", "0", "0", "0", "0", "61", "0.97", "0", "0", "1", "0.02", "1", "0.02", "63", "100", "0", "0", "63", "1", "0", "0", "0", "0", "63", "100", "23", "0.37", "40", "0.63", "0", "0", "63", "100" ]
+, [ "row-ema5_6fr4~nyc5", "00000000-0000-0000-28CD-2FC9148F5CA7", 0, 1425769516, null, 1425769516, null, "{ }", "12779", "242", "183", "0.76", "59", "0.24", "0", "0", "242", "100", "0", "0", "0", "0", "0", "0", "0", "0", "239", "0.99", "0", "0", "3", "0.01", "0", "0", "242", "100", "1", "0", "241", "1", "0", "0", "0", "0", "242", "100", "155", "0.64", "87", "0.36", "0", "0", "242", "100" ]
+, [ "row-zhgd-s2se-ytqi", "00000000-0000-0000-80EE-787B00865EC9", 0, 1425769516, null, 1425769516, null, "{ }", "12783", "201", "66", "0.33", "135", "0.67", "0", "0", "201", "100", "0", "0", "0", "0", "2", "0.01", "0", "0", "195", "0.97", "0", "0", "3", "0.01", "1", "0", "201", "99", "4", "0.02", "197", "0.98", "0", "0", "0", "0", "201", "100", "77", "0.38", "124", "0.62", "0", "0", "201", "100" ]
+, [ "row-rxi8~tmc6-jfu9", "00000000-0000-0000-7CCE-2A8C6EB6E182", 0, 1425769516, null, 1425769516, null, "{ }", "12786", "4", "3", "0.75", "1", "0.25", "0", "0", "4", "100", "0", "0", "0", "0", "0", "0", "0", "0", "4", "1", "0", "0", "0", "0", "0", "0", "4", "100", "0", "0", "4", "1", "0", "0", "0", "0", "4", "100", "1", "0.25", "3", "0.75", "0", "0", "4", "100" ]
+, [ "row-t2ty-xiuj.t3gs", "00000000-0000-0000-9D1A-C4F756C3823C", 0, 1425769516, null, 1425769516, null, "{ }", "12788", "83", "39", "0.47", "44", "0.53", "0", "0", "83", "100", "0", "0", "0", "0", "0", "0", "0", "0", "81", "0.98", "0", "0", "2", "0.02", "0", "0", "83", "100", "0", "0", "83", "1", "0", "0", "0", "0", "83", "100", "35", "0.42", "48", "0.58", "0", "0", "83", "100" ]
+, [ "row-vet8-5sj9.epy7", "00000000-0000-0000-83C3-B011FB6F61D9", 0, 1425769516, null, 1425769516, null, "{ }", "12789", "272", "115", "0.42", "157", "0.58", "0", "0", "272", "100", "0", "0", "0", "0", "0", "0", "0", "0", "262", "0.96", "0", "0", "6", "0.02", "4", "0.01", "272", "99", "1", "0", "271", "1", "0", "0", "0", "0", "272", "100", "70", "0.26", "202", "0.74", "0", "0", "272", "100" ]
+, [ "row-9pmv.ew77_7u3n", "00000000-0000-0000-C53C-3998C71C16AD", 0, 1425769516, null, 1425769516, null, "{ }", "13731", "17", "2", "0.12", "15", "0.88", "0", "0", "17", "100", "0", "0", "0", "0", "0", "0", "0", "0", "15", "0.88", "0", "0", "2", "0.12", "0", "0", "17", "100", "0", "0", "17", "1", "0", "0", "0", "0", "17", "100", "7", "0.41", "10", "0.59", "0", "0", "17", "100" ]
+, [ "row-7er6_w4cf-d2xq", "00000000-0000-0000-1E97-D9166B7949ED", 0, 1425769516, null, 1425769516, null, "{ }", "16091", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+, [ "row-a3vb-nvdj-phtw", "00000000-0000-0000-DF2B-B01987144EDE", 0, 1425769516, null, 1425769516, null, "{ }", "20459", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ]
+ ]
+}
