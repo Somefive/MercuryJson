@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <deque>
+#include <cstring>
 
 #define GROUPLEN 32 // =256/8
 
@@ -222,20 +224,18 @@ namespace MercuryJson {
         base = next_base;
     }
 
-    // #define TYPE_NULL 0
-    // #define TYPE_BOOL 1
-    // #define TYPE_STR  2
-    // #define TYPE_NUM  3
-    // #define TYPE_OBJ  4
-    // #define TYPE_ARR  5
-
     struct JsonValue;
     typedef std::map<std::string, JsonValue> JsonObject;
-    typedef std::vector<JsonValue> JsonArray;
+    typedef std::deque<JsonValue> JsonArray;
+
+    union Numerical {
+        long long int integer;
+        double decimal;
+    };
 
     struct JsonValue
     {
-        enum{TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_NUM} type;
+        enum{TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC, TYPE_CHAR} type;
         union
         {
             bool boolean;
@@ -244,39 +244,166 @@ namespace MercuryJson {
             JsonArray * array;
             long long int integer;
             double decimal;
+
+            char structural;
         };
-        static JsonValue create()                   { return {JsonValue::TYPE_NULL, 0}; }
-        static JsonValue create(bool value)         { return {JsonValue::TYPE_BOOL, value}; }
-        static JsonValue create(char * value)       { return {JsonValue::TYPE_STR, value}; }
-        static JsonValue create(JsonObject * value) { return {JsonValue::TYPE_OBJ, value}; }
-        static JsonValue create(JsonArray * value)  { return {JsonValue::TYPE_ARR, value}; }
-        static JsonValue create(long long int value){ return {JsonValue::TYPE_NUM, value}; }
-        static JsonValue create(double value)       { return {JsonValue::TYPE_NUM, value}; }
+        static JsonValue create()                   { return JsonValue({.type=JsonValue::TYPE_NULL}); }
+        static JsonValue create(bool value)         { return JsonValue({.type=JsonValue::TYPE_BOOL, {.boolean=value}}); }
+        static JsonValue create(char * value)       { return JsonValue({.type=JsonValue::TYPE_STR, {.str=value}}); }
+        static JsonValue create(JsonObject * value) { return JsonValue({.type=JsonValue::TYPE_OBJ, {.object=value}}); }
+        static JsonValue create(JsonArray * value)  { return JsonValue({.type=JsonValue::TYPE_ARR, {.array=value}}); }
+        static JsonValue create(long long int value){ return JsonValue({.type=JsonValue::TYPE_INT, {.integer=value}}); }
+        static JsonValue create(double value)       { return JsonValue({.type=JsonValue::TYPE_DEC, {.decimal=value}}); }
+
+        static JsonValue create(char c)             { return JsonValue{.type=TYPE_CHAR, {.structural=c}}; }
     };
 
-    void parse(const char * input, size_t len, size_t * indices) {
-        // std::stack<JsonValue> bs;
+    const u_int64_t structural_or_whitespace[256] = {
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    const u_int8_t escape_map[256] = {
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0x22, 0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0x2f,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0x5c, 0, 0,    0,
+        0, 0, 0x08, 0, 0,    0, 0x0c, 0, 0, 0, 0, 0, 0,    0, 0x0a, 0,
+        0, 0, 0x0d, 0, 0x09, 0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+        0, 0, 0,    0, 0,    0, 0,    0, 0, 0, 0, 0, 0,    0, 0,    0,
+    };
+
+    char * parseStr(const char * s, char * & buffer) {
+        char * base = buffer;
+        u_int64_t prev_odd_backslash_ending_mask = 0;
+        while (true) {
+            __m256i lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s));
+            __m256i hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s+32));
+            Warp warp(lo, hi);
+            u_int64_t escape_mask = extract_escape_mask(warp, prev_odd_backslash_ending_mask);
+            u_int64_t quote_mask = __cmpeq_mask(warp, '"') & escape_mask;
+            
+            u_int64_t bitcnt = 0;
+            while (escape_mask) {
+                u_int64_t shift = _tzcnt_u64(escape_mask);
+                memcpy(buffer, s, shift-bitcnt);
+                
+                buffer[shift-1] = escape_map[s[shift]];
+                buffer += shift;
+                s += shift+1;
+                bitcnt += shift+1;
+            }
+        }
+        // TODO: should process escape and termination
+        return base;
+    }
+
+    bool parseTrue(const char * s) {
+        u_int64_t local = 0, mask = 0x0000000065757274;
+        std::memcpy(&local, s, 4);
+        if (mask != local || !structural_or_whitespace[s[4]]) throw "invalid true value";
+        return true;
+    }
+
+    bool parseFalse(const char * s) {
+        u_int64_t local = 0, mask = 0x00000065736c6166;
+        std::memcpy(&local, s, 5);
+        if (mask != local || !structural_or_whitespace[s[5]]) throw "invalid false value";
+        return false;
+    }
+
+    void parseNull(const char * s) {
+        u_int64_t local = 0, mask = 0x000000006c6c756e;
+        std::memcpy(&local, s, 4);
+        if (mask != local || !structural_or_whitespace[s[4]]) throw "invalid null value";
+        return;
+    }
+
+    JsonValue * get_last(std::deque<JsonValue> values) {
+        return values.empty() ? NULL : &values.back();
+    }
+
+    void parse(char * input, size_t len, size_t * indices) {
+        std::deque<JsonValue> values;
+        // std::deque<
         while (true) {
             size_t idx = *indices++;
             if (idx >= len) break;
+            JsonValue * last = get_last(values);
             switch (input[idx])
             {
                 case '{':
-                    // bs.push(idx);
+                    if (last && (last->type == JsonValue::TYPE_CHAR)) throw "find '{' after non-structural character";
+                    values.push_back(JsonValue::create('{'));
                     break;
                 case '[':
-                    // bs.push(idx);
+                    if (last && (last->type == JsonValue::TYPE_CHAR)) throw "find '[' after non-structural character";
+                    values.push_back(JsonValue::create('['));
                     break;
                 case ']':
+                    
                     break;
                 case '}':
                     break;
                 case ':':
+                    if (last && last->type != JsonValue::TYPE_STR) throw "find ':' after non-string value";
+                    values.push_back(JsonValue::create(':'));
                     break;
                 case ',':
+                    if (last && (last->type == JsonValue::TYPE_CHAR)) throw "find ',' after structural character";
+                    values.push_back(JsonValue::create(','));
                     break;
                 case '"':
-                    break;    
+                    if (last && (last->type != JsonValue::TYPE_CHAR)) throw "find string after non-structural character";
+                    // values.push_back(JsonValue::create(parseStr(input + idx + 1)));
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-':
+                    if (last && (last->type != JsonValue::TYPE_CHAR)) throw "find number after non-structural character";
+                    // stack.push(JsonValue::create(parseStr(input + idx + 1)));
+                    break;
+                case 'n':
+                    if (last && (last->type != JsonValue::TYPE_CHAR)) throw "find null after non-structural character";
+                    parseNull(input + idx);
+                    values.push_back(JsonValue::create());
+                    break;
+                case 'f':
+                    if (last && (last->type != JsonValue::TYPE_CHAR)) throw "find true/false after non-structural character";
+                    values.push_back(JsonValue::create(parseFalse(input + idx)));
+                    break;
+                case 't':
+                    if (last && (last->type != JsonValue::TYPE_CHAR)) throw "find true/false after non-structural character";
+                    values.push_back(JsonValue::create(parseTrue(input + idx)));
+                    break;
                 default:
                     break;
             }

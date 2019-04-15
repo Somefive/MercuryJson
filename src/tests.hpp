@@ -72,3 +72,11 @@ void test_extract_warp_mask() {
     for (size_t i = 0; i < base; ++i) printf("%lu[%c] ", indices[i], buf[indices[i]]);
     printf("\n");
 }
+
+void test_tfn_value() {
+    try {
+        MercuryJson::parseNull("null      ");
+    } catch (const char * err) {
+        printf("error: %s\n", err);
+    }
+}
