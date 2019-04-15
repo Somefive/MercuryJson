@@ -1,2 +1,2 @@
 main:
-	g++ -o dist/main -mavx2 -mpclmul -mbmi src/main.cpp src/utils.cpp src/mercuryparser.hpp src/tests.hpp
+	g++ -std=c++17 -mavx2 -mpclmul -mbmi src/main.cpp src/utils.cpp src/tests.cpp src/mercuryparser.cpp -o dist/main

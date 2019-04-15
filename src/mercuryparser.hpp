@@ -8,14 +8,9 @@
 #include <deque>
 #include <cstring>
 
-#define GROUPLEN 32 // =256/8
+#include "mercuryparser.h"
 
 namespace MercuryJson {
-
-    struct Warp {
-        __m256i hi, lo;
-        Warp(const __m256i & h, const __m256i & l): hi(h), lo(l) {}
-    };
 
     inline u_int64_t __cmpeq_mask(const Warp & raw, char c) {
         u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, _mm256_set1_epi8(c))));
@@ -223,40 +218,6 @@ namespace MercuryJson {
         }
         base = next_base;
     }
-
-    struct JsonValue;
-    typedef std::map<std::string, JsonValue> JsonObject;
-    typedef std::deque<JsonValue> JsonArray;
-
-    union Numerical {
-        long long int integer;
-        double decimal;
-    };
-
-    struct JsonValue
-    {
-        enum{TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC, TYPE_CHAR} type;
-        union
-        {
-            bool boolean;
-            char * str;
-            JsonObject * object;
-            JsonArray * array;
-            long long int integer;
-            double decimal;
-
-            char structural;
-        };
-        static JsonValue create()                   { return JsonValue({.type=JsonValue::TYPE_NULL}); }
-        static JsonValue create(bool value)         { return JsonValue({.type=JsonValue::TYPE_BOOL, {.boolean=value}}); }
-        static JsonValue create(char * value)       { return JsonValue({.type=JsonValue::TYPE_STR, {.str=value}}); }
-        static JsonValue create(JsonObject * value) { return JsonValue({.type=JsonValue::TYPE_OBJ, {.object=value}}); }
-        static JsonValue create(JsonArray * value)  { return JsonValue({.type=JsonValue::TYPE_ARR, {.array=value}}); }
-        static JsonValue create(long long int value){ return JsonValue({.type=JsonValue::TYPE_INT, {.integer=value}}); }
-        static JsonValue create(double value)       { return JsonValue({.type=JsonValue::TYPE_DEC, {.decimal=value}}); }
-
-        static JsonValue create(char c)             { return JsonValue{.type=TYPE_CHAR, {.structural=c}}; }
-    };
 
     const u_int64_t structural_or_whitespace[256] = {
         1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

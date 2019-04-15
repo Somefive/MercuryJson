@@ -1,7 +1,8 @@
 #include <cstdio>
-#include "utils.h"
-#include "mercuryparser.hpp"
 #include <immintrin.h>
+
+#include "mercuryparser.h"
+#include "utils.h"
 
 void test_extract_mask() {
     size_t size;
