@@ -7,11 +7,11 @@
 
 char *read_file(const char *filename, size_t &size) {
     std::FILE *pfile = std::fopen(filename, "rb");
-    if (pfile == NULL) throw std::runtime_error("file open error");
+    if (pfile == nullptr) throw std::runtime_error("file open error");
     std::fseek(pfile, 0, SEEK_END);
     size = std::ftell(pfile);
     char *buffer = (char *)aligned_malloc(ALIGNMENT_SIZE, size);
-    if (buffer == NULL) {
+    if (buffer == nullptr) {
         std::fclose(pfile);
         throw std::runtime_error("allocate memory failed");
     }

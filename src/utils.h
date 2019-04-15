@@ -14,13 +14,13 @@ static inline void *aligned_malloc(size_t alignment, size_t size) {
     return p;
 }
 
-template<typename T>
+template <typename T>
 static inline void aligned_free(T *memblock) {
     if (memblock == nullptr) { return; }
     free(reinterpret_cast<void *>(memblock));
 }
 
-template<typename T>
+template <typename T>
 static inline void aligned_free(const T *memblock) {
     aligned_free<T>(const_cast<T *>(memblock));
 }
