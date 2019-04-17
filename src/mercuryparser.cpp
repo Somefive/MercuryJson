@@ -35,34 +35,34 @@ namespace MercuryJson {
     const u_int64_t __even_mask64 = 0x5555555555555555U;
     const u_int64_t __odd_mask64 = ~__even_mask64;
 
-    u_int64_t extract_escape_mask(const Warp &raw, u_int64_t &prev_odd_backslash_ending_mask) {
+    u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask) {
         u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
         u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ prev_odd_backslash_ending_mask;
+        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ *prev_odd_backslash_ending_mask;
         u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
         u_int64_t even_escape_mask = even_carrier_backslash_mask & (~backslash_mask) & __odd_mask64;
 
-        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ prev_odd_backslash_ending_mask;
+        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ *prev_odd_backslash_ending_mask;
         u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
         u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
-        prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
+        *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
         u_int64_t odd_escape_mask = odd_carrier_backslash_mask & (~backslash_mask) & __even_mask64;
         return even_escape_mask | odd_escape_mask;
     }
 
     u_int64_t extract_literal_mask(
-            const Warp &raw, u_int64_t escape_mask, u_int64_t &prev_literal_ending, u_int64_t &quote_mask) {
-        quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
+            const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask) {
+        *quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
         u_int64_t literal_mask = _mm_cvtsi128_si64(
-                _mm_clmulepi64_si128(_mm_set_epi64x(0ULL, quote_mask), _mm_set1_epi8(0xFF), 0));
-        u_int64_t literal_reversor = prev_literal_ending * ~0ULL;
+                _mm_clmulepi64_si128(_mm_set_epi64x(0ULL, *quote_mask), _mm_set1_epi8(0xFF), 0));
+        u_int64_t literal_reversor = *prev_literal_ending * ~0ULL;
         literal_mask ^= literal_reversor;
-        prev_literal_ending = (literal_mask & (1ULL << 63U)) >> 63U;
+        *prev_literal_ending = literal_mask >> 63U;
         return literal_mask;
     }
 
     void extract_structural_whitespace_characters(
-            const Warp &raw, u_int64_t literal_mask, u_int64_t &structural_mask, u_int64_t &whitespace_mask) {
+            const Warp &raw, u_int64_t literal_mask, u_int64_t *structural_mask, u_int64_t *whitespace_mask) {
         const __m256i upper_lookup = _mm256_setr_epi8(8, 0, 17, 2, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 17, 2, 0,
                                                       4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0);
         const __m256i lower_lookup = _mm256_setr_epi8(16, 0, 0, 0, 0, 0, 0, 0, 0, 8, 10, 4, 1, 12, 0, 0, 16, 0, 0, 0, 0,
@@ -78,20 +78,20 @@ namespace MercuryJson {
 
         __m256i hi_whitespace_mask = _mm256_and_si256(hi_character_label, _mm256_set1_epi8(0x18));
         __m256i lo_whitespace_mask = _mm256_and_si256(lo_character_label, _mm256_set1_epi8(0x18));
-        whitespace_mask = (~__cmpeq_mask<0>(Warp(hi_whitespace_mask, lo_whitespace_mask)) & (~literal_mask));
+        *whitespace_mask = ~__cmpeq_mask<0>(Warp(hi_whitespace_mask, lo_whitespace_mask)) & (~literal_mask);
 
         __m256i hi_structural_mask = _mm256_and_si256(hi_character_label, _mm256_set1_epi8(0x7));
         __m256i lo_structural_mask = _mm256_and_si256(lo_character_label, _mm256_set1_epi8(0x7));
-        structural_mask = (~__cmpeq_mask<0>(Warp(hi_structural_mask, lo_structural_mask)) & (~literal_mask));
+        *structural_mask = ~__cmpeq_mask<0>(Warp(hi_structural_mask, lo_structural_mask)) & (~literal_mask);
     }
 
     u_int64_t extract_pseudo_structural_mask(
             u_int64_t structural_mask, u_int64_t whitespace_mask, u_int64_t quote_mask, u_int64_t literal_mask,
-            u_int64_t &prev_pseudo_structural_end_mask) {
+            u_int64_t *prev_pseudo_structural_end_mask) {
         u_int64_t st_ws = structural_mask | whitespace_mask;
         structural_mask |= quote_mask;
-        u_int64_t pseudo_structural_mask = (st_ws << 1U) | prev_pseudo_structural_end_mask;
-        prev_pseudo_structural_end_mask = (st_ws >> 63U) & 1ULL;
+        u_int64_t pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
+        *prev_pseudo_structural_end_mask = (st_ws >> 63U) & 1ULL;
         pseudo_structural_mask &= (~whitespace_mask) & (~literal_mask);
         structural_mask |= pseudo_structural_mask;
         structural_mask &= ~(quote_mask & ~literal_mask);
@@ -99,28 +99,28 @@ namespace MercuryJson {
     }
 
     void construct_structural_character_pointers(
-            u_int64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t &base) {
-        size_t next_base = base + __builtin_popcountll(pseudo_structural_mask);
+            u_int64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
+        size_t next_base = *base + __builtin_popcountll(pseudo_structural_mask);
         while (pseudo_structural_mask) {
-            indices[base] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 1] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 1] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 2] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 2] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 3] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 3] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 4] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 4] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 5] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 5] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 6] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 6] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            indices[base + 7] = offset + _tzcnt_u64(pseudo_structural_mask);
+            indices[*base + 7] = offset + _tzcnt_u64(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u64(pseudo_structural_mask);
-            base += 8;
+            *base += 8;
         }
-        base = next_base;
+        *base = next_base;
     }
 
     const __mmask32 __even_mask = 0x55555555U;
@@ -142,35 +142,35 @@ namespace MercuryJson {
         printf("\n");
     }
 
-    __mmask32 extract_escape_mask(__m256i raw, __mmask32 &prev_odd_backslash_ending_mask) {
+    __mmask32 extract_escape_mask(__m256i raw, __mmask32 *prev_odd_backslash_ending_mask) {
         __mmask32 backslash_mask = __cmpeq_mask<'\\'>(raw);
         __mmask32 start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        __mmask32 even_start_backslash_mask = (start_backslash_mask & __even_mask) ^prev_odd_backslash_ending_mask;
+        __mmask32 even_start_backslash_mask = (start_backslash_mask & __even_mask) ^ *prev_odd_backslash_ending_mask;
         __mmask32 even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
         __mmask32 even_escape_mask = even_carrier_backslash_mask & (~backslash_mask) & __odd_mask;
 
-        __mmask32 odd_start_backslash_mask = (start_backslash_mask & __odd_mask) ^prev_odd_backslash_ending_mask;
+        __mmask32 odd_start_backslash_mask = (start_backslash_mask & __odd_mask) ^ *prev_odd_backslash_ending_mask;
         __mmask32 odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
         __mmask32 odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
-        prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
+        *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
         __mmask32 odd_escape_mask = odd_carrier_backslash_mask & (~backslash_mask) & __even_mask;
 
         return even_escape_mask | odd_escape_mask;
     }
 
     __mmask32 extract_literal_mask(
-            __m256i raw, __mmask32 escape_mask, __mmask32 &prev_literal_ending, __mmask32 &quote_mask) {
-        quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
+            __m256i raw, __mmask32 escape_mask, __mmask32 *prev_literal_ending, __mmask32 *quote_mask) {
+        *quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
         __mmask32 literal_mask = _mm_cvtsi128_si32(
-                _mm_clmulepi64_si128(_mm_set_epi32(0, 0, 0, quote_mask), _mm_set1_epi8(0xFF), 0));
-        __mmask32 literal_reversor = prev_literal_ending * ~0U;
+                _mm_clmulepi64_si128(_mm_set_epi32(0, 0, 0, *quote_mask), _mm_set1_epi8(0xFF), 0));
+        __mmask32 literal_reversor = *prev_literal_ending * ~0U;
         literal_mask ^= literal_reversor;
-        prev_literal_ending = (literal_mask & (1U << (32U - 1))) >> (32U - 1);
+        *prev_literal_ending = literal_mask >> 31U;
         return literal_mask;
     }
 
     void extract_structural_whitespace_characters(
-            __m256i raw, __mmask32 literal_mask, __mmask32 &structural_mask, __mmask32 &whitespace_mask) {
+            __m256i raw, __mmask32 literal_mask, __mmask32 *structural_mask, __mmask32 *whitespace_mask) {
         const __m256i hi_lookup = _mm256_setr_epi8(8, 0, 17, 2, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 17, 2, 0, 4,
                                                    0, 4, 0, 0, 0, 0, 0, 0, 0, 0);
         const __m256i lo_lookup = _mm256_setr_epi8(16, 0, 0, 0, 0, 0, 0, 0, 0, 8, 10, 4, 1, 12, 0, 0, 16, 0, 0, 0, 0, 0,
@@ -179,19 +179,17 @@ namespace MercuryJson {
                                                _mm256_and_si256(_mm256_srli_epi16(raw, 4), _mm256_set1_epi8(0x7F)));
         __m256i lo_index = _mm256_shuffle_epi8(lo_lookup, raw);
         __m256i character_label = _mm256_and_si256(hi_index, lo_index);
-        whitespace_mask =
-                (~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x18)))) & (~literal_mask);
-        structural_mask =
-                (~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x7)))) & (~literal_mask);
+        *whitespace_mask = ~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x18))) & ~literal_mask;
+        *structural_mask = ~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x7))) & ~literal_mask;
     }
 
     __mmask32 extract_pseudo_structural_mask(
             __mmask32 structural_mask, __mmask32 whitespace_mask, __mmask32 quote_mask, __mmask32 literal_mask,
-            __mmask32 &prev_pseudo_structural_end_mask) {
+            __mmask32 *prev_pseudo_structural_end_mask) {
         __mmask32 st_ws = structural_mask | whitespace_mask;
         structural_mask |= quote_mask;
-        __mmask32 pseudo_structural_mask = (st_ws << 1U) | prev_pseudo_structural_end_mask;
-        prev_pseudo_structural_end_mask = (st_ws >> (32U - 1)) & 1U;
+        __mmask32 pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
+        *prev_pseudo_structural_end_mask = st_ws >> 31U;
         pseudo_structural_mask &= (~whitespace_mask) & (~literal_mask);
         structural_mask |= pseudo_structural_mask;
         structural_mask &= ~(quote_mask & ~literal_mask);
@@ -199,28 +197,28 @@ namespace MercuryJson {
     }
 
     void construct_structural_character_pointers(
-            __mmask32 pseudo_structural_mask, size_t offset, size_t *indices, size_t &base) {
-        size_t next_base = base + __builtin_popcount(pseudo_structural_mask);
+            __mmask32 pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
+        size_t next_base = *base + __builtin_popcount(pseudo_structural_mask);
         while (pseudo_structural_mask) {
-            indices[base] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 1] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 1] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 2] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 2] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 3] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 3] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 4] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 4] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 5] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 5] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 6] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 6] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            indices[base + 7] = offset + _tzcnt_u32(pseudo_structural_mask);
+            indices[*base + 7] = offset + _tzcnt_u32(pseudo_structural_mask);
             pseudo_structural_mask = _blsr_u32(pseudo_structural_mask);
-            base += 8;
+            *base += 8;
         }
-        base = next_base;
+        *base = next_base;
     }
 
     const u_int64_t structural_or_whitespace[256] = {
@@ -266,7 +264,7 @@ namespace MercuryJson {
             __m256i lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s));
             __m256i hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s + 32));
             Warp warp(lo, hi);
-            u_int64_t escape_mask = extract_escape_mask(warp, prev_odd_backslash_ending_mask);
+            u_int64_t escape_mask = extract_escape_mask(warp, &prev_odd_backslash_ending_mask);
             u_int64_t quote_mask = __cmpeq_mask<'"'>(warp) & escape_mask;
 
             u_int64_t bitcnt = 0;
@@ -288,21 +286,24 @@ namespace MercuryJson {
     bool parseTrue(const char *s) {
         u_int64_t local = 0, mask = 0x0000000065757274;
         std::memcpy(&local, s, 4);
-        if (mask != local || !structural_or_whitespace[s[4]]) throw "invalid true value";
+        if (mask != local || !structural_or_whitespace[s[4]])
+            throw std::runtime_error("invalid true value");
         return true;
     }
 
     bool parseFalse(const char *s) {
         u_int64_t local = 0, mask = 0x00000065736c6166;
         std::memcpy(&local, s, 5);
-        if (mask != local || !structural_or_whitespace[s[5]]) throw "invalid false value";
+        if (mask != local || !structural_or_whitespace[s[5]])
+            throw std::runtime_error("invalid false value");
         return false;
     }
 
     void parseNull(const char *s) {
         u_int64_t local = 0, mask = 0x000000006c6c756e;
         std::memcpy(&local, s, 4);
-        if (mask != local || !structural_or_whitespace[s[4]]) throw "invalid null value";
+        if (mask != local || !structural_or_whitespace[s[4]])
+            throw std::runtime_error("invalid null value");
         return;
     }
 

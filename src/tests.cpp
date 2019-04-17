@@ -26,7 +26,7 @@ inline void print(const char *name, std::vector<T> masks) {
 
 void test_extract_mask() {
     size_t size;
-    char *buf = read_file("data/test_extract_escape_mask.json", size);
+    char *buf = read_file("data/test_extract_escape_mask.json", &size);
     if (buf[size - 1] == '\n') buf[--size] = 0;
     printf("%15lu: %s\n", size, buf);
 
@@ -43,14 +43,14 @@ void test_extract_mask() {
     __mmask32 prev_pseudo_mask = 0;
     for (size_t offset = 0; offset < size; offset += 32) {
         __m256i input = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(buf + offset));
-        __mmask32 escape_mask = MercuryJson::extract_escape_mask(input, prev_escape_mask);
+        __mmask32 escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
         __mmask32 quote_mask = 0;
-        __mmask32 literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, prev_quote_mask, quote_mask);
+        __mmask32 literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
         __mmask32 structural_mask = 0, whitespace_mask = 0;
-        MercuryJson::extract_structural_whitespace_characters(input, literal_mask, structural_mask, whitespace_mask);
+        MercuryJson::extract_structural_whitespace_characters(input, literal_mask, &structural_mask, &whitespace_mask);
         __mmask32 pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
-                structural_mask, whitespace_mask, quote_mask, literal_mask, prev_pseudo_mask);
-        MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, base);
+                structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
+        MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
 
         escape_masks.push_back(escape_mask);
         quote_masks.push_back(quote_mask);
@@ -76,7 +76,7 @@ void test_extract_mask() {
 
 void test_extract_warp_mask() {
     size_t size;
-    char *buf = read_file("data/test_extract_escape_mask.json", size);
+    char *buf = read_file("data/test_extract_escape_mask.json", &size);
     if (buf[size - 1] == '\n') buf[--size] = 0;
     printf("%15lu: %s\n", size, buf);
 
@@ -95,14 +95,14 @@ void test_extract_warp_mask() {
         __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(buf + offset));
         __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(buf + offset + 32));
         MercuryJson::Warp input(_input2, _input1);
-        u_int64_t escape_mask = MercuryJson::extract_escape_mask(input, prev_escape_mask);
+        u_int64_t escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
         u_int64_t quote_mask = 0;
-        u_int64_t literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, prev_quote_mask, quote_mask);
+        u_int64_t literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
         u_int64_t structural_mask = 0, whitespace_mask = 0;
-        MercuryJson::extract_structural_whitespace_characters(input, literal_mask, structural_mask, whitespace_mask);
+        MercuryJson::extract_structural_whitespace_characters(input, literal_mask, &structural_mask, &whitespace_mask);
         u_int64_t pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
-                structural_mask, whitespace_mask, quote_mask, literal_mask, prev_pseudo_mask);
-        MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, base);
+                structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
+        MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
 
         escape_masks.push_back(escape_mask);
         quote_masks.push_back(quote_mask);

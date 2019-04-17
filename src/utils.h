@@ -6,7 +6,7 @@
 
 static const size_t ALIGNMENT_SIZE = 64;
 
-char *read_file(const char *filename, size_t &size);
+char *read_file(const char *filename, size_t *size);
 
 static inline void *aligned_malloc(size_t alignment, size_t size) {
     void *p;
