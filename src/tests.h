@@ -7,4 +7,6 @@ void test_extract_warp_mask();
 
 void test_tfn_value();
 
+void test_parse();
+
 #endif // MERCURYJSON_TESTS_H

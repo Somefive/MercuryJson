@@ -1,10 +1,11 @@
-#include <algorithm>
-#include <bitset>
-#include <string>
-#include <vector>
-
 #include <cstdio>
 #include <immintrin.h>
+
+#include <algorithm>
+#include <bitset>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include "mercuryparser.h"
 #include "utils.h"
@@ -132,4 +133,75 @@ void test_tfn_value() {
     } catch (const std::runtime_error &err) {
         printf("error: %s\n", err.what());
     }
+}
+
+using namespace MercuryJson;
+
+void print_indent(int indent) {
+    if (indent > 0) {
+        std::cout << std::string(indent, ' ');
+    }
+}
+
+void print_json(const JsonValue &value, int indent = 0) {
+    int cnt;
+    switch (value.type) {
+        case JsonValue::TYPE_NULL:
+            std::cout << "null";
+            break;
+        case JsonValue::TYPE_BOOL:
+            if (value.boolean) std::cout << "true";
+            else std::cout << "false";
+            break;
+        case JsonValue::TYPE_STR:
+            std::cout << "\"" << value.str << "\"";
+            break;
+        case JsonValue::TYPE_OBJ:
+            std::cout << "{" << std::endl;
+            cnt = 0;
+            for (const auto& it : *value.object) {
+                print_indent(indent + 2);
+                std::cout << "\"" << it.first << "\": ";
+                print_json(it.second, indent + 2);
+                if (cnt + 1 < value.object->size())
+                    std::cout << ",";
+                std::cout << std::endl;
+                ++cnt;
+            }
+            print_indent(indent);
+            std::cout << "}";
+            break;
+        case JsonValue::TYPE_ARR:
+            std::cout << "[" << std::endl;
+            cnt = 0;
+            for (const auto& it : *value.array) {
+                print_indent(indent + 2);
+                print_json(it, indent + 2);
+                if (cnt + 1 < value.object->size())
+                    std::cout << ",";
+                std::cout << std::endl;
+                ++cnt;
+            }
+            print_indent(indent);
+            std::cout << "]";
+            break;
+        case JsonValue::TYPE_INT:
+            std::cout << value.integer;
+            break;
+        case JsonValue::TYPE_DEC:
+            std::cout << value.decimal;
+            break;
+        case JsonValue::TYPE_CHAR:
+            std::cout << value.structural;
+            break;
+    }
+}
+
+void test_parse() {
+    size_t size;
+//    char *buf = read_file("data/test_extract_escape_mask.json", &size);
+//    char *buf = read_file("data/pp.json", &size);
+    char *buf = read_file("data/demographic_statistics_by_zipcode.json", &size);
+    auto json = parseJson(buf, size);
+    print_json(json);
 }

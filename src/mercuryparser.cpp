@@ -7,6 +7,8 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <cmath>
 
 #include "mercuryparser.h"
 
@@ -257,30 +259,119 @@ namespace MercuryJson {
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
 
-    char *parseStr(const char *s, char *&buffer) {
-        char *base = buffer;
-        u_int64_t prev_odd_backslash_ending_mask = 0;
-        while (true) {
-            __m256i lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s));
-            __m256i hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s + 32));
-            Warp warp(lo, hi);
-            u_int64_t escape_mask = extract_escape_mask(warp, &prev_odd_backslash_ending_mask);
-            u_int64_t quote_mask = __cmpeq_mask<'"'>(warp) & escape_mask;
+    /* EBNF of JSON:
+     *
+     * json            = value
+     *
+     * value           = string | number | object | array | "true" | "false" | "null"
+     *
+     * object          = "{" , object-elements, "}"
+     * object-elements = string, ":", value, [ ",", object-elements ]
+     *
+     * array           = "[", array-elements, "]"
+     * array-elements  = value, [ ",", array-elements ]
+     *
+     * string          = '"', { character }, '"'
+     *
+     * character       = "\", ( '"' | "\" | "/" | "b" | "f" | "n" | "r" | "t" | "u", digit, digit, digit, digit ) | unicode
+     *
+     * digit           = "0" | digit-1-9
+     * digit-1-9       = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+     * number          = [ "-" ], ( "0" | digit-1-9, { digit } ), [ ".", { digit } ], [ ( "e" | "E" ), ( "+" | "-" ), { digit } ]
+     */
 
-            u_int64_t bitcnt = 0;
-            while (escape_mask) {
-                u_int64_t shift = _tzcnt_u64(escape_mask);
-                memcpy(buffer, s, shift - bitcnt);
-
-                buffer[shift - 1] = escape_map[s[shift]];
-                buffer += shift;
-                s += shift + 1;
-                bitcnt += shift + 1;
-            }
-            break;
+    inline JsonValue parseNumber(char *s) {
+        long long int integer = 0LL;
+        double decimal = 0.0;
+        bool negative = false, is_decimal = false;
+        if (*s == '-') {
+            ++s;
+            negative = true;
         }
-        // TODO: should process escape and termination
-        return base;
+        if (*s == '0') {
+            ++s;
+            if (*s >= '0' && *s <= '9')
+                throw std::runtime_error("numbers cannot have leading zeros");
+        } else {
+            while (*s >= '0' && *s <= '9')
+                integer = integer * 10 + (*s++ - '0');
+        }
+        if (negative) integer = -integer;
+        if (*s == '.') {
+            is_decimal = true;
+            decimal = integer;
+            double multiplier = 0.1;
+            while (*s >= '0' && *s <= '9') {
+                decimal += (*s++ - '0') * multiplier;
+                multiplier /= 10.0;
+            }
+        }
+        if (*s == 'e' || *s == 'E') {
+            if (!is_decimal) {
+                is_decimal = true;
+                decimal = integer;
+            }
+            ++s;
+            bool negative_exp = false;
+            if (*s == '-') {
+                negative_exp = true;
+                ++s;
+            } else if (*s == '+') ++s;
+            double exponent = 0.0;
+            while (*s >= '0' && *s <= '9')
+                exponent = exponent * 10.0 + (*s++ - '0');
+            if (negative_exp) exponent = -exponent;
+            decimal *= pow(10.0, exponent);
+        }
+        if (is_decimal) return JsonValue::create(decimal);
+        else return JsonValue::create(integer);
+    }
+
+    char *parseStr(char *s) {
+        bool escape = false;
+        char *ptr = s + 1;
+        for (char *end = s + 1; escape || *end != '"'; ++end) {
+            if (escape) {
+                switch (*end) {
+                    case '"':
+                        *ptr++ = '"';
+                        break;
+                    case '\\':
+                        *ptr++ = '\\';
+                        break;
+                    case '/':
+                        *ptr++ = '/';
+                        break;
+                    case 'b':
+                        *ptr++ = '\b';
+                        break;
+                    case 'f':
+                        *ptr++ = '\f';
+                        break;
+                    case 'n':
+                        *ptr++ = '\n';
+                        break;
+                    case 'r':
+                        *ptr++ = '\r';
+                        break;
+                    case 't':
+                        *ptr++ = '\t';
+                        break;
+                    case 'u':
+                        *ptr++ = '\\';
+                        *ptr++ = 'u';
+                        break;
+                    default:
+                        throw std::runtime_error("invalid escape sequence");
+                }
+                escape = false;
+            } else {
+                if (*end == '\\') escape = true;
+                ++ptr;
+            }
+        }
+        *ptr++ = 0;
+        return s + 1;
     }
 
     bool parseTrue(const char *s) {
@@ -315,79 +406,321 @@ namespace MercuryJson {
         return values.empty() ? nullptr : &values.back();
     }
 
-    void parse(char *input, size_t len, size_t *indices) {
-        std::deque<JsonValue> values;
-        // std::deque<
-        while (true) {
-            size_t idx = *indices++;
-            if (idx >= len) break;
-            JsonValue *last = get_last(values);
-            switch (input[idx]) {
-                case '{':
-                    if (last && (last->type == JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found '{' after non-structural character");
-                    values.push_back(JsonValue::create('{'));
-                    break;
-                case '[':
-                    if (last && (last->type == JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found '[' after non-structural character");
-                    values.push_back(JsonValue::create('['));
-                    break;
-                case ']':
-
-                    break;
-                case '}':
-                    break;
-                case ':':
-                    if (last && last->type != JsonValue::TYPE_STR)
-                        throw std::runtime_error("found ':' after non-string value");
-                    values.push_back(JsonValue::create(':'));
-                    break;
-                case ',':
-                    if (last && (last->type == JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found ',' after structural character");
-                    values.push_back(JsonValue::create(','));
-                    break;
-                case '"':
-                    if (last && (last->type != JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found string after non-structural character");
-                    // values.push_back(JsonValue::create(parseStr(input + idx + 1)));
-                    break;
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                case '8':
-                case '9':
-                case '-':
-                    if (last && (last->type != JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found number after non-structural character");
-                    // stack.push(JsonValue::create(parseStr(input + idx + 1)));
-                    break;
-                case 'n':
-                    if (last && (last->type != JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found null after non-structural character");
-                    parseNull(input + idx);
-                    values.push_back(JsonValue::create());
-                    break;
-                case 'f':
-                    if (last && (last->type != JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found true/false after non-structural character");
-                    values.push_back(JsonValue::create(parseFalse(input + idx)));
-                    break;
-                case 't':
-                    if (last && (last->type != JsonValue::TYPE_CHAR))
-                        throw std::runtime_error("found true/false after non-structural character");
-                    values.push_back(JsonValue::create(parseTrue(input + idx)));
-                    break;
-                default:
-                    break;
-            }
-        }
+    void __error(const char *expected, char encountered, size_t index) {
+        std::stringstream stream;
+        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
+        throw std::runtime_error(stream.str());
     }
+
+    static char *input;
+    static size_t __len;
+    static size_t *ptr;
+
+#define next_char() ({ \
+        idx = *ptr++; \
+        if (idx >= __len) throw std::runtime_error("text ended prematurely"); \
+        ch = input[idx]; \
+    })
+
+#define expect(__char) ({ \
+        if (ch != (__char)) __error(#__char, ch, idx); \
+    })
+
+#define error(__expected) ({ \
+        __error(__expected, ch, idx); \
+    })
+
+    JsonValue _parseValue();
+
+    JsonValue _parseObject() {
+        size_t idx = *ptr;
+        char ch = input[idx];
+        auto *object = new JsonObject;
+        if (ch == '}') {
+            next_char();
+            return JsonValue::create(object);
+        }
+        while (true) {
+            expect('"');
+            std::string key = parseStr(input + idx);
+//            printf("key: %s\n", key.c_str());
+            next_char();
+            next_char();
+            expect(':');
+            idx = *ptr;
+            ch = input[idx];
+            JsonValue value = _parseValue();
+            (*object)[key] = value;
+            next_char();
+            if (ch == '}') break;
+            expect(',');
+            idx = *ptr;
+            ch = input[idx];
+        }
+        return JsonValue::create(object);
+    }
+
+    JsonValue _parseArray() {
+        size_t idx = *ptr;
+        char ch = input[idx];
+        auto *array = new JsonArray;
+        if (ch == ']') {
+            next_char();
+            return JsonValue::create(array);
+        }
+        while (true) {
+            JsonValue value = _parseValue();
+            array->push_back(value);
+            next_char();
+            if (ch == ']') break;
+            expect(',');
+            idx = *ptr;
+            ch = input[idx];
+        }
+        return JsonValue::create(array);
+    }
+
+    JsonValue _parseValue() {
+        size_t idx;
+        char ch;
+        next_char();
+        JsonValue value;
+        switch (ch) {
+            case '"':
+                value = JsonValue::create(parseStr(input + idx));
+//                printf("str: %s\n", value.str);
+                break;
+            case 't':
+                value = JsonValue::create(parseTrue(input + idx));
+//                printf("true\n");
+                break;
+            case 'f':
+                value = JsonValue::create(parseFalse(input + idx));
+//                printf("false\n");
+                break;
+            case 'n':
+                parseNull(input + idx);
+                value = JsonValue::create();
+//                printf("null\n");
+                break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case '-':
+                value = parseNumber(input + idx);
+                if (value.type == JsonValue::TYPE_DEC) printf("number %lf\n", value.decimal);
+//                else printf("number %lld\n", value.integer);
+                break;
+            case '[':
+//                printf("begin array\n");
+                value = _parseArray();
+//                printf("end array\n");
+                break;
+            case '{':
+//                printf("begin object\n");
+                value = _parseObject();
+//                printf("end object\n");
+                break;
+            default:
+                error("JSON value");
+        }
+        return value;
+    }
+
+    JsonValue parseJson(char *document, size_t size) {
+        input = document;
+        __len = size;
+
+        size_t base = 0;
+        size_t *indices = new size_t[65536];
+
+        u_int64_t prev_escape_mask = 0;
+        u_int64_t prev_quote_mask = 0;
+        u_int64_t prev_pseudo_mask = 0;
+        for (size_t offset = 0; offset < size; offset += 64) {
+            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset));
+            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset + 32));
+            MercuryJson::Warp input(_input2, _input1);
+            u_int64_t escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
+            u_int64_t quote_mask = 0;
+            u_int64_t literal_mask = MercuryJson::extract_literal_mask(
+                    input, escape_mask, &prev_quote_mask, &quote_mask);
+            u_int64_t structural_mask = 0, whitespace_mask = 0;
+            MercuryJson::extract_structural_whitespace_characters(
+                    input, literal_mask, &structural_mask, &whitespace_mask);
+            u_int64_t pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
+                    structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
+            MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
+        }
+
+        ptr = indices;
+
+        auto value = _parseValue();
+        delete[] indices;
+
+        return value;
+    }
+
+//    void parse(char *input, size_t len, size_t *indices) {
+//        std::deque<JsonValue> values(MAX_DEPTH);
+//        std::vector<int> state_stack(MAX_DEPTH);
+//
+//        size_t idx;
+//        ParserState state = START;
+//        std::string key;
+//        JsonObject *cur_obj;
+//        JsonArray *cur_arr;
+//        JsonValue value;
+//        while ((idx = *indices++) < len) {
+//            JsonValue *last = get_last(values);
+//            char ch = input[idx];
+//
+//            switch (state) {
+//                case START:
+//                    switch (ch) {
+//                        case '{':
+//                            state_stack.push_back(state);
+//                            state = OBJECT_BEGIN;
+//                            break;
+//                        case '[':
+//                            state_stack.push_back(state);
+//                            state = ARRAY_BEGIN;
+//                            break;
+//                        default:
+//                            error("'{' or '['");
+//                    }
+//                    break;
+//                case OBJECT_BEGIN:
+//                    switch (ch) {
+//                        case '}':
+//                            next_state(SCOPE_END);
+//                            break;
+//                        case '"':
+//                            key = parseStr(input + idx + 1);
+//                            state = OBJECT_ELEMS;
+//                            break;
+//                        default:
+//                            error("'}' or '\"'");
+//                    }
+//                case OBJECT_ELEMS:
+//                    expect_next(':');
+//                    cur_obj = values.back().object;
+//                    switch (ch) {
+//                        case '"':
+//                            value = JsonValue::create(parseStr(input + idx + 1));
+//                            break;
+//                        case 't':
+//                            value = JsonValue::create(parseTrue(input + idx));
+//                            break;
+//                        case 'f':
+//                            value = JsonValue::create(parseFalse(input + idx));
+//                            break;
+//                        case 'n':
+//                            parseNull(input + idx);
+//                            value = JsonValue::create();
+//                            break;
+//                        case '0':
+//                        case '1':
+//                        case '2':
+//                        case '3':
+//                        case '4':
+//                        case '5':
+//                        case '6':
+//                        case '7':
+//                        case '8':
+//                        case '9':
+//                        case '-':
+//                            value = parseNumeric(input + idx);
+//                            break;
+//                        case '[':
+//                            state_stack.push_back(state);
+//                            state =
+//                    }
+//                    break;
+//                case ARRAY_ELEMS:
+//                    break;
+//                case OBJECT_CONTINUE:
+//                    break;
+//                case ARRAY_BEGIN:
+//                    break;
+//                case SCOPE_END:
+//                    break;
+//                case ARRAY_ELEMS:
+//                    break;
+//            }
+//            switch (ch) {
+//                case '{':
+//                    if (last && (last->type == JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found '{' after non-structural character");
+//                    values.push_back(JsonValue::create('{'));
+//                    break;
+//                case '[':
+//                    if (last && (last->type == JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found '[' after non-structural character");
+//                    values.push_back(JsonValue::create('['));
+//                    break;
+//                case ']':
+//
+//                    break;
+//                case '}':
+//                    break;
+//                case ':':
+//                    if (last && last->type != JsonValue::TYPE_STR)
+//                        throw std::runtime_error("found ':' after non-string value");
+//                    values.push_back(JsonValue::create(':'));
+//                    break;
+//                case ',':
+//                    if (last && (last->type == JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found ',' after structural character");
+//                    values.push_back(JsonValue::create(','));
+//                    break;
+//                case '"':
+//                    if (last && (last->type != JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found string after non-structural character");
+//                    // values.push_back(JsonValue::create(parseStr(input + idx + 1)));
+//                    break;
+//                case '0':
+//                case '1':
+//                case '2':
+//                case '3':
+//                case '4':
+//                case '5':
+//                case '6':
+//                case '7':
+//                case '8':
+//                case '9':
+//                case '-':
+//                    if (last && (last->type != JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found number after non-structural character");
+//                    // stack.push(JsonValue::create(parseStr(input + idx + 1)));
+//                    break;
+//                case 'n':
+//                    if (last && (last->type != JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found null after non-structural character");
+//                    parseNull(input + idx);
+//                    values.push_back(JsonValue::create());
+//                    break;
+//                case 'f':
+//                    if (last && (last->type != JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found true/false after non-structural character");
+//                    values.push_back(JsonValue::create(parseFalse(input + idx)));
+//                    break;
+//                case 't':
+//                    if (last && (last->type != JsonValue::TYPE_CHAR))
+//                        throw std::runtime_error("found true/false after non-structural character");
+//                    values.push_back(JsonValue::create(parseTrue(input + idx)));
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//    }
 
 }

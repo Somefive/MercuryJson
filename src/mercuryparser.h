@@ -48,7 +48,7 @@ namespace MercuryJson {
         enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC, TYPE_CHAR } type;
         union {
             bool boolean;
-            char *str;
+            const char *str;
             JsonObject *object;
             JsonArray *array;
             long long int integer;
@@ -61,7 +61,7 @@ namespace MercuryJson {
 
         static JsonValue create(bool value) { return JsonValue({.type=JsonValue::TYPE_BOOL, {.boolean=value}}); }
 
-        static JsonValue create(char *value) { return JsonValue({.type=JsonValue::TYPE_STR, {.str=value}}); }
+        static JsonValue create(const char *value) { return JsonValue({.type=JsonValue::TYPE_STR, {.str=value}}); }
 
         static JsonValue create(JsonObject *value) { return JsonValue({.type=JsonValue::TYPE_OBJ, {.object=value}}); }
 
@@ -82,6 +82,8 @@ namespace MercuryJson {
     void parseNull(const char *s);
 
     void parse(char *input, size_t len, size_t *indices);
+
+    JsonValue parseJson(char *document, size_t size);
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H
