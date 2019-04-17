@@ -10,12 +10,19 @@
 
 #include "mercuryparser.h"
 
+#define STATIC_CMPEQ_MASK 1
+
 namespace MercuryJson {
 
-    inline u_int64_t __cmpeq_mask(const Warp &raw, char c) {
-        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, _mm256_set1_epi8(c))));
-        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, _mm256_set1_epi8(c))));
-        // printf("__cmpeq_mask, hi: %16llx, lo: %16llx\n", (unsigned long long)(hi << 32), (unsigned long long)(lo));
+    template <char c>
+    inline u_int64_t __cmpeq_mask(const Warp &raw) {
+#if STATIC_CMPEQ_MASK
+        static __m256i vec_c = _mm256_set1_epi8(c);
+#else
+        __m256i vec_c = _mm256_set1_epi8(c);
+#endif
+        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, vec_c)));
+        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
         return (hi << 32U) | lo;
     }
 
@@ -29,32 +36,23 @@ namespace MercuryJson {
     const u_int64_t __odd_mask64 = ~__even_mask64;
 
     u_int64_t extract_escape_mask(const Warp &raw, u_int64_t &prev_odd_backslash_ending_mask) {
-        u_int64_t backslash_mask = __cmpeq_mask(raw, '\\');
+        u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
         u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^prev_odd_backslash_ending_mask;
+        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ prev_odd_backslash_ending_mask;
         u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
         u_int64_t even_escape_mask = even_carrier_backslash_mask & (~backslash_mask) & __odd_mask64;
-        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^prev_odd_backslash_ending_mask;
+
+        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ prev_odd_backslash_ending_mask;
         u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
-        u_int64_t odd_backslash_ending_mask =
-                (odd_carrier_backslash_mask < odd_start_backslash_mask) | prev_odd_backslash_ending_mask;
+        u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
         prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
         u_int64_t odd_escape_mask = odd_carrier_backslash_mask & (~backslash_mask) & __even_mask64;
-        // printf("backslash_mask: %016llx\n", static_cast<unsigned long long>(backslash_mask));
-        // printf("start_backslash_mask: %016llx\n", static_cast<unsigned long long>(start_backslash_mask));
-        // printf("even_start_backslash_mask: %016llx\n", static_cast<unsigned long long>(even_start_backslash_mask));
-        // printf("even_carrier_backslash_mask: %016llx\n", static_cast<unsigned long long>(even_carrier_backslash_mask));
-        // printf("even_escape_mask: %016llx\n", static_cast<unsigned long long>(even_escape_mask));
-        // printf("odd_start_backslash_mask: %016llx\n", static_cast<unsigned long long>(odd_start_backslash_mask));
-        // printf("odd_carrier_backslash_mask: %016llx\n", static_cast<unsigned long long>(odd_carrier_backslash_mask));
-        // printf("odd_backslash_ending_mask: %016llx\n", static_cast<unsigned long long>(odd_backslash_ending_mask));
-        // printf("odd_backslash_ending_mask: %016llx\n", static_cast<unsigned long long>(odd_backslash_ending_mask));
         return even_escape_mask | odd_escape_mask;
     }
 
     u_int64_t extract_literal_mask(
             const Warp &raw, u_int64_t escape_mask, u_int64_t &prev_literal_ending, u_int64_t &quote_mask) {
-        quote_mask = __cmpeq_mask(raw, '"') & ~escape_mask;
+        quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
         u_int64_t literal_mask = _mm_cvtsi128_si64(
                 _mm_clmulepi64_si128(_mm_set_epi64x(0ULL, quote_mask), _mm_set1_epi8(0xFF), 0));
         u_int64_t literal_reversor = prev_literal_ending * ~0ULL;
@@ -80,11 +78,11 @@ namespace MercuryJson {
 
         __m256i hi_whitespace_mask = _mm256_and_si256(hi_character_label, _mm256_set1_epi8(0x18));
         __m256i lo_whitespace_mask = _mm256_and_si256(lo_character_label, _mm256_set1_epi8(0x18));
-        whitespace_mask = (~__cmpeq_mask(Warp(hi_whitespace_mask, lo_whitespace_mask), 0) & (~literal_mask));
+        whitespace_mask = (~__cmpeq_mask<0>(Warp(hi_whitespace_mask, lo_whitespace_mask)) & (~literal_mask));
 
         __m256i hi_structural_mask = _mm256_and_si256(hi_character_label, _mm256_set1_epi8(0x7));
         __m256i lo_structural_mask = _mm256_and_si256(lo_character_label, _mm256_set1_epi8(0x7));
-        structural_mask = (~__cmpeq_mask(Warp(hi_structural_mask, lo_structural_mask), 0) & (~literal_mask));
+        structural_mask = (~__cmpeq_mask<0>(Warp(hi_structural_mask, lo_structural_mask)) & (~literal_mask));
     }
 
     u_int64_t extract_pseudo_structural_mask(
@@ -128,8 +126,14 @@ namespace MercuryJson {
     const __mmask32 __even_mask = 0x55555555U;
     const __mmask32 __odd_mask = ~__even_mask;
 
-    inline __mmask32 __cmpeq_mask(__m256i raw, char c) {
-        return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, _mm256_set1_epi8(c))));
+    template <char c>
+    inline __mmask32 __cmpeq_mask(__m256i raw) {
+#if STATIC_CMPEQ_MASK
+        static __m256i vec_c = _mm256_set1_epi8(c);
+#else
+        __m256i vec_c = _mm256_set1_epi8(c);
+#endif
+        return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, vec_c)));
     }
 
     void __print_m256i(__m256i raw) {
@@ -139,41 +143,29 @@ namespace MercuryJson {
     }
 
     __mmask32 extract_escape_mask(__m256i raw, __mmask32 &prev_odd_backslash_ending_mask) {
-        __mmask32 backslash_mask = __cmpeq_mask(raw, '\\');
-        // printf("backslash_mask: %8x\n", backslash_mask);
+        __mmask32 backslash_mask = __cmpeq_mask<'\\'>(raw);
         __mmask32 start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        // printf("start_backslash_mask: %8x\n", start_backslash_mask);
         __mmask32 even_start_backslash_mask = (start_backslash_mask & __even_mask) ^prev_odd_backslash_ending_mask;
-        // printf("even_start_backslash_mask: %8x\n", even_start_backslash_mask);
         __mmask32 even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
-        // printf("even_carrier_backslash_mask: %8x\n", even_carrier_backslash_mask);
         __mmask32 even_escape_mask = even_carrier_backslash_mask & (~backslash_mask) & __odd_mask;
-        // printf("even_escape_mask: %8x\n", even_escape_mask);
 
         __mmask32 odd_start_backslash_mask = (start_backslash_mask & __odd_mask) ^prev_odd_backslash_ending_mask;
-        // printf("odd_start_backslash_mask: %8x\n", odd_start_backslash_mask);
         __mmask32 odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
-        // printf("odd_carrier_backslash_mask: %8x\n", odd_carrier_backslash_mask);
         __mmask32 odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
-        odd_backslash_ending_mask |= prev_odd_backslash_ending_mask;
         prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
         __mmask32 odd_escape_mask = odd_carrier_backslash_mask & (~backslash_mask) & __even_mask;
-        // printf("odd_escape_mask: %8x\n", odd_escape_mask);
 
         return even_escape_mask | odd_escape_mask;
     }
 
     __mmask32 extract_literal_mask(
             __m256i raw, __mmask32 escape_mask, __mmask32 &prev_literal_ending, __mmask32 &quote_mask) {
-        quote_mask = __cmpeq_mask(raw, '"') & ~escape_mask;
+        quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
         __mmask32 literal_mask = _mm_cvtsi128_si32(
                 _mm_clmulepi64_si128(_mm_set_epi32(0, 0, 0, quote_mask), _mm_set1_epi8(0xFF), 0));
-        // printf("literal_mask: %08x\n", literal_mask);
         __mmask32 literal_reversor = prev_literal_ending * ~0U;
-        // printf("literal reversor: %08x\n", literal_reversor);
         literal_mask ^= literal_reversor;
         prev_literal_ending = (literal_mask & (1U << (32U - 1))) >> (32U - 1);
-        // printf("literal mask: %08x, literal_ending: %08x\n", literal_mask, prev_literal_ending);
         return literal_mask;
     }
 
@@ -187,31 +179,21 @@ namespace MercuryJson {
                                                _mm256_and_si256(_mm256_srli_epi16(raw, 4), _mm256_set1_epi8(0x7F)));
         __m256i lo_index = _mm256_shuffle_epi8(lo_lookup, raw);
         __m256i character_label = _mm256_and_si256(hi_index, lo_index);
-        // printf("raw:");
-        // __print_m256i(raw);
-        // printf("hi_index:");
-        // __print_m256i(hi_index);
-        // printf("lo_index:");
-        // __print_m256i(lo_index);
-        // printf("character_label:");
-        // __print_m256i(character_label);
         whitespace_mask =
-                (~__cmpeq_mask(_mm256_and_si256(character_label, _mm256_set1_epi8(0x18)), 0)) & (~literal_mask);
+                (~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x18)))) & (~literal_mask);
         structural_mask =
-                (~__cmpeq_mask(_mm256_and_si256(character_label, _mm256_set1_epi8(0x7)), 0)) & (~literal_mask);
+                (~__cmpeq_mask<0>(_mm256_and_si256(character_label, _mm256_set1_epi8(0x7)))) & (~literal_mask);
     }
 
     __mmask32 extract_pseudo_structural_mask(
             __mmask32 structural_mask, __mmask32 whitespace_mask, __mmask32 quote_mask, __mmask32 literal_mask,
             __mmask32 &prev_pseudo_structural_end_mask) {
         __mmask32 st_ws = structural_mask | whitespace_mask;
-        // printf("st_ws: %08x\n", st_ws);
         structural_mask |= quote_mask;
         __mmask32 pseudo_structural_mask = (st_ws << 1U) | prev_pseudo_structural_end_mask;
         prev_pseudo_structural_end_mask = (st_ws >> (32U - 1)) & 1U;
         pseudo_structural_mask &= (~whitespace_mask) & (~literal_mask);
         structural_mask |= pseudo_structural_mask;
-        // printf("right quote: %08x\n", (quote_mask & ~literal_mask));
         structural_mask &= ~(quote_mask & ~literal_mask);
         return structural_mask;
     }
@@ -285,7 +267,7 @@ namespace MercuryJson {
             __m256i hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(s + 32));
             Warp warp(lo, hi);
             u_int64_t escape_mask = extract_escape_mask(warp, prev_odd_backslash_ending_mask);
-            u_int64_t quote_mask = __cmpeq_mask(warp, '"') & escape_mask;
+            u_int64_t quote_mask = __cmpeq_mask<'"'>(warp) & escape_mask;
 
             u_int64_t bitcnt = 0;
             while (escape_mask) {
@@ -297,6 +279,7 @@ namespace MercuryJson {
                 s += shift + 1;
                 bitcnt += shift + 1;
             }
+            break;
         }
         // TODO: should process escape and termination
         return base;
