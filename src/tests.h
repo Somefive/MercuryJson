@@ -7,7 +7,7 @@ void test_extract_warp_mask();
 
 void test_tfn_value();
 
-void test_parse();
+void test_parse(bool print = false);
 
 void test_parseStr();
 

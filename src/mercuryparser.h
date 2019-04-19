@@ -16,7 +16,13 @@ namespace MercuryJson {
         }
     };
 
+    template <bool include_backslash = false>
     u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
+
+    // explicit instantiation declaration
+    extern template u_int64_t extract_escape_mask<true>(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
+    extern template u_int64_t extract_escape_mask<false>(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
+
     u_int64_t extract_literal_mask(
             const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask);
     void extract_structural_whitespace_characters(

@@ -197,47 +197,51 @@ void print_json(const JsonValue &value, int indent = 0) {
     }
 }
 
-void test_parse() {
+void test_parse(bool print) {
     size_t size;
 //    char *buf = read_file("data/test_extract_escape_mask.json", &size);
 //    char *buf = read_file("data/pp.json", &size);
     char *buf = read_file("data/demographic_statistics_by_zipcode.json", &size);
     auto json = parseJson(buf, size);
-    // print_json(json);
+    if (print) print_json(json);
 }
 
 void test_parseStr() {
-    char text[256] = "\"something\\tto parse\\nnextLine here with lots of escape\\\\\\\\;\"";
+    char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;")";
+    std::cout << "Original:" << std::endl << text << std::endl;
     char *p = parseStr(text);
-    std::cout << p << std::endl;
+    std::cout << "Parsed: " << std::endl << p << std::endl;
+    std::cout << std::endl;
 }
 
 void test_parseStrAVX() {
-    char text[256] = "\"something\\tto parse\\nnextLine here with lots of escape\\\\\\\\;\\nthis is a cross boundary test!\\\\!!!!\", this should be invisible\\tOh!";
-    char *p = parseStrAVX(text+1);
-    std::cout << p << std::endl;
+    char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
+                     R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
+    std::cout << "Original:" << std::endl << text << std::endl;
+    char *p = parseStrAVX(text);
+    std::cout << "Parsed: " << std::endl << p << std::endl;
+    std::cout << std::endl;
 }
 
 char *generate_randomString(size_t length) {
     char *text = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
     char *base = text;
     *base++ = '"';
-    for (size_t i=0; i<length-4; ++i) {
+    for (size_t i = 0; i < length - 4; ++i) {
         char c = rand() % (127 - 32) + 32;
-        switch (c)
-        {
-        case 'b':
-        // case 'f':
-        case 'n':
-        case 'r':
-        case 't':
-        case '"':
-        case '\\':
-            *base++ = '\\';
-            ++i;
-            break;
-        default:
-            break;
+        switch (c) {
+            case 'b':
+                // case 'f':
+            case 'n':
+            case 'r':
+            case 't':
+            case '"':
+            case '\\':
+                *base++ = '\\';
+                ++i;
+                break;
+            default:
+                break;
         }
         *base++ = c;
     }
@@ -248,7 +252,7 @@ char *generate_randomString(size_t length) {
 }
 
 void test_parseString() {
-    srand(time(0));
+    srand(time(nullptr));
     clock_t t_baseline = 0, t_avx = 0;
     for (int i = 0; i < 10; ++i) {
         size_t length = 1e8;
@@ -259,16 +263,19 @@ void test_parseString() {
         char *text2 = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
         // strcpy(text, base);
         strcpy(text2, text);
-        printf("test begin\n");
+        printf("test[%d]: ", i);
+        fflush(stdout);
         clock_t t0 = clock();
         char *p1 = parseStr(text);
         clock_t t1 = clock();
         char *p2 = parseStrAVX(text2);
         clock_t t2 = clock();
-        t_baseline += (t1-t0);
-        t_avx += (t2-t1);
+        t_baseline += (t1 - t0);
+        t_avx += (t2 - t1);
         // printf("%s\n\n\n%s\n\n\n", p1, p2);
-        printf("test[%d] consistent: %d\n", i, strcmp(p1, p2));
+        int result = strcmp(p1, p2);
+        if (result == 0) printf("passed\n");
+        else printf("incorrect: %d\n", result);
         aligned_free(text);
         aligned_free(text2);
     }
