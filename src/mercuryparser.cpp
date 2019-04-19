@@ -331,8 +331,8 @@ namespace MercuryJson {
             if (negative_exp) exponent = -exponent;
             decimal *= pow(10.0, exponent);
         }
-        if (is_decimal) return JsonValue::create(decimal);
-        else return JsonValue::create(integer);
+        if (is_decimal) return JsonValue(decimal);
+        else return JsonValue(integer);
     }
 
     char *parseStr(char *s) {
@@ -446,7 +446,7 @@ namespace MercuryJson {
         auto *object = new JsonObject;
         if (ch == '}') {
             next_char();
-            return JsonValue::create(object);
+            return JsonValue(object);
         }
         while (true) {
             expect('"');
@@ -465,7 +465,7 @@ namespace MercuryJson {
             idx = *ptr;
             ch = input[idx];
         }
-        return JsonValue::create(object);
+        return JsonValue(object);
     }
 
     JsonValue _parseArray() {
@@ -474,7 +474,7 @@ namespace MercuryJson {
         auto *array = new JsonArray;
         if (ch == ']') {
             next_char();
-            return JsonValue::create(array);
+            return JsonValue(array);
         }
         while (true) {
             JsonValue value = _parseValue();
@@ -485,7 +485,7 @@ namespace MercuryJson {
             idx = *ptr;
             ch = input[idx];
         }
-        return JsonValue::create(array);
+        return JsonValue(array);
     }
 
     JsonValue _parseValue() {
@@ -495,20 +495,20 @@ namespace MercuryJson {
         JsonValue value;
         switch (ch) {
             case '"':
-                value = JsonValue::create(parseStr(input + idx));
+                value = JsonValue(parseStr(input + idx));
 //                printf("str: %s\n", value.str);
                 break;
             case 't':
-                value = JsonValue::create(parseTrue(input + idx));
+                value = JsonValue(parseTrue(input + idx));
 //                printf("true\n");
                 break;
             case 'f':
-                value = JsonValue::create(parseFalse(input + idx));
+                value = JsonValue(parseFalse(input + idx));
 //                printf("false\n");
                 break;
             case 'n':
                 parseNull(input + idx);
-                value = JsonValue::create();
+                value = JsonValue();
 //                printf("null\n");
                 break;
             case '0':
@@ -622,17 +622,17 @@ namespace MercuryJson {
 //                    cur_obj = values.back().object;
 //                    switch (ch) {
 //                        case '"':
-//                            value = JsonValue::create(parseStr(input + idx + 1));
+//                            value = JsonValue(parseStr(input + idx + 1));
 //                            break;
 //                        case 't':
-//                            value = JsonValue::create(parseTrue(input + idx));
+//                            value = JsonValue(parseTrue(input + idx));
 //                            break;
 //                        case 'f':
-//                            value = JsonValue::create(parseFalse(input + idx));
+//                            value = JsonValue(parseFalse(input + idx));
 //                            break;
 //                        case 'n':
 //                            parseNull(input + idx);
-//                            value = JsonValue::create();
+//                            value = JsonValue();
 //                            break;
 //                        case '0':
 //                        case '1':
@@ -667,12 +667,12 @@ namespace MercuryJson {
 //                case '{':
 //                    if (last && (last->type == JsonValue::TYPE_CHAR))
 //                        throw std::runtime_error("found '{' after non-structural character");
-//                    values.push_back(JsonValue::create('{'));
+//                    values.push_back(JsonValue('{'));
 //                    break;
 //                case '[':
 //                    if (last && (last->type == JsonValue::TYPE_CHAR))
 //                        throw std::runtime_error("found '[' after non-structural character");
-//                    values.push_back(JsonValue::create('['));
+//                    values.push_back(JsonValue('['));
 //                    break;
 //                case ']':
 //
@@ -682,17 +682,17 @@ namespace MercuryJson {
 //                case ':':
 //                    if (last && last->type != JsonValue::TYPE_STR)
 //                        throw std::runtime_error("found ':' after non-string value");
-//                    values.push_back(JsonValue::create(':'));
+//                    values.push_back(JsonValue(':'));
 //                    break;
 //                case ',':
 //                    if (last && (last->type == JsonValue::TYPE_CHAR))
 //                        throw std::runtime_error("found ',' after structural character");
-//                    values.push_back(JsonValue::create(','));
+//                    values.push_back(JsonValue(','));
 //                    break;
 //                case '"':
 //                    if (last && (last->type != JsonValue::TYPE_CHAR))
 //                        throw std::runtime_error("found string after non-structural character");
-//                    // values.push_back(JsonValue::create(parseStr(input + idx + 1)));
+//                    // values.push_back(JsonValue(parseStr(input + idx + 1)));
 //                    break;
 //                case '0':
 //                case '1':

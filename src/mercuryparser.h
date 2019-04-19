@@ -43,13 +43,8 @@ namespace MercuryJson {
     typedef std::map<std::string, JsonValue> JsonObject;
     typedef std::deque<JsonValue> JsonArray;
 
-    union Numerical {
-        long long int integer;
-        double decimal;
-    };
-
     struct JsonValue {
-        enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC, TYPE_CHAR } type;
+        enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC } type;
         union {
             bool boolean;
             const char *str;
@@ -57,27 +52,21 @@ namespace MercuryJson {
             JsonArray *array;
             long long int integer;
             double decimal;
-
-            char structural;
         };
 
-        static JsonValue create() { return JsonValue({.type=JsonValue::TYPE_NULL}); }
+        explicit JsonValue() : type(TYPE_NULL) {}
 
-        static JsonValue create(bool value) { return JsonValue({.type=JsonValue::TYPE_BOOL, {.boolean=value}}); }
+        explicit JsonValue(bool value) : type(TYPE_BOOL), boolean(value) {}
 
-        static JsonValue create(const char *value) { return JsonValue({.type=JsonValue::TYPE_STR, {.str=value}}); }
+        explicit JsonValue(const char *value) : type(TYPE_STR), str(value) {}
 
-        static JsonValue create(JsonObject *value) { return JsonValue({.type=JsonValue::TYPE_OBJ, {.object=value}}); }
+        explicit JsonValue(JsonObject *value) : type(TYPE_OBJ), object(value) {}
 
-        static JsonValue create(JsonArray *value) { return JsonValue({.type=JsonValue::TYPE_ARR, {.array=value}}); }
+        explicit JsonValue(JsonArray *value) : type(TYPE_ARR), array(value) {}
 
-        static JsonValue create(long long int value) {
-            return JsonValue({.type=JsonValue::TYPE_INT, {.integer=value}});
-        }
+        explicit JsonValue(long long int value) : type(TYPE_INT), integer(value) {}
 
-        static JsonValue create(double value) { return JsonValue({.type=JsonValue::TYPE_DEC, {.decimal=value}}); }
-
-        static JsonValue create(char c) { return JsonValue{.type=TYPE_CHAR, {.structural=c}}; }
+        explicit JsonValue(double value) : type(TYPE_DEC), decimal(value) {}
     };
 
     char *parseStr(char *s);
