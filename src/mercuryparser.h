@@ -7,9 +7,13 @@
 namespace MercuryJson {
     /* Stage 1 */
     struct Warp {
-        __m256i hi, lo;
+        __m256i lo, hi;
 
         Warp(const __m256i &h, const __m256i &l) : hi(h), lo(l) {}
+        Warp(const char * address) {
+            lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(address));
+            hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(address+32));
+        }
     };
 
     u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
@@ -76,7 +80,7 @@ namespace MercuryJson {
         static JsonValue create(char c) { return JsonValue{.type=TYPE_CHAR, {.structural=c}}; }
     };
 
-    char *parseStr(const char *s, char *&buffer);
+    char *parseStr(char *s);
     bool parseTrue(const char *s);
     bool parseFalse(const char *s);
     void parseNull(const char *s);
@@ -84,6 +88,8 @@ namespace MercuryJson {
     void parse(char *input, size_t len, size_t *indices);
 
     JsonValue parseJson(char *document, size_t size);
+
+    char *parseStrAVX(char *s);
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H

@@ -9,6 +9,8 @@
 #include <vector>
 #include <sstream>
 #include <cmath>
+#include <bitset>
+#include <algorithm>
 
 #include "mercuryparser.h"
 
@@ -31,6 +33,12 @@ namespace MercuryJson {
     void __print(Warp &raw) {
         auto *vals = reinterpret_cast<u_int8_t *>(&raw);
         for (size_t i = 0; i < 64; ++i) printf("%2x ", vals[i]);
+        printf("\n");
+    }
+
+    void __printChar(Warp &raw) {
+        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
+        for (size_t i = 0; i < 64; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
 
@@ -367,7 +375,7 @@ namespace MercuryJson {
                 escape = false;
             } else {
                 if (*end == '\\') escape = true;
-                ++ptr;
+                else *ptr++ = *end;
             }
         }
         *ptr++ = 0;
@@ -515,7 +523,7 @@ namespace MercuryJson {
             case '9':
             case '-':
                 value = parseNumber(input + idx);
-                if (value.type == JsonValue::TYPE_DEC) printf("number %lf\n", value.decimal);
+//                if (value.type == JsonValue::TYPE_DEC) printf("number %lf\n", value.decimal);
 //                else printf("number %lld\n", value.integer);
                 break;
             case '[':
@@ -722,5 +730,51 @@ namespace MercuryJson {
 //            }
 //        }
 //    }
+    char *parseStrAVX(char *s) {
+        s += 1;
+        u_int64_t *prev_odd_backslash_ending_mask = new u_int64_t(0ULL);
+        char *dest = s, *base = s;
+        while (true) {
+            MercuryJson::Warp input(s);
+            u_int64_t backslash_mask = __cmpeq_mask<'\\'>(input);
+            u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
+            u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ *prev_odd_backslash_ending_mask;
+            u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
+            u_int64_t even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & __odd_mask64;
 
+            u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ *prev_odd_backslash_ending_mask;
+            u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
+            u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
+            *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
+            u_int64_t odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & __even_mask64;
+
+            u_int64_t escape_mask = even_escape_mask | odd_escape_mask;
+            u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
+
+            size_t ending_offset = _tzcnt_u64(quote_mask);
+            size_t last_offset = 0, length;
+            // printf("ending_offset: %ld\n", ending_offset);
+            while (true) {
+                size_t offset = _tzcnt_u64(escape_mask);
+                length = offset - last_offset;
+                // printf("offset: %ld, last_offset: %ld, length: %ld\n", offset, last_offset, length);
+                char escaper = s[offset];
+                // printf("escaper: %c\n", escaper);
+                memmove(dest, s+last_offset, length);
+                dest += length;
+                if (offset >= ending_offset) break;
+                *(dest-1) = escape_map[escaper];
+                last_offset = offset + 1;
+                escape_mask = _blsr_u64(escape_mask);
+            }
+            s += 64;
+            // printf("next: %s\n", s);
+            if (ending_offset < 64) {
+                // printf("distance: %ld\n", dest-base);
+                dest[ending_offset-last_offset-length] = '\0';
+                break;
+            }
+        }
+        return base;
+    }
 }

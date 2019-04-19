@@ -9,4 +9,10 @@ void test_tfn_value();
 
 void test_parse();
 
+void test_parseStr();
+
+void test_parseStrAVX();
+
+void test_parseString();
+
 #endif // MERCURYJSON_TESTS_H

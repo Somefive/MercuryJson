@@ -9,7 +9,9 @@ int main() {
 //    test_extract_warp_mask();
 //    test_tfn_value();
 
-    test_parse();
-
+    // test_parse();
+    // test_parseStr();
+    // test_parseStrAVX();
+    test_parseString();
     return 0;
 }
