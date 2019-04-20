@@ -4,6 +4,8 @@
 #include <deque>
 #include <map>
 
+using std::size_t;
+
 namespace MercuryJson {
     /* Stage 1 */
     struct Warp {
@@ -85,6 +87,15 @@ namespace MercuryJson {
     JsonValue parseJson(char *document, size_t size);
 
     char *parseStrAVX(char *s);
+    __m256i translate_escape_characters(__m256i input);
+    void deescape(Warp &input, u_int64_t escaper_mask);
+    
+    inline __m256i expand_reverse_mask(u_int32_t input);
+
+    void __print_m256i(__m256i raw);
+    void __printChar_m256i(__m256i raw);
+    void __print(Warp &raw);
+    void __printChar(Warp &raw);
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H

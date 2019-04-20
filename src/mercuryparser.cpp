@@ -162,6 +162,12 @@ namespace MercuryJson {
         printf("\n");
     }
 
+    void __printChar_m256i(__m256i raw) {
+        u_int8_t *vals = reinterpret_cast<u_int8_t *>(&raw);
+        for (size_t i = 0; i < 32; ++i) printf("%2x(%c) ", vals[i], vals[i]);
+        printf("\n");
+    }
+
     __mmask32 extract_escape_mask(__m256i raw, __mmask32 *prev_odd_backslash_ending_mask) {
         __mmask32 backslash_mask = __cmpeq_mask<'\\'>(raw);
         __mmask32 start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
@@ -573,6 +579,7 @@ namespace MercuryJson {
         return value;
     }
 
+
 //    void parse(char *input, size_t len, size_t *indices) {
 //        std::deque<JsonValue> values(MAX_DEPTH);
 //        std::vector<int> state_stack(MAX_DEPTH);
@@ -733,19 +740,17 @@ namespace MercuryJson {
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
         char *dest = s, *base = s;
         while (true) {
-            MercuryJson::Warp input(s);
+            Warp input(s);
             u_int64_t escape_mask = extract_escape_mask<true>(input, &prev_odd_backslash_ending_mask);
             u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
             size_t ending_offset = _tzcnt_u64(quote_mask);
+            /* old version */ /*
             size_t last_offset = 0, length;
-            // printf("ending_offset: %ld\n", ending_offset);
             while (true) {
                 size_t offset = _tzcnt_u64(escape_mask);
                 length = offset - last_offset;
-                // printf("offset: %ld, last_offset: %ld, length: %ld\n", offset, last_offset, length);
                 char escaper = s[offset];
-                // printf("escaper: %c\n", escaper);
                 memmove(dest, s + last_offset, length);
                 dest += length;
                 if (offset >= ending_offset) break;
@@ -754,13 +759,106 @@ namespace MercuryJson {
                 escape_mask = _blsr_u64(escape_mask);
             }
             s += 64;
-            // printf("next: %s\n", s);
             if (ending_offset < 64) {
-                // printf("distance: %ld\n", dest-base);
                 dest[ending_offset - last_offset - length] = '\0';
                 break;
+            }*/
+            /* new version */ 
+            __m256i lo_mask = expand_reverse_mask(escape_mask);
+            __m256i hi_mask = expand_reverse_mask(escape_mask >> 32U);
+            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)), 
+                                       _mm256_and_si256(lo_mask, input.lo));
+            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)), 
+                                       _mm256_and_si256(hi_mask, input.hi));
+            u_int64_t escaper_mask = (escape_mask >> 1) | (prev_odd_backslash_ending_mask << 63);
+            deescape(input, escaper_mask);
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest+32), input.hi);
+
+            if (ending_offset < 64) {
+                dest[_mm_popcnt_u64(((1ULL << ending_offset) - 1) & ~escaper_mask)] = '\0';
+                break;
+            } else {
+                dest += 64 - _mm_popcnt_u64(escaper_mask);
+                s += 64;
             }
         }
         return base;
+    }
+
+    inline u_int64_t __extract_highestbit_pext(const Warp &input, int shift, u_int64_t escaper_mask) {
+        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.lo, shift)));
+        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.hi, shift)));
+        return _pext_u64(((hi << 32U) | lo), escaper_mask);
+    }
+
+    inline __m256i expand_reverse_mask(u_int32_t input) {
+        const __m256i projector  = _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 
+                                                    1, 1, 1, 1, 1, 1, 1, 1,
+                                                    2, 2, 2, 2, 2, 2, 2, 2, 
+                                                    3, 3, 3, 3, 3, 3, 3, 3);
+        const __m256i masker     = _mm256_setr_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
+                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
+                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
+                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80);
+        const __m256i zeros      = _mm256_set1_epi8(0);    
+        return _mm256_cmpeq_epi8(_mm256_and_si256(_mm256_shuffle_epi8(_mm256_set1_epi32(input), projector), masker),zeros);
+    }
+    
+    inline __m256i __expand(u_int32_t input) {
+        const __m256i ones       = _mm256_set1_epi8(1);    
+        return _mm256_add_epi8(expand_reverse_mask(input), ones);
+    }
+    inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
+                                 u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {
+        __m256i result = __expand(h0);
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h1), 1));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h2), 2));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h3), 3));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h4), 4));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h5), 5));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h6), 6));
+        result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h7), 7));
+        return result;
+    }
+
+    void deescape(Warp &input, u_int64_t escaper_mask) {
+        u_int64_t nonescaper_mask = ~escaper_mask;
+        u_int64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
+        u_int64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
+        u_int64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
+        u_int64_t h4 = __extract_highestbit_pext(input, 3, nonescaper_mask);
+        u_int64_t h3 = __extract_highestbit_pext(input, 4, nonescaper_mask);
+        u_int64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
+        u_int64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
+        u_int64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
+        input.lo = __reconstruct(h0, h1, h2, h3, h4, h5, h6, h7);
+        input.hi = __reconstruct(h0 >> 32U, h1 >> 32U, h2 >> 32U, h3 >> 32U, h4 >> 32U, h5 >> 32U, h6 >> 32U, h7 >> 32U);
+    }
+
+    // 1. '/'   0x2f 0x2f
+    // 2. '""'  0x22 0x22
+    // 4. '\'   0x5c 0x5c
+    // 8. 'b'   0x62 0x08
+    // 16.'f'   0x66 0x0c
+    // 32.'n'   0x6e 0x0a
+    // 64.'r'   0x72 0x0d
+    //128.'t'   0x74 0x09
+    __m256i translate_escape_characters(__m256i input) {
+        const __m256i hi_lookup = _mm256_setr_epi8(0, 0, 0x03, 0, 0, 0x04, 0x38, 0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                                   0, 0, 0x03, 0, 0, 0x04, 0x38, 0xc0, 0, 0, 0, 0, 0, 0, 0, 0);
+        const __m256i lo_lookup = _mm256_setr_epi8(0, 0, 0x4a, 0, 0x80, 0, 0x10, 0, 0, 0, 0, 0, 0x04, 0, 0x20, 0x01,
+                                                   0, 0, 0x4a, 0, 0x80, 0, 0x10, 0, 0, 0, 0, 0, 0x04, 0, 0x20, 0x01);
+        __m256i hi_index = _mm256_shuffle_epi8(hi_lookup,
+                                               _mm256_and_si256(_mm256_srli_epi16(input, 4), _mm256_set1_epi8(0x7F)));
+        __m256i lo_index = _mm256_shuffle_epi8(lo_lookup, input);
+        __m256i character_class = _mm256_and_si256(hi_index, lo_index);
+        const __m256i trans_1 = _mm256_setr_epi8(0, 0x2f, 0x22, 0, 0x5c, 0, 0, 0, 0x08, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0x2f, 0x22, 0, 0x5c, 0, 0, 0, 0x08, 0, 0, 0, 0, 0, 0, 0);
+        const __m256i trans_2 = _mm256_setr_epi8(0, 0x0c, 0x0a, 0, 0x0d, 0, 0, 0, 0x09, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0x0c, 0x0a, 0, 0x0d, 0, 0, 0, 0x09, 0, 0, 0, 0, 0, 0, 0);
+        __m256i trans = _mm256_or_si256(_mm256_shuffle_epi8(trans_1, character_class),
+                                        _mm256_shuffle_epi8(trans_2, _mm256_and_si256(_mm256_srli_epi16(character_class, 4), _mm256_set1_epi8(0x7F))));
+        return trans;
     }
 }

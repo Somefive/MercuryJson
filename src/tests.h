@@ -15,4 +15,8 @@ void test_parseStrAVX();
 
 void test_parseString();
 
+void test_translate();
+
+void test_remove_escaper();
+
 #endif // MERCURYJSON_TESTS_H

@@ -14,5 +14,8 @@ int main() {
 //    test_parseStr();
 //    test_parseStrAVX();
     test_parseString();
+//    test_translate();
+
+//    test_remove_escaper();
     return 0;
 }
