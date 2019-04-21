@@ -181,7 +181,7 @@ void print_json(const JsonValue &value, int indent) {
             for (const auto &it : *value.array) {
                 print_indent(indent + 2);
                 print_json(it, indent + 2);
-                if (cnt + 1 < value.object->size())
+                if (cnt + 1 < value.array->size())
                     std::cout << ",";
                 std::cout << std::endl;
                 ++cnt;
