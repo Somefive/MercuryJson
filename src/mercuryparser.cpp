@@ -774,10 +774,14 @@ namespace MercuryJson {
             __m256i lo_mask = convert_to_mask(escape_mask);
             __m256i hi_mask = convert_to_mask(escape_mask >> 32U);
             // mask ? translated : original
-            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)),
-                                       _mm256_and_si256(lo_mask, input.lo));
-            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)),
-                                       _mm256_and_si256(hi_mask, input.hi));
+            __m256i lo_trans = translate_escape_characters(input.lo);
+            __m256i hi_trans = translate_escape_characters(input.hi);
+            input.lo = _mm256_blendv_epi8(lo_trans, input.lo, lo_mask);
+            input.hi = _mm256_blendv_epi8(hi_trans, input.hi, hi_mask);
+//            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)),
+//                                       _mm256_and_si256(lo_mask, input.lo));
+//            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)),
+//                                       _mm256_and_si256(hi_mask, input.hi));
             u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
             deescape(input, escaper_mask);
             _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
