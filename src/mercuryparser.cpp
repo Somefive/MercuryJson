@@ -576,7 +576,7 @@ namespace MercuryJson {
         __len = size;
 
         size_t base = 0;
-        size_t *indices = new size_t[size / 2 + 2];  // TODO: Make this a dynamic-sized array
+        size_t *indices = new size_t[size];  // TODO: Make this a dynamic-sized array
 
         u_int64_t prev_escape_mask = 0;
         u_int64_t prev_quote_mask = 0;
@@ -598,7 +598,6 @@ namespace MercuryJson {
         }
 
         ptr = indices;
-
         auto value = _parseValue();
         delete[] indices;
 
