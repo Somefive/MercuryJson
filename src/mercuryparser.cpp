@@ -427,15 +427,21 @@ namespace MercuryJson {
         return values.empty() ? nullptr : &values.back();
     }
 
-    void __error(const char *expected, char encountered, size_t index) {
-        std::stringstream stream;
-        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
-        throw std::runtime_error(stream.str());
-    }
-
     static char *input;
     static size_t __len;
     static size_t *ptr;
+
+    void __error(const char *expected, char encountered, size_t index) {
+        std::stringstream stream;
+        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
+        stream << std::endl;
+        input[index + 20] = 0;
+        for (int i = index - 20; i < index + 20; ++i)
+            if (input[i] == 0) input[i] = ' ';
+        stream << "context: " << (input + index - 20) << std::endl;
+        stream << "         " << std::string(20, ' ') << "^";
+        throw std::runtime_error(stream.str());
+    }
 
 #define next_char() ({ \
         idx = *ptr++; \
@@ -555,7 +561,7 @@ namespace MercuryJson {
         __len = size;
 
         size_t base = 0;
-        size_t *indices = new size_t[65536];  // TODO: Make this a dynamic-sized array
+        size_t *indices = new size_t[size / 2 + 2];  // TODO: Make this a dynamic-sized array
 
         u_int64_t prev_escape_mask = 0;
         u_int64_t prev_quote_mask = 0;
@@ -769,6 +775,7 @@ namespace MercuryJson {
                 dest[ending_offset - last_offset - length] = '\0';
                 break;
             }
+            // similar bug here
 #else
             /* new version */
             __m256i lo_mask = convert_to_mask(escape_mask);
@@ -778,19 +785,22 @@ namespace MercuryJson {
             __m256i hi_trans = translate_escape_characters(input.hi);
             input.lo = _mm256_blendv_epi8(lo_trans, input.lo, lo_mask);
             input.hi = _mm256_blendv_epi8(hi_trans, input.hi, hi_mask);
-//            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)),
-//                                       _mm256_and_si256(lo_mask, input.lo));
-//            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)),
-//                                       _mm256_and_si256(hi_mask, input.hi));
             u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
-            deescape(input, escaper_mask);
-            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
-            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
 
             if (ending_offset < 64) {
-                dest[_mm_popcnt_u64(((1ULL << ending_offset) - 1) & ~escaper_mask)] = '\0';
+                u_int64_t str_mask = (1ULL << (ending_offset / 2) << ((ending_offset + 1) / 2)) - 1ULL;
+                escaper_mask &= str_mask;
+                deescape(input, escaper_mask);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
+                size_t end_pos = _mm_popcnt_u64(str_mask & ~escaper_mask);
+                memmove(s + ending_offset, dest + end_pos, 64 - ending_offset);
+                dest[end_pos] = '\0';
                 break;
             } else {
+                deescape(input, escaper_mask);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
                 dest += 64 - _mm_popcnt_u64(escaper_mask);
                 s += 64;
             }

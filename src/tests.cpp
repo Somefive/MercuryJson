@@ -10,6 +10,7 @@
 #include <ctime>
 #include <cstring>
 
+#include "tests.h"
 #include "mercuryparser.h"
 #include "utils.h"
 
@@ -146,7 +147,7 @@ void print_indent(int indent) {
     }
 }
 
-void print_json(const JsonValue &value, int indent = 0) {
+void print_json(const JsonValue &value, int indent) {
     int cnt;
     switch (value.type) {
         case JsonValue::TYPE_NULL:
