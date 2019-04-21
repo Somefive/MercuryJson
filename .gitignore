@@ -6,3 +6,4 @@ CMakeCache.txt
 main
 CMakeFiles/
 Makefile
+data/benchmark/
