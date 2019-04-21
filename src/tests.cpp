@@ -215,8 +215,8 @@ void test_parseStr() {
 }
 
 void test_parseStrAVX() {
-     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
-                      R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
+    char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
+                     R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
     // char text[512] = "\"fLA[/wsxV\\r&Io#`G\\t5XBZM|;/|HvoxPWE\\n0Rf%K:\\tOcaRD)DWag/0aJ<\\\\o3Lia!,P2^84(O)T4g'UpK*O0:\\\\\\raxOR\"!";
     std::cout << "Original:" << std::endl << text << std::endl;
     char *p = parseStrAVX(text);
@@ -256,7 +256,7 @@ void test_parseString() {
     srand(time(nullptr));
     clock_t t_baseline = 0, t_avx = 0;
     for (int i = 0; i < 10; ++i) {
-        size_t length = 1e8;
+        size_t length = static_cast<size_t>(1e8);
         // const char *base = generate_randomString(length);
         // printf("base: %s\n", base);
         // char *text = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
@@ -285,7 +285,7 @@ void test_parseString() {
 }
 
 void test_translate() {
-    const char *s = "/0\"1\\2b3f4n5r6t7t8r9nAfBbC\\D\"E/F";
+    const char *s = R"(/0"1\2b3f4n5r6t7t8r9nAfBbC\D"E/F)";
     __m256i input = Warp(s).lo;
     printf("origin: ");
     __printChar_m256i(input);
@@ -294,14 +294,14 @@ void test_translate() {
 }
 
 void test_remove_escaper() {
-    const char *s = "\\tabc\\t\\n\\\\\\t\\t\\n\\\\\\t\\t\\n\\\\\\t\\t\\n\\\\\\t\\t\\n\\\\\\t\\t\\n\\\\t\\t\\n\\\\\\t\\t\\n\\\\t\\t\\n\\\\\\t\\t\\n\\\\";
+    const char *s = R"(\tabc\t\n\\\t\t\n\\\t\t\n\\\t\t\n\\\t\t\n\\\t\t\n\\t\t\n\\\t\t\n\\t\t\n\\\t\t\n\\)";
     printf("s: %s\n", s);
     Warp input(s);
     printf("input: ");
     __printChar(input);
     u_int64_t prev_odd_backslash_ending_mask = 0ULL;
     u_int64_t escape_mask = extract_escape_mask<true>(input, &prev_odd_backslash_ending_mask);
-    u_int64_t escaper_mask = (escape_mask >> 1) | (prev_odd_backslash_ending_mask << 63);
+    u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
     auto masks = std::vector<u_int64_t>();
     masks.push_back(escaper_mask);
     print("escaper", masks);

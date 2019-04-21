@@ -14,17 +14,18 @@
 
 #include "mercuryparser.h"
 
-#define STATIC_CMPEQ_MASK 1
+#define STATIC_CMPEQ_MASK 0
 #define USE_PARSE_STR_AVX 1
+#define PARSE_STR_FULL_AVX 1
 
 namespace MercuryJson {
 
     template <char c>
     inline u_int64_t __cmpeq_mask(const Warp &raw) {
 #if STATIC_CMPEQ_MASK
-        static __m256i vec_c = _mm256_set1_epi8(c);
+        static const __m256i vec_c = _mm256_set1_epi8(c);
 #else
-        __m256i vec_c = _mm256_set1_epi8(c);
+        const __m256i vec_c = _mm256_set1_epi8(c);
 #endif
         u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, vec_c)));
         u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
@@ -46,6 +47,7 @@ namespace MercuryJson {
     const u_int64_t __even_mask64 = 0x5555555555555555U;
     const u_int64_t __odd_mask64 = ~__even_mask64;
 
+    // @formatter:off
     template <bool include_backslash>
     u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask) {
         u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
@@ -65,6 +67,7 @@ namespace MercuryJson {
         else odd_escape_mask = odd_carrier_backslash_mask & ~backslash_mask & __even_mask64;
         return even_escape_mask | odd_escape_mask;
     }
+    // @formatter:on
 
     // explicit instantiation
     template u_int64_t extract_escape_mask<true>(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
@@ -168,6 +171,7 @@ namespace MercuryJson {
         printf("\n");
     }
 
+    // @formatter:off
     __mmask32 extract_escape_mask(__m256i raw, __mmask32 *prev_odd_backslash_ending_mask) {
         __mmask32 backslash_mask = __cmpeq_mask<'\\'>(raw);
         __mmask32 start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
@@ -183,6 +187,7 @@ namespace MercuryJson {
 
         return even_escape_mask | odd_escape_mask;
     }
+    // @formatter:on
 
     __mmask32 extract_literal_mask(
             __m256i raw, __mmask32 escape_mask, __mmask32 *prev_literal_ending, __mmask32 *quote_mask) {
@@ -745,7 +750,8 @@ namespace MercuryJson {
             u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
             size_t ending_offset = _tzcnt_u64(quote_mask);
-            /* old version */ /*
+#if !PARSE_STR_FULL_AVX
+            /* old version */
             size_t last_offset = 0, length;
             while (true) {
                 size_t offset = _tzcnt_u64(escape_mask);
@@ -762,18 +768,20 @@ namespace MercuryJson {
             if (ending_offset < 64) {
                 dest[ending_offset - last_offset - length] = '\0';
                 break;
-            }*/
-            /* new version */ 
-            __m256i lo_mask = expand_reverse_mask(escape_mask);
-            __m256i hi_mask = expand_reverse_mask(escape_mask >> 32U);
-            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)), 
+            }
+#else
+            /* new version */
+            __m256i lo_mask = convert_to_mask(escape_mask);
+            __m256i hi_mask = convert_to_mask(escape_mask >> 32U);
+            // mask ? translated : original
+            input.lo = _mm256_or_si256(_mm256_andnot_si256(lo_mask, translate_escape_characters(input.lo)),
                                        _mm256_and_si256(lo_mask, input.lo));
-            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)), 
+            input.hi = _mm256_or_si256(_mm256_andnot_si256(hi_mask, translate_escape_characters(input.hi)),
                                        _mm256_and_si256(hi_mask, input.hi));
-            u_int64_t escaper_mask = (escape_mask >> 1) | (prev_odd_backslash_ending_mask << 63);
+            u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
             deescape(input, escaper_mask);
             _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
-            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest+32), input.hi);
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
 
             if (ending_offset < 64) {
                 dest[_mm_popcnt_u64(((1ULL << ending_offset) - 1) & ~escaper_mask)] = '\0';
@@ -782,8 +790,30 @@ namespace MercuryJson {
                 dest += 64 - _mm_popcnt_u64(escaper_mask);
                 s += 64;
             }
+#endif
         }
         return base;
+    }
+
+    inline __m256i convert_to_mask(u_int32_t input) {
+        /* Create a mask based on each bit of `input`.
+         *                    input : [0-31]
+         * _mm256_set1_epi32(input) : [0-7] [8-15] [16-23] [24-31] * 8
+         *      _mm256_shuffle_epi8 : [0-7] * 8 [8-15] * 8 ...
+         *         _mm256_and_si256 : [0] [1] [2] [3] [4] ...
+         *        _mm256_cmpeq_epi8 : 0xFF for 1-bits, 0x00 for 0-bits
+         */
+        const __m256i projector = _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0,
+                                                   1, 1, 1, 1, 1, 1, 1, 1,
+                                                   2, 2, 2, 2, 2, 2, 2, 2,
+                                                   3, 3, 3, 3, 3, 3, 3, 3);
+        const __m256i masker = _mm256_setr_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
+                                                0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
+                                                0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
+                                                0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80);
+        const __m256i zeros = _mm256_set1_epi8(0);
+        return _mm256_cmpeq_epi8(_mm256_and_si256(_mm256_shuffle_epi8(
+                _mm256_set1_epi32(input), projector), masker), zeros);
     }
 
     inline u_int64_t __extract_highestbit_pext(const Warp &input, int shift, u_int64_t escaper_mask) {
@@ -792,25 +822,15 @@ namespace MercuryJson {
         return _pext_u64(((hi << 32U) | lo), escaper_mask);
     }
 
-    inline __m256i expand_reverse_mask(u_int32_t input) {
-        const __m256i projector  = _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 
-                                                    1, 1, 1, 1, 1, 1, 1, 1,
-                                                    2, 2, 2, 2, 2, 2, 2, 2, 
-                                                    3, 3, 3, 3, 3, 3, 3, 3);
-        const __m256i masker     = _mm256_setr_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
-                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
-                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 
-                                                    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80);
-        const __m256i zeros      = _mm256_set1_epi8(0);    
-        return _mm256_cmpeq_epi8(_mm256_and_si256(_mm256_shuffle_epi8(_mm256_set1_epi32(input), projector), masker),zeros);
-    }
-    
     inline __m256i __expand(u_int32_t input) {
-        const __m256i ones       = _mm256_set1_epi8(1);    
-        return _mm256_add_epi8(expand_reverse_mask(input), ones);
+        /* 0x00 for 1-bits, 0x01 for 0-bits */
+        const __m256i ones = _mm256_set1_epi8(1);
+        return _mm256_add_epi8(convert_to_mask(input), ones);
     }
+
     inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
                                  u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {
+        /* Reconstruct a __m256i with 8-bit numbers specified by bits from h0~h7 */
         __m256i result = __expand(h0);
         result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h1), 1));
         result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h2), 2));
@@ -823,7 +843,9 @@ namespace MercuryJson {
     }
 
     void deescape(Warp &input, u_int64_t escaper_mask) {
+        /* Remove 8-bit characters specified by `escaper_mask` */
         u_int64_t nonescaper_mask = ~escaper_mask;
+        // Obtain each bit from each 8-bit character, keeping only non-escapers
         u_int64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
         u_int64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
         u_int64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
@@ -832,8 +854,10 @@ namespace MercuryJson {
         u_int64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
         u_int64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
         u_int64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
+        // _mm256_packus_epi32
         input.lo = __reconstruct(h0, h1, h2, h3, h4, h5, h6, h7);
-        input.hi = __reconstruct(h0 >> 32U, h1 >> 32U, h2 >> 32U, h3 >> 32U, h4 >> 32U, h5 >> 32U, h6 >> 32U, h7 >> 32U);
+        input.hi = __reconstruct(
+                h0 >> 32U, h1 >> 32U, h2 >> 32U, h3 >> 32U, h4 >> 32U, h5 >> 32U, h6 >> 32U, h7 >> 32U);
     }
 
     // 1. '/'   0x2f 0x2f
@@ -845,7 +869,7 @@ namespace MercuryJson {
     // 64.'r'   0x72 0x0d
     //128.'t'   0x74 0x09
     __m256i translate_escape_characters(__m256i input) {
-        const __m256i hi_lookup = _mm256_setr_epi8(0, 0, 0x03, 0, 0, 0x04, 0x38, 0xc0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        const __m256i hi_lookup = _mm256_setr_epi8(0, 0, 0x03, 0, 0, 0x04, 0x38, 0xc0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                    0, 0, 0x03, 0, 0, 0x04, 0x38, 0xc0, 0, 0, 0, 0, 0, 0, 0, 0);
         const __m256i lo_lookup = _mm256_setr_epi8(0, 0, 0x4a, 0, 0x80, 0, 0x10, 0, 0, 0, 0, 0, 0x04, 0, 0x20, 0x01,
                                                    0, 0, 0x4a, 0, 0x80, 0, 0x10, 0, 0, 0, 0, 0, 0x04, 0, 0x20, 0x01);
@@ -857,8 +881,10 @@ namespace MercuryJson {
                                                  0, 0x2f, 0x22, 0, 0x5c, 0, 0, 0, 0x08, 0, 0, 0, 0, 0, 0, 0);
         const __m256i trans_2 = _mm256_setr_epi8(0, 0x0c, 0x0a, 0, 0x0d, 0, 0, 0, 0x09, 0, 0, 0, 0, 0, 0, 0,
                                                  0, 0x0c, 0x0a, 0, 0x0d, 0, 0, 0, 0x09, 0, 0, 0, 0, 0, 0, 0);
-        __m256i trans = _mm256_or_si256(_mm256_shuffle_epi8(trans_1, character_class),
-                                        _mm256_shuffle_epi8(trans_2, _mm256_and_si256(_mm256_srli_epi16(character_class, 4), _mm256_set1_epi8(0x7F))));
+        __m256i trans = _mm256_or_si256(
+                _mm256_shuffle_epi8(trans_1, character_class),
+                _mm256_shuffle_epi8(trans_2, _mm256_and_si256(
+                        _mm256_srli_epi16(character_class, 4), _mm256_set1_epi8(0x7F))));
         return trans;
     }
 }

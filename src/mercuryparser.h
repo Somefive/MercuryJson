@@ -90,7 +90,7 @@ namespace MercuryJson {
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
     
-    inline __m256i expand_reverse_mask(u_int32_t input);
+    inline __m256i convert_to_mask(u_int32_t input);
 
     void __print_m256i(__m256i raw);
     void __printChar_m256i(__m256i raw);

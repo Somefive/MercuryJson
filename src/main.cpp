@@ -12,7 +12,7 @@ int main() {
 
 //    test_parse(true);
 //    test_parseStr();
-//    test_parseStrAVX();
+    test_parseStrAVX();
     test_parseString();
 //    test_translate();
 
