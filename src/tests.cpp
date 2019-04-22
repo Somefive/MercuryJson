@@ -301,7 +301,7 @@ void test_remove_escaper() {
     printf("input: ");
     __printChar(input);
     u_int64_t prev_odd_backslash_ending_mask = 0ULL;
-    u_int64_t escape_mask = extract_escape_mask<true>(input, &prev_odd_backslash_ending_mask);
+    u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
     u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
     auto masks = std::vector<u_int64_t>();
     masks.push_back(escaper_mask);

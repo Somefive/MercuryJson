@@ -49,30 +49,23 @@ namespace MercuryJson {
     const u_int64_t __odd_mask64 = ~__even_mask64;
 
     // @formatter:off
-    template <bool include_backslash>
     u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask) {
         u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
         u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
         u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ *prev_odd_backslash_ending_mask;
         u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
         u_int64_t even_escape_mask;
-        if (include_backslash) even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & __odd_mask64;
-        else even_escape_mask = even_carrier_backslash_mask & ~backslash_mask & __odd_mask64;
+        even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & __odd_mask64;
 
         u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ *prev_odd_backslash_ending_mask;
         u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
         u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
         *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
         u_int64_t odd_escape_mask;
-        if (include_backslash) odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & __even_mask64;
-        else odd_escape_mask = odd_carrier_backslash_mask & ~backslash_mask & __even_mask64;
+        odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & __even_mask64;
         return even_escape_mask | odd_escape_mask;
     }
     // @formatter:on
-
-    // explicit instantiation
-    template u_int64_t extract_escape_mask<true>(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
-    template u_int64_t extract_escape_mask<false>(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
 
     u_int64_t extract_literal_mask(
             const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask) {
@@ -779,7 +772,7 @@ namespace MercuryJson {
         char *dest = s, *base = s;
         while (true) {
             Warp input(s);
-            u_int64_t escape_mask = extract_escape_mask<true>(input, &prev_odd_backslash_ending_mask);
+            u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
             u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
             size_t ending_offset = _tzcnt_u64(quote_mask);
