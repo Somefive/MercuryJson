@@ -10,13 +10,8 @@ else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mpclmul -mbmi -mbmi2")
 endif ()
 
-set(SOURCE_FILES
-        src/main.cpp
-        src/mercuryparser.cpp
-        src/tests.cpp
+set(SUPPORT_FILES
         src/utils.cpp
         )
 
-add_executable(main ${SOURCE_FILES})
-
-include(benchmark/CMakeLists.txt)
+add_executable(rapidjson benchmark/rapidjson.cpp ${SUPPORT_FILES})
