@@ -147,27 +147,27 @@ void print_indent(int indent) {
     }
 }
 
-void print_json(const JsonValue &value, int indent) {
+void print_json(JsonValue *value, int indent) {
     int cnt;
-    switch (value.type) {
+    switch (value->type) {
         case JsonValue::TYPE_NULL:
             std::cout << "null";
             break;
         case JsonValue::TYPE_BOOL:
-            if (value.boolean) std::cout << "true";
+            if (value->boolean) std::cout << "true";
             else std::cout << "false";
             break;
         case JsonValue::TYPE_STR:
-            std::cout << "\"" << value.str << "\"";
+            std::cout << "\"" << value->str << "\"";
             break;
         case JsonValue::TYPE_OBJ:
             std::cout << "{" << std::endl;
             cnt = 0;
-            for (const auto &it : *value.object) {
+            for (const auto &it : *value->object) {
                 print_indent(indent + 2);
                 std::cout << "\"" << it.first << "\": ";
                 print_json(it.second, indent + 2);
-                if (cnt + 1 < value.object->size())
+                if (cnt + 1 < value->object->size())
                     std::cout << ",";
                 std::cout << std::endl;
                 ++cnt;
@@ -178,10 +178,10 @@ void print_json(const JsonValue &value, int indent) {
         case JsonValue::TYPE_ARR:
             std::cout << "[" << std::endl;
             cnt = 0;
-            for (const auto &it : *value.array) {
+            for (const auto &it : *value->array) {
                 print_indent(indent + 2);
                 print_json(it, indent + 2);
-                if (cnt + 1 < value.array->size())
+                if (cnt + 1 < value->array->size())
                     std::cout << ",";
                 std::cout << std::endl;
                 ++cnt;
@@ -190,10 +190,10 @@ void print_json(const JsonValue &value, int indent) {
             std::cout << "]";
             break;
         case JsonValue::TYPE_INT:
-            std::cout << value.integer;
+            std::cout << value->integer;
             break;
         case JsonValue::TYPE_DEC:
-            std::cout << value.decimal;
+            std::cout << value->decimal;
             break;
     }
 }
@@ -203,9 +203,8 @@ void test_parse(bool print) {
 //    char *buf = read_file("data/test_extract_escape_mask.json", &size);
 //    char *buf = read_file("data/pp.json", &size);
     char *buf = read_file("data/demographic_statistics_by_zipcode.json", &size);
-    clock_t c;
-    auto json = parseJson(buf, size, c);
-    if (print) print_json(json);
+    auto json = JSON(buf, size);
+    if (print) print_json(json.document);
 }
 
 void test_parseStr() {

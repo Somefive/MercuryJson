@@ -3,6 +3,14 @@
 
 #include <deque>
 #include <map>
+#include <string>
+#include <string_view>
+#include <vector>
+#include <variant>
+
+#include "utils.h"
+
+#define USE_BLOCK_ALLOCATOR 1
 
 using std::size_t;
 
@@ -12,9 +20,10 @@ namespace MercuryJson {
         __m256i lo, hi;
 
         Warp(const __m256i &h, const __m256i &l) : hi(h), lo(l) {}
-        Warp(const char * address) {
+
+        Warp(const char *address) {
             lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(address));
-            hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(address+32));
+            hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(address + 32));
         }
     };
 
@@ -48,8 +57,9 @@ namespace MercuryJson {
 
     /* Stage 2 */
     struct JsonValue;
-    typedef std::map<std::string, JsonValue> JsonObject;
-    typedef std::deque<JsonValue> JsonArray;
+//    typedef std::map<std::string_view, JsonValue> JsonObject;
+    typedef std::vector<std::pair<std::string_view, JsonValue *>> JsonObject;
+    typedef std::vector<JsonValue *> JsonArray;
 
     struct JsonValue {
         enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC } type;
@@ -75,35 +85,86 @@ namespace MercuryJson {
         explicit JsonValue(long long int value) : type(TYPE_INT), integer(value) {}
 
         explicit JsonValue(double value) : type(TYPE_DEC), decimal(value) {}
-
-        // ~JsonValue() {
-        //     switch (type)
-        //     {
-        //     case TYPE_OBJ:
-        //         delete object;
-        //         break;
-        //     case TYPE_ARR:
-        //         delete array;
-        //         break;
-        //     default:
-        //         break;
-        //     }
-        // }
     };
 
-    char *parseStr(char *s);
+    template <typename default_class>
+    class BlockedAllocator {
+    private:
+#if USE_BLOCK_ALLOCATOR
+        char *mem, *ptr;
+        std::vector<char *> all_memory;
+        size_t block_size, allocated;
+        static constexpr size_t alignment = sizeof(default_class);
+#endif
+
+    public:
+        BlockedAllocator(size_t block_size) {
+#if USE_BLOCK_ALLOCATOR
+            block_size = round_up(block_size, alignment);
+            ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
+            allocated = 0;
+            this->block_size = block_size;
+#endif
+        }
+
+        ~BlockedAllocator() {
+#if USE_BLOCK_ALLOCATOR
+//            printf("%lu blocks allocated\n", all_memory.size() + 1);
+            aligned_free(mem);
+            for (void *p : all_memory)
+                aligned_free(p);
+#endif
+        }
+
+        template <typename T = default_class, typename ...Args>
+        T *construct(Args ...args) {
+#if USE_BLOCK_ALLOCATOR
+            if (allocated + sizeof(T) > block_size) {
+                all_memory.push_back(mem);
+                allocated = 0;
+                ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
+            }
+            static constexpr size_t size = round_up(sizeof(T), alignment);
+            T *ret = new(ptr) T(std::forward<Args>(args)...);
+            ptr += size;
+            allocated += size;
+#else
+            T *ret = new T(std::forward<Args>(args)...);
+#endif
+            return ret;
+        }
+    };
+
+    class JSON {
+    private:
+        char *input;
+        size_t input_len;
+        size_t *indices;
+
+        void __error(const char *expected, char encountered, size_t index);
+
+        JsonValue *_parseValue();
+        JsonValue *_parseObject();
+        JsonValue *_parseArray();
+
+        BlockedAllocator<JsonValue> allocator;
+
+    public:
+        JsonValue *document;
+
+        JSON(char *document, size_t size);
+        ~JSON();
+    };
+
+    char *parseStr(char *s, size_t *len = nullptr);
     bool parseTrue(const char *s);
     bool parseFalse(const char *s);
     void parseNull(const char *s);
 
-    void parse(char *input, size_t len, size_t *indices);
-
-    JsonValue parseJson(char *document, size_t size, clock_t& c);
-
-    char *parseStrAVX(char *s);
+    char *parseStrAVX(char *s, size_t *len = nullptr);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
-    
+
     inline __m256i convert_to_mask(u_int32_t input);
 
     void __print_m256i(__m256i raw);

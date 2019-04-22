@@ -1,22 +1,22 @@
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <immintrin.h>
 
+#include <algorithm>
+#include <bitset>
 #include <deque>
 #include <map>
+#include <sstream>
 #include <stack>
 #include <string>
+#include <variant>
 #include <vector>
-#include <sstream>
-#include <cmath>
-#include <bitset>
-#include <algorithm>
 
 #include "mercuryparser.h"
 
 #define STATIC_CMPEQ_MASK 0
 #define USE_PARSE_STR_AVX 1
-#define PARSE_STR_FULL_AVX 1
 
 namespace MercuryJson {
 
@@ -300,23 +300,7 @@ namespace MercuryJson {
      * number          = [ "-" ], ( "0" | digit-1-9, { digit } ), [ ".", { digit } ], [ ( "e" | "E" ), ( "+" | "-" ), { digit } ]
      */
 
-    static char *input;
-    static size_t __len;
-    static size_t *ptr;
-
-    void __error(const char *expected, char encountered, size_t index) {
-        std::stringstream stream;
-        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
-        stream << std::endl;
-        input[index + 20] = 0;
-        for (int i = index - 20; i < index + 20; ++i)
-            if (input[i] == 0) input[i] = ' ';
-        stream << "context: " << (input + index - 20) << std::endl;
-        stream << "         " << std::string(20, ' ') << "^";
-        throw std::runtime_error(stream.str());
-    }
-
-    void __error(const char *message, char *input) {
+    [[noreturn]] void __error(const std::string &message, char *input) {
         std::stringstream stream;
         stream << message << std::endl;
         input[20] = 0;
@@ -327,10 +311,10 @@ namespace MercuryJson {
         throw std::runtime_error(stream.str());
     }
 
-    inline JsonValue parseNumber(char *s) {
+    inline std::variant<double, long long int> parseNumber(char *s, bool *is_decimal) {
         long long int integer = 0LL;
         double decimal = 0.0;
-        bool negative = false, is_decimal = false;
+        bool negative = false, _is_decimal = false;
         if (*s == '-') {
             ++s;
             negative = true;
@@ -345,7 +329,7 @@ namespace MercuryJson {
         }
         if (negative) integer = -integer;
         if (*s == '.') {
-            is_decimal = true;
+            _is_decimal = true;
             decimal = integer;
             double multiplier = 0.1;
             while (*s >= '0' && *s <= '9') {
@@ -354,8 +338,8 @@ namespace MercuryJson {
             }
         }
         if (*s == 'e' || *s == 'E') {
-            if (!is_decimal) {
-                is_decimal = true;
+            if (!_is_decimal) {
+                _is_decimal = true;
                 decimal = integer;
             }
             ++s;
@@ -370,11 +354,12 @@ namespace MercuryJson {
             if (negative_exp) exponent = -exponent;
             decimal *= pow(10.0, exponent);
         }
-        if (is_decimal) return JsonValue(decimal);
-        else return JsonValue(integer);
+        *is_decimal = _is_decimal;
+        if (_is_decimal) return decimal;
+        else return integer;
     }
 
-    char *parseStr(char *s) {
+    char *parseStr(char *s, size_t *len) {
         bool escape = false;
         char *ptr = s + 1;
         for (char *end = s + 1; escape || *end != '"'; ++end) {
@@ -419,6 +404,7 @@ namespace MercuryJson {
             }
         }
         *ptr++ = 0;
+        if (len != nullptr) *len = ptr - (s + 1);
         return s + 1;
     }
 
@@ -446,22 +432,20 @@ namespace MercuryJson {
         return;
     }
 
-    JsonValue *get_last(std::deque<JsonValue> &values) {
-        return values.empty() ? nullptr : &values.back();
-    }
-
-    const JsonValue *get_last(const std::deque<JsonValue> &values) {
-        return values.empty() ? nullptr : &values.back();
+    void JSON::__error(const char *expected, char encountered, size_t index) {
+        std::stringstream stream;
+        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
+        MercuryJson::__error(stream.str(), input + index);
     }
 
 #define next_char() ({ \
-        idx = *ptr++; \
-        if (idx >= __len) throw std::runtime_error("text ended prematurely"); \
+        idx = *indices++; \
+        if (idx >= input_len) throw std::runtime_error("text ended prematurely"); \
         ch = input[idx]; \
     })
 
 #define peek_char() ({ \
-        idx = *ptr; \
+        idx = *indices; \
         ch = input[idx]; \
     })
 
@@ -473,78 +457,77 @@ namespace MercuryJson {
         __error(__expected, ch, idx); \
     })
 
-    JsonValue _parseValue();
-
-    JsonValue _parseObject() {
-        size_t idx;
+    JsonValue *JSON::_parseObject() {
+        size_t idx, len;
         char ch;
         peek_char();
-        auto *object = new JsonObject;
+        auto *object = allocator.construct<JsonObject>();
         if (ch == '}') {
             next_char();
-            return JsonValue(object);
+            return allocator.construct(object);
         }
         while (true) {
             expect('"');
 #if USE_PARSE_STR_AVX
-            std::string key = parseStrAVX(input + idx);
+            char *str = parseStrAVX(input + idx, &len);
 #else
-            std::string key = parseStr(input + idx);  // keys are probably short strings
+            char *str = parseStr(input + idx, &len);  // keys are probably short strings
 #endif
+            std::string_view key(str, len);
             next_char();
             next_char();
             expect(':');
-            JsonValue value = _parseValue();
-            (*object)[key] = value;
+            JsonValue *value = _parseValue();
+            object->emplace_back(key, value);
             next_char();
             if (ch == '}') break;
             expect(',');
             peek_char();
         }
-        return JsonValue(object);
+        return allocator.construct(object);
     }
 
-    JsonValue _parseArray() {
+    JsonValue *JSON::_parseArray() {
         size_t idx;
         char ch;
         peek_char();
-        auto *array = new JsonArray;
+        auto array = allocator.construct<JsonArray>();
         if (ch == ']') {
             next_char();
-            return JsonValue(array);
+            return allocator.construct(array);
         }
         while (true) {
-            JsonValue value = _parseValue();
+            JsonValue *value = _parseValue();
             array->push_back(value);
             next_char();
             if (ch == ']') break;
             expect(',');
         }
-        return JsonValue(array);
+        return allocator.construct(array);
     }
 
-    JsonValue _parseValue() {
+    JsonValue *JSON::_parseValue() {
         size_t idx;
         char ch;
         next_char();
-        JsonValue value;
+        JsonValue *value;
         switch (ch) {
             case '"':
 #if USE_PARSE_STR_AVX
-                value = JsonValue(parseStrAVX(input + idx));
+                value = allocator.construct(parseStrAVX(input + idx));
 #else
-                value = JsonValue(parseStr(input + idx));
+                value = allocator.construct(parseStr(input + idx));
 #endif
                 break;
             case 't':
-                value = JsonValue(parseTrue(input + idx));
+                value = allocator.construct(parseTrue(input + idx));
                 break;
             case 'f':
-                value = JsonValue(parseFalse(input + idx));
+                value = allocator.construct(parseFalse(input + idx));
                 break;
             case 'n':
                 parseNull(input + idx);
-                value = JsonValue();
+                value = allocator.construct();
                 break;
             case '0':
             case '1':
@@ -556,9 +539,13 @@ namespace MercuryJson {
             case '7':
             case '8':
             case '9':
-            case '-':
-                value = parseNumber(input + idx);
+            case '-': {
+                bool is_decimal;
+                auto ret = parseNumber(input + idx, &is_decimal);
+                if (is_decimal) value = allocator.construct(std::get<double>(ret));
+                else value = allocator.construct(std::get<long long int>(ret));
                 break;
+            }
             case '[':
                 value = _parseArray();
                 break;
@@ -571,11 +558,17 @@ namespace MercuryJson {
         return value;
     }
 
-    JsonValue parseJson(char *document, size_t size, clock_t& c) {
-        input = document;
-        __len = size;
+#undef next_char
+#undef peek_char
+#undef expect
+#undef error
+
+    JSON::JSON(char *document, size_t size) : allocator(size * sizeof(JsonValue)) {
+        this->input = document;
+        this->input_len = size;
+
         size_t base = 0;
-        size_t *indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+        auto *indices = new size_t[size];  // TODO: Make this a dynamic-sized array
 
         u_int64_t prev_escape_mask = 0;
         u_int64_t prev_quote_mask = 0;
@@ -583,25 +576,25 @@ namespace MercuryJson {
         for (size_t offset = 0; offset < size; offset += 64) {
             __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset));
             __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset + 32));
-            MercuryJson::Warp input(_input2, _input1);
-            u_int64_t escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
+            Warp input(_input2, _input1);
+            u_int64_t escape_mask = extract_escape_mask(input, &prev_escape_mask);
             u_int64_t quote_mask = 0;
-            u_int64_t literal_mask = MercuryJson::extract_literal_mask(
-                    input, escape_mask, &prev_quote_mask, &quote_mask);
+            u_int64_t literal_mask = extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
             u_int64_t structural_mask = 0, whitespace_mask = 0;
-            MercuryJson::extract_structural_whitespace_characters(
-                    input, literal_mask, &structural_mask, &whitespace_mask);
-            u_int64_t pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
+            extract_structural_whitespace_characters(input, literal_mask, &structural_mask, &whitespace_mask);
+            u_int64_t pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
-            MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
+            construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
         }
-        ptr = indices;
-        c = clock();
-        auto value = _parseValue();
+
+        this->indices = indices;
+        this->document = _parseValue();
         delete[] indices;
-        return value;
     }
 
+    JSON::~JSON() {
+
+    }
 
 //    void parse(char *input, size_t len, size_t *indices) {
 //        std::deque<JsonValue> values(MAX_DEPTH);
@@ -758,7 +751,7 @@ namespace MercuryJson {
 //        }
 //    }
 
-    char *parseStrAVX(char *s) {
+    char *parseStrAVX(char *s, size_t *len) {
         ++s;  // skip the " character
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
         char *dest = s, *base = s;
@@ -776,6 +769,7 @@ namespace MercuryJson {
                     if (offset >= ending_offset) {
                         memmove(dest, s + last_offset, ending_offset - last_offset);
                         dest[ending_offset - last_offset] = '\0';
+                        if (len != nullptr) *len = (dest - base) + (ending_offset - last_offset);
                         break;
                     }
                     length = offset - last_offset;

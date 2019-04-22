@@ -8,8 +8,13 @@ static const size_t ALIGNMENT_SIZE = 64;
 
 char *read_file(const char *filename, size_t *size);
 
+inline constexpr size_t round_up(size_t size, size_t alignment) {
+    return (size + alignment - 1) / alignment * alignment;
+}
+
 static inline void *aligned_malloc(size_t alignment, size_t size) {
     void *p;
+    size = round_up(size, alignment);
     if (posix_memalign(&p, alignment, size) != 0) { return nullptr; }
     return p;
 }
