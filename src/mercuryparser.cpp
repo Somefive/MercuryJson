@@ -571,10 +571,9 @@ namespace MercuryJson {
         return value;
     }
 
-    JsonValue parseJson(char *document, size_t size) {
+    JsonValue parseJson(char *document, size_t size, clock_t& c) {
         input = document;
         __len = size;
-
         size_t base = 0;
         size_t *indices = new size_t[size];  // TODO: Make this a dynamic-sized array
 
@@ -596,11 +595,10 @@ namespace MercuryJson {
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
             MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
         }
-
         ptr = indices;
+        c = clock();
         auto value = _parseValue();
         delete[] indices;
-
         return value;
     }
 

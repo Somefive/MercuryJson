@@ -98,7 +98,7 @@ namespace MercuryJson {
 
     void parse(char *input, size_t len, size_t *indices);
 
-    JsonValue parseJson(char *document, size_t size);
+    JsonValue parseJson(char *document, size_t size, clock_t& c);
 
     char *parseStrAVX(char *s);
     __m256i translate_escape_characters(__m256i input);
@@ -110,6 +110,7 @@ namespace MercuryJson {
     void __printChar_m256i(__m256i raw);
     void __print(Warp &raw);
     void __printChar(Warp &raw);
+
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H
