@@ -163,11 +163,11 @@ void print_json(JsonValue *value, int indent) {
         case JsonValue::TYPE_OBJ:
             std::cout << "{" << std::endl;
             cnt = 0;
-            for (const auto &it : *value->object) {
+            for (auto *elem = value->object; elem; elem = elem->next) {
                 print_indent(indent + 2);
-                std::cout << "\"" << it.first << "\": ";
-                print_json(it.second, indent + 2);
-                if (cnt + 1 < value->object->size())
+                std::cout << "\"" << elem->key << "\": ";
+                print_json(elem->value, indent + 2);
+                if (elem->next != nullptr)
                     std::cout << ",";
                 std::cout << std::endl;
                 ++cnt;
@@ -178,10 +178,10 @@ void print_json(JsonValue *value, int indent) {
         case JsonValue::TYPE_ARR:
             std::cout << "[" << std::endl;
             cnt = 0;
-            for (const auto &it : *value->array) {
+            for (auto *elem = value->array; elem; elem = elem->next) {
                 print_indent(indent + 2);
-                print_json(it, indent + 2);
-                if (cnt + 1 < value->array->size())
+                print_json(elem->value, indent + 2);
+                if (elem->next != nullptr)
                     std::cout << ",";
                 std::cout << std::endl;
                 ++cnt;

@@ -439,13 +439,13 @@ namespace MercuryJson {
     }
 
 #define next_char() ({ \
-        idx = *indices++; \
+        idx = *idx_ptr++; \
         if (idx >= input_len) throw std::runtime_error("text ended prematurely"); \
         ch = input[idx]; \
     })
 
 #define peek_char() ({ \
-        idx = *indices; \
+        idx = *idx_ptr; \
         ch = input[idx]; \
     })
 
@@ -461,28 +461,40 @@ namespace MercuryJson {
         size_t idx, len;
         char ch;
         peek_char();
-        auto *object = allocator.construct<JsonObject>();
         if (ch == '}') {
             next_char();
-            return allocator.construct(object);
+            return allocator.construct(static_cast<JsonObject *>(nullptr));
         }
-        while (true) {
-            expect('"');
+
+        expect('"');
 #if USE_PARSE_STR_AVX
-            char *str = parseStrAVX(input + idx, &len);
+        char *str = parseStrAVX(input + idx, &len);
 #else
-            char *str = parseStr(input + idx, &len);  // keys are probably short strings
+        char *str = parseStr(input + idx, &len);  // keys are probably short strings
 #endif
-            std::string_view key(str, len);
-            next_char();
-            next_char();
-            expect(':');
-            JsonValue *value = _parseValue();
-            object->emplace_back(key, value);
+//            std::string_view key(str, len);
+        next_char();
+        next_char();
+        expect(':');
+        JsonValue *value = _parseValue();
+        auto *object = allocator.construct<JsonObject>(str, value), *ptr = object;
+        while (true) {
             next_char();
             if (ch == '}') break;
             expect(',');
             peek_char();
+            expect('"');
+#if USE_PARSE_STR_AVX
+            str = parseStrAVX(input + idx, &len);
+#else
+            str = parseStr(input + idx, &len);  // keys are probably short strings
+#endif
+//            std::string_view key(str, len);
+            next_char();
+            next_char();
+            expect(':');
+            value = _parseValue();
+            ptr = ptr->next = allocator.construct<JsonObject>(str, value);
         }
         return allocator.construct(object);
     }
@@ -491,17 +503,18 @@ namespace MercuryJson {
         size_t idx;
         char ch;
         peek_char();
-        auto array = allocator.construct<JsonArray>();
         if (ch == ']') {
             next_char();
-            return allocator.construct(array);
+            return allocator.construct(static_cast<JsonArray *>(nullptr));
         }
+        JsonValue *value = _parseValue();
+        auto *array = allocator.construct<JsonArray>(value), *ptr = array;
         while (true) {
-            JsonValue *value = _parseValue();
-            array->push_back(value);
             next_char();
             if (ch == ']') break;
             expect(',');
+            value = _parseValue();
+            ptr = ptr->next = allocator.construct<JsonArray>(value);
         }
         return allocator.construct(array);
     }
@@ -563,37 +576,45 @@ namespace MercuryJson {
 #undef expect
 #undef error
 
-    JSON::JSON(char *document, size_t size) : allocator(size * sizeof(JsonValue)) {
+    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size * sizeof(JsonValue)) {
         this->input = document;
         this->input_len = size;
 
-        size_t base = 0;
-        auto *indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+        this->idx_ptr = this->indices = new size_t[size];  // TODO: Make this a dynamic-sized array
 
+        if (!manual_construct) {
+            exec_stage1();
+            exec_stage2();
+        }
+    }
+
+    void JSON::exec_stage1() {
+        size_t base = 0;
         u_int64_t prev_escape_mask = 0;
         u_int64_t prev_quote_mask = 0;
         u_int64_t prev_pseudo_mask = 0;
-        for (size_t offset = 0; offset < size; offset += 64) {
-            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset));
-            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(document + offset + 32));
-            Warp input(_input2, _input1);
-            u_int64_t escape_mask = extract_escape_mask(input, &prev_escape_mask);
+        for (size_t offset = 0; offset < this->input_len; offset += 64) {
+            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(this->input + offset));
+            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(this->input + offset + 32));
+            Warp warp(_input2, _input1);
+            u_int64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
             u_int64_t quote_mask = 0;
-            u_int64_t literal_mask = extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
+            u_int64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
             u_int64_t structural_mask = 0, whitespace_mask = 0;
-            extract_structural_whitespace_characters(input, literal_mask, &structural_mask, &whitespace_mask);
+            extract_structural_whitespace_characters(warp, literal_mask, &structural_mask, &whitespace_mask);
             u_int64_t pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
-            construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
+            construct_structural_character_pointers(pseudo_mask, offset, this->indices, &base);
         }
+    }
 
-        this->indices = indices;
+    void JSON::exec_stage2() {
         this->document = _parseValue();
-        delete[] indices;
+        delete[] this->indices;
+        this->indices = nullptr;
     }
 
     JSON::~JSON() {
-
     }
 
 //    void parse(char *input, size_t len, size_t *indices) {

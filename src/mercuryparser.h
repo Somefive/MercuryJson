@@ -57,9 +57,26 @@ namespace MercuryJson {
 
     /* Stage 2 */
     struct JsonValue;
+
 //    typedef std::map<std::string_view, JsonValue> JsonObject;
-    typedef std::vector<std::pair<std::string_view, JsonValue *>> JsonObject;
-    typedef std::vector<JsonValue *> JsonArray;
+//    typedef std::vector<std::pair<std::string_view, JsonValue *>> JsonObject;
+//    typedef std::vector<JsonValue *> JsonArray;
+    struct JsonObject {
+        char *key;
+        JsonValue *value;
+        JsonObject *next;
+
+        explicit JsonObject(char *key, JsonValue *value, JsonObject *next = nullptr)
+                : key(key), value(value), next(next) {}
+    };
+
+    struct JsonArray {
+        JsonValue *value;
+        JsonArray *next;
+
+        explicit JsonArray(JsonValue *value, JsonArray *next = nullptr)
+                : value(value), next(next) {}
+    };
 
     struct JsonValue {
         enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC } type;
@@ -109,7 +126,8 @@ namespace MercuryJson {
 
         ~BlockedAllocator() {
 #if USE_BLOCK_ALLOCATOR
-//            printf("%lu blocks allocated\n", all_memory.size() + 1);
+            if (all_memory.size() > 0)
+                printf("%lu blocks allocated\n", all_memory.size() + 1);
             aligned_free(mem);
             for (void *p : all_memory)
                 aligned_free(p);
@@ -139,7 +157,7 @@ namespace MercuryJson {
     private:
         char *input;
         size_t input_len;
-        size_t *indices;
+        size_t *indices, *idx_ptr;
 
         void __error(const char *expected, char encountered, size_t index);
 
@@ -152,7 +170,11 @@ namespace MercuryJson {
     public:
         JsonValue *document;
 
-        JSON(char *document, size_t size);
+        JSON(char *document, size_t size, bool manual_construct = false);
+
+        void exec_stage1();
+        void exec_stage2();
+
         ~JSON();
     };
 
