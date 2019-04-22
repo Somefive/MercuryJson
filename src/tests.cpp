@@ -133,7 +133,7 @@ void test_extract_warp_mask() {
 
 void test_tfn_value() {
     try {
-        MercuryJson::parseNull("null      ");
+        MercuryJson::parse_null("null      ");
     } catch (const std::runtime_error &err) {
         printf("error: %s\n", err.what());
     }
@@ -210,7 +210,7 @@ void test_parse(bool print) {
 void test_parseStr() {
     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;")";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parseStr(text);
+    char *p = parse_str_naive(text);
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
@@ -220,7 +220,7 @@ void test_parseStrAVX() {
                      R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
     // char text[512] = "\"fLA[/wsxV\\r&Io#`G\\t5XBZM|;/|HvoxPWE\\n0Rf%K:\\tOcaRD)DWag/0aJ<\\\\o3Lia!,P2^84(O)T4g'UpK*O0:\\\\\\raxOR\"!";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parseStrAVX(text);
+    char *p = parse_str_avx(text);
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
@@ -269,9 +269,9 @@ void test_parseString() {
         printf("test[%d]: ", i);
         fflush(stdout);
         clock_t t0 = clock();
-        char *p1 = parseStr(text);
+        char *p1 = parse_str_naive(text);
         clock_t t1 = clock();
-        char *p2 = parseStrAVX(text2);
+        char *p2 = parse_str_avx(text2);
         clock_t t2 = clock();
         t_baseline += (t1 - t0);
         t_avx += (t2 - t1);

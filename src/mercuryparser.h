@@ -154,11 +154,11 @@ namespace MercuryJson {
         size_t input_len;
         size_t *indices, *idx_ptr;
 
-        void __error(const char *expected, char encountered, size_t index);
+        void _error(const char *expected, char encountered, size_t index);
 
-        JsonValue *_parseValue();
-        JsonValue *_parseObject();
-        JsonValue *_parseArray();
+        JsonValue *_parse_value();
+        JsonValue *_parse_object();
+        JsonValue *_parse_array();
 
         BlockedAllocator<JsonValue> allocator;
 
@@ -173,12 +173,12 @@ namespace MercuryJson {
         ~JSON();
     };
 
-    char *parseStr(char *s, size_t *len = nullptr);
-    bool parseTrue(const char *s);
-    bool parseFalse(const char *s);
-    void parseNull(const char *s);
+    char *parse_str_naive(char *s, size_t *len = nullptr);
+    bool parse_true(const char *s);
+    bool parse_false(const char *s);
+    void parse_null(const char *s);
 
-    char *parseStrAVX(char *s, size_t *len = nullptr);
+    char *parse_str_avx(char *s, size_t *len = nullptr);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
 
