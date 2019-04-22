@@ -17,6 +17,7 @@
 
 #define STATIC_CMPEQ_MASK 0
 #define USE_PARSE_STR_AVX 1
+#define PARSE_STR_FULLY_AXV 0
 
 namespace MercuryJson {
 
@@ -576,7 +577,7 @@ namespace MercuryJson {
 #undef expect
 #undef error
 
-    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size * sizeof(JsonValue)) {
+    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size) {
         this->input = document;
         this->input_len = size;
 
@@ -803,6 +804,7 @@ namespace MercuryJson {
                 }
                 break;
             } else {
+#if PARSE_STR_FULLY_AXV
                 /* fully-AVX version */
                 __m256i lo_mask = convert_to_mask(escape_mask);
                 __m256i hi_mask = convert_to_mask(escape_mask >> 32U);
@@ -818,6 +820,21 @@ namespace MercuryJson {
                 _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
                 dest += 64 - _mm_popcnt_u64(escaper_mask);
                 s += 64;
+#else
+                size_t last_offset = 0, length;
+                while (true) {
+                    size_t offset = _tzcnt_u64(escape_mask);
+                    length = offset - last_offset;
+                    char escaper = s[offset];
+                    memmove(dest, s+last_offset, length);
+                    dest += length;
+                    if (offset >= ending_offset) break;
+                    *(dest-1) = escape_map[escaper];
+                    last_offset = offset + 1;
+                    escape_mask = _blsr_u64(escape_mask);
+                }
+                s += 64;
+#endif
             }
         }
         return base;

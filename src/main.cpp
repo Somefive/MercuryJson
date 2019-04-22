@@ -1,10 +1,12 @@
-#include <cstdio>
-#include <immintrin.h>
 #include <chrono>
 
+#include <cstdio>
+#include <cstring>
+#include <immintrin.h>
+
+#include "mercuryparser.h"
 #include "tests.h"
 #include "utils.h"
-#include "mercuryparser.h"
 
 const int REPEAT = 1000;
 
