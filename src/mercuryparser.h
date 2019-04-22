@@ -75,6 +75,20 @@ namespace MercuryJson {
         explicit JsonValue(long long int value) : type(TYPE_INT), integer(value) {}
 
         explicit JsonValue(double value) : type(TYPE_DEC), decimal(value) {}
+
+        // ~JsonValue() {
+        //     switch (type)
+        //     {
+        //     case TYPE_OBJ:
+        //         delete object;
+        //         break;
+        //     case TYPE_ARR:
+        //         delete array;
+        //         break;
+        //     default:
+        //         break;
+        //     }
+        // }
     };
 
     char *parseStr(char *s);

@@ -1,0 +1,88 @@
+==5383== Memcheck, a memory error detector
+==5383== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==5383== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==5383== Command: ./main ../simdjson/jsonexamples/mesh.json --leak-check=full --leak-resolution
+==5383== 
+==5383== error calling PR_SET_PTRACER, vgdb might block
+==5383== Conditional jump or move depends on uninitialised value(s)
+==5383==    at 0x10E2EA: construct_structural_character_pointers (mercuryparser.cpp:127)
+==5383==    by 0x10E2EA: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:597)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Conditional jump or move depends on uninitialised value(s)
+==5383==    at 0x10E3FC: construct_structural_character_pointers (mercuryparser.cpp:127)
+==5383==    by 0x10E3FC: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:597)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Conditional jump or move depends on uninitialised value(s)
+==5383==    at 0x10D4F5: _parseValue (mercuryparser.cpp:529)
+==5383==    by 0x10D4F5: MercuryJson::_parseArray() (mercuryparser.cpp:517)
+==5383==    by 0x10DD34: MercuryJson::_parseValue() (mercuryparser.cpp:563)
+==5383==    by 0x10CD77: MercuryJson::_parseObject() (mercuryparser.cpp:497)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Use of uninitialised value of size 8
+==5383==    at 0x10D433: _parseValue (mercuryparser.cpp:529)
+==5383==    by 0x10D433: MercuryJson::_parseArray() (mercuryparser.cpp:517)
+==5383==    by 0x10DD34: MercuryJson::_parseValue() (mercuryparser.cpp:563)
+==5383==    by 0x10CD77: MercuryJson::_parseObject() (mercuryparser.cpp:497)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Use of uninitialised value of size 8
+==5383==    at 0x10D67A: parseNumber (mercuryparser.cpp:343)
+==5383==    by 0x10D67A: _parseValue (mercuryparser.cpp:560)
+==5383==    by 0x10D67A: MercuryJson::_parseArray() (mercuryparser.cpp:517)
+==5383==    by 0x10DD34: MercuryJson::_parseValue() (mercuryparser.cpp:563)
+==5383==    by 0x10CD77: MercuryJson::_parseObject() (mercuryparser.cpp:497)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Conditional jump or move depends on uninitialised value(s)
+==5383==    at 0x10D4C0: MercuryJson::_parseArray() (mercuryparser.cpp:519)
+==5383==    by 0x10DD34: MercuryJson::_parseValue() (mercuryparser.cpp:563)
+==5383==    by 0x10CD77: MercuryJson::_parseObject() (mercuryparser.cpp:497)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Use of uninitialised value of size 8
+==5383==    at 0x10D4CD: MercuryJson::_parseArray() (mercuryparser.cpp:519)
+==5383==    by 0x10DD34: MercuryJson::_parseValue() (mercuryparser.cpp:563)
+==5383==    by 0x10CD77: MercuryJson::_parseObject() (mercuryparser.cpp:497)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Conditional jump or move depends on uninitialised value(s)
+==5383==    at 0x10CF41: MercuryJson::_parseObject() (mercuryparser.cpp:499)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== Use of uninitialised value of size 8
+==5383==    at 0x10CF4E: MercuryJson::_parseObject() (mercuryparser.cpp:499)
+==5383==    by 0x10DC2C: MercuryJson::_parseValue() (mercuryparser.cpp:566)
+==5383==    by 0x10E42B: MercuryJson::parseJson(char*, unsigned long) (mercuryparser.cpp:601)
+==5383==    by 0x10B043: main (main.cpp:19)
+==5383== 
+==5383== 
+==5383== HEAP SUMMARY:
+==5383==     in use at exit: 35,191,680 bytes in 130,110 blocks
+==5383==   total heap usage: 130,512 allocs, 402 frees, 100,838,880 bytes allocated
+==5383== 
+==5383== LEAK SUMMARY:
+==5383==    definitely lost: 480 bytes in 10 blocks
+==5383==    indirectly lost: 35,185,792 bytes in 130,086 blocks
+==5383==      possibly lost: 5,408 bytes in 14 blocks
+==5383==    still reachable: 0 bytes in 0 blocks
+==5383==         suppressed: 0 bytes in 0 blocks
+==5383== Rerun with --leak-check=full to see details of leaked memory
+==5383== 
+==5383== Use --track-origins=yes to see where uninitialised values come from
+==5383== For lists of detected and suppressed errors, rerun with: -s
+==5383== ERROR SUMMARY: 160 errors from 9 contexts (suppressed: 0 from 0)
