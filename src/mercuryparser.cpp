@@ -321,11 +321,11 @@ namespace MercuryJson {
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
         }
-        if (negative) integer = -integer;
         if (*s == '.') {
             _is_decimal = true;
             decimal = integer;
             double multiplier = 0.1;
+            ++s;
             while (*s >= '0' && *s <= '9') {
                 decimal += (*s++ - '0') * multiplier;
                 multiplier /= 10.0;
@@ -349,6 +349,9 @@ namespace MercuryJson {
             decimal *= pow(10.0, exponent);
         }
         *is_decimal = _is_decimal;
+        if (negative) 
+            if (_is_decimal) decimal = -decimal;
+            else integer = -integer;
         if (_is_decimal) return decimal;
         else return integer;
     }

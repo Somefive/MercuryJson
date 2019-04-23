@@ -121,8 +121,8 @@ namespace MercuryJson {
 
         ~BlockedAllocator() {
 #if USE_BLOCK_ALLOCATOR
-            if (all_memory.size() > 0)
-                printf("%lu blocks allocated\n", all_memory.size() + 1);
+            // if (all_memory.size() > 0)
+            //     printf("%lu blocks allocated\n", all_memory.size() + 1);
             aligned_free(mem);
             for (void *p : all_memory)
                 aligned_free(p);
