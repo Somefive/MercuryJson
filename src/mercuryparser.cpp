@@ -15,9 +15,15 @@
 
 #include "mercuryparser.h"
 
+#ifndef STATIC_CMPEQ_MASK
 #define STATIC_CMPEQ_MASK 0
+#endif
+#ifndef PARSE_STR_MODE
 #define PARSE_STR_MODE 1  // 0 for naive, 1 for avx, 2 for per_bit
+#endif
+#ifndef PARSE_STR_FULLY_AXV
 #define PARSE_STR_FULLY_AXV 0
+#endif
 
 namespace MercuryJson {
 
@@ -831,7 +837,6 @@ namespace MercuryJson {
                 uint8_t escape_char = src[backslash_offset + 1];
                 if (escape_char == 'u') {
                     // TODO: deal with unicode characters
-                    char unicode[6];  // don't escape as of now
                     memcpy(dest + backslash_offset, src + backslash_offset, 6);
                     src += backslash_offset + 6;
                     dest += backslash_offset + 6;
