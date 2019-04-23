@@ -195,13 +195,14 @@ namespace MercuryJson {
         ~JSON();
     };
 
-    char *parse_str_naive(char *s, size_t *len = nullptr);
-    bool parse_true(const char *s);
-    bool parse_false(const char *s);
-    void parse_null(const char *s);
+    bool parse_true(const char *s, size_t offset = 0U);
+    bool parse_false(const char *s, size_t offset = 0U);
+    void parse_null(const char *s, size_t offset = 0U);
+    std::variant<double, long long int> parseNumber(const char *s, bool *is_decimal, size_t offset = 0U);
 
-    void parse_str_per_bit(char *src, char *dest, size_t *len = nullptr);
-    char *parse_str_avx(char *s, size_t *len = nullptr);
+    void parse_str_per_bit(const char *src, char *dest, size_t *len = nullptr, size_t offset = 0U);
+    char *parse_str_naive(char *src, size_t *len = nullptr, size_t offset = 0U);
+    char *parse_str_avx(char *src, size_t *len = nullptr, size_t offset = 0U);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
 

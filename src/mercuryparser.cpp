@@ -294,18 +294,51 @@ namespace MercuryJson {
      * number          = [ "-" ], ( "0" | digit-1-9, { digit } ), [ ".", { digit } ], [ ( "e" | "E" ), ( "+" | "-" ), { digit } ]
      */
 
-    [[noreturn]] void __error(const std::string &message, char *input) {
+    inline void __error_maybe_escape(char *context, size_t *length, char ch) {
+        if (ch == '\t' || ch == '\n' || ch == '\b' || ch == '\0') {
+            context[*length++] = '\\';
+            context[*length++] = '[';
+            switch (ch) {
+                case '\t':
+                    context[*length++] = 't';
+                    break;
+                case '\n':
+                    context[*length++] = 'n';
+                    break;
+                case '\b':
+                    context[*length++] = 'b';
+                    break;
+                case '\0':
+                    context[*length++] = '0';
+                    break;
+            }
+            context[*length++] = ']';
+        } else {
+            context[*length++] = ch;
+        }
+    }
+
+    [[noreturn]] void __error(const std::string &message, const char *input, size_t offset) {
+        static const size_t context_len = 20;
+        char *context = new char[(2 * context_len + 1) * 2];  // add space for escaped chars
+        size_t length = 0U;
+        for (size_t i = offset > context_len ? offset - context_len : 0U; i < offset; ++i)
+            __error_maybe_escape(context, &length, input[i]);
+        size_t left = length;
+        for (size_t i = offset; i < offset + context_len; ++i) {
+            if (input[i] == '\0') break;
+            __error_maybe_escape(context, &length, input[i]);
+        }
         std::stringstream stream;
         stream << message << std::endl;
-        input[20] = 0;
-        for (int i = -20; i < 20; ++i)
-            if (input[i] == 0) input[i] = ' ';
-        stream << "context: " << (input - 20) << std::endl;
-        stream << "         " << std::string(20, ' ') << "^";
+        stream << "context: " << context << std::endl;
+        delete[] context;
+        stream << "         " << std::string(left, ' ') << "^";
         throw std::runtime_error(stream.str());
     }
 
-    inline std::variant<double, long long int> parseNumber(char *s, bool *is_decimal) {
+    inline std::variant<double, long long int> parseNumber(const char *input, bool *is_decimal, size_t offset) {
+        const char *s = input + offset;
         long long int integer = 0LL;
         double decimal = 0.0;
         bool negative = false, _is_decimal = false;
@@ -316,7 +349,7 @@ namespace MercuryJson {
         if (*s == '0') {
             ++s;
             if (*s >= '0' && *s <= '9')
-                __error("numbers cannot have leading zeros", s);
+                __error("numbers cannot have leading zeros", input, offset);
         } else {
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
@@ -349,17 +382,19 @@ namespace MercuryJson {
             decimal *= pow(10.0, exponent);
         }
         *is_decimal = _is_decimal;
-        if (negative) 
-            if (_is_decimal) decimal = -decimal;
-            else integer = -integer;
-        if (_is_decimal) return decimal;
-        else return integer;
+        if (negative) {
+            if (_is_decimal) return -decimal;
+            else return -integer;
+        } else {
+            if (_is_decimal) return decimal;
+            else return integer;
+        }
     }
 
-    char *parse_str_naive(char *s, size_t *len) {
+    char *parse_str_naive(char *s, size_t *len, size_t offset) {
         bool escape = false;
-        char *ptr = s;
-        for (char *end = s; escape || *end != '"'; ++end) {
+        char *ptr = s + offset;
+        for (char *end = s + offset; escape || *end != '"'; ++end) {
             if (escape) {
                 switch (*end) {
                     case '"':
@@ -392,7 +427,7 @@ namespace MercuryJson {
                         *ptr++ = 'u';
                         break;
                     default:
-                        __error("invalid escape sequence", end);
+                        __error("invalid escape sequence", s, end - s);
                 }
                 escape = false;
             } else {
@@ -405,33 +440,34 @@ namespace MercuryJson {
         return s;
     }
 
-    bool parse_true(const char *s) {
-        u_int64_t local = 0, mask = 0x0000000065757274;
-        std::memcpy(&local, s, 4);
-        if (mask != local || !structural_or_whitespace[s[4]])
-            throw std::runtime_error("invalid true value");
+    bool parse_true(const char *s, size_t offset) {
+        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
+        u_int32_t target = 0x65757274;
+        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+            __error("invalid true value", s, offset);
         return true;
     }
 
-    bool parse_false(const char *s) {
-        u_int64_t local = 0, mask = 0x00000065736c6166;
-        std::memcpy(&local, s, 5);
-        if (mask != local || !structural_or_whitespace[s[5]])
-            throw std::runtime_error("invalid false value");
+    bool parse_false(const char *s, size_t offset) {
+        const auto *literal = reinterpret_cast<const u_int64_t *>(s + offset);
+        u_int64_t target = 0x00000065736c6166;
+        u_int64_t mask = 0x000000ffffffffff;
+        if (target != (*literal & mask) || !structural_or_whitespace[s[offset + 5]])
+            __error("invalid false value", s, offset);
         return false;
     }
 
-    void parse_null(const char *s) {
-        u_int64_t local = 0, mask = 0x000000006c6c756e;
-        std::memcpy(&local, s, 4);
-        if (mask != local || !structural_or_whitespace[s[4]])
-            throw std::runtime_error("invalid null value");
+    void parse_null(const char *s, size_t offset) {
+        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
+        u_int32_t target = 0x6c6c756e;
+        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+            __error("invalid null value", s, offset);
     }
 
     void JSON::_error(const char *expected, char encountered, size_t index) {
         std::stringstream stream;
         stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
-        MercuryJson::__error(stream.str(), input + index);
+        MercuryJson::__error(stream.str(), input, index);
     }
 
 #define next_char() ({ \
@@ -528,13 +564,13 @@ namespace MercuryJson {
                 value = allocator.construct(_parse_str(idx));
                 break;
             case 't':
-                value = allocator.construct(parse_true(input + idx));
+                value = allocator.construct(parse_true(input, idx));
                 break;
             case 'f':
-                value = allocator.construct(parse_false(input + idx));
+                value = allocator.construct(parse_false(input, idx));
                 break;
             case 'n':
-                parse_null(input + idx);
+                parse_null(input, idx);
                 value = allocator.construct();
                 break;
             case '0':
@@ -549,7 +585,7 @@ namespace MercuryJson {
             case '9':
             case '-': {
                 bool is_decimal;
-                auto ret = parseNumber(input + idx, &is_decimal);
+                auto ret = parseNumber(input, &is_decimal, idx);
                 if (is_decimal) value = allocator.construct(std::get<double>(ret));
                 else value = allocator.construct(std::get<long long int>(ret));
                 break;
@@ -580,6 +616,7 @@ namespace MercuryJson {
     ) {
         this->input = document;
         this->input_len = size;
+        this->document = nullptr;
 
         this->idx_ptr = this->indices = new size_t[size];  // TODO: Make this a dynamic-sized array
 
@@ -615,8 +652,7 @@ namespace MercuryJson {
         this->indices = nullptr;
     }
 
-    JSON::~JSON() {
-    }
+    JSON::~JSON() = default;
 
 //    void parse(char *input, size_t len, size_t *indices) {
 //        std::deque<JsonValue> values(MAX_DEPTH);
@@ -773,7 +809,9 @@ namespace MercuryJson {
 //        }
 //    }
 
-    void parse_str_per_bit(char *src, char *dest, size_t *len) {
+    void parse_str_per_bit(const char *src, char *dest, size_t *len, size_t offset) {
+        const char *_src = src;
+        src += offset;
         char *base = dest;
         while (true) {
             __m256i input = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
@@ -800,7 +838,7 @@ namespace MercuryJson {
                 } else {
                     u_int8_t escaped = escape_map[escape_char];
                     if (escaped == 0U)
-                        __error("invalid escape character '" + std::string(1, escape_char) + "'", src);
+                        __error("invalid escape character '" + std::string(1, escape_char) + "'", _src, offset);
                     dest[backslash_offset] = escape_map[escape_char];
                     src += backslash_offset + 2;
                     dest += backslash_offset + 1;
@@ -813,11 +851,13 @@ namespace MercuryJson {
         }
     }
 
-    char *parse_str_avx(char *s, size_t *len) {
+    char *parse_str_avx(char *src, size_t *len, size_t offset) {
+        char *_src = src;
+        src += offset;
+        char *dest = src, *base = src;
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
-        char *dest = s, *base = s;
         while (true) {
-            Warp input(s);
+            Warp input(src);
             u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
             u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
@@ -826,19 +866,19 @@ namespace MercuryJson {
             if (ending_offset < 64) {
                 size_t last_offset = 0, length;
                 while (true) {
-                    size_t offset = _tzcnt_u64(escape_mask);
-                    if (offset >= ending_offset) {
-                        memmove(dest, s + last_offset, ending_offset - last_offset);
+                    size_t this_offset = _tzcnt_u64(escape_mask);
+                    if (this_offset >= ending_offset) {
+                        memmove(dest, src + last_offset, ending_offset - last_offset);
                         dest[ending_offset - last_offset] = '\0';
                         if (len != nullptr) *len = (dest - base) + (ending_offset - last_offset);
                         break;
                     }
-                    length = offset - last_offset;
-                    char escaper = s[offset];
-                    memmove(dest, s + last_offset, length);
+                    length = this_offset - last_offset;
+                    char escaper = src[this_offset];
+                    memmove(dest, src + last_offset, length);
                     dest += length;
                     *(dest - 1) = escape_map[escaper];
-                    last_offset = offset + 1;
+                    last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
                 break;
@@ -858,21 +898,21 @@ namespace MercuryJson {
                 _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
                 _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest + 32), input.hi);
                 dest += 64 - _mm_popcnt_u64(escaper_mask);
-                s += 64;
+                src += 64;
 #else
                 size_t last_offset = 0, length;
                 while (true) {
-                    size_t offset = _tzcnt_u64(escape_mask);
-                    length = offset - last_offset;
-                    char escaper = s[offset];
-                    memmove(dest, s + last_offset, length);
+                    size_t this_offset = _tzcnt_u64(escape_mask);
+                    length = this_offset - last_offset;
+                    char escaper = src[this_offset];
+                    memmove(dest, src + last_offset, length);
                     dest += length;
-                    if (offset >= ending_offset) break;
+                    if (this_offset >= ending_offset) break;
                     *(dest - 1) = escape_map[escaper];
-                    last_offset = offset + 1;
+                    last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
-                s += 64;
+                src += 64;
 #endif
             }
         }
@@ -906,11 +946,16 @@ namespace MercuryJson {
         return _pext_u64(((hi << 32U) | lo), escaper_mask);
     }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "portability-simd-intrinsics"
+
     inline __m256i __expand(u_int32_t input) {
         /* 0x00 for 1-bits, 0x01 for 0-bits */
         const __m256i ones = _mm256_set1_epi8(1);
         return _mm256_add_epi8(convert_to_mask(input), ones);
     }
+
+#pragma clang diagnostic pop
 
     inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
                                  u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {

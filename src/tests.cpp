@@ -132,11 +132,49 @@ void test_extract_warp_mask() {
 }
 
 void test_tfn_value() {
-    try {
-        MercuryJson::parse_null("null      ");
-    } catch (const std::runtime_error &err) {
-        printf("error: %s\n", err.what());
+    bool ok = true;
+    auto good_literals = {"null      ", "null\0", "true,      ", "true}      ", "false]      ", "false\n"};
+    for (auto &str : good_literals) {
+        try {
+            switch (str[0]) {
+                case 'n':
+                    MercuryJson::parse_null(str);
+                    break;
+                case 't':
+                    MercuryJson::parse_true(str);
+                    break;
+                case 'f':
+                    MercuryJson::parse_false(str);
+                    break;
+                default:
+                    break;
+            }
+        } catch (const std::runtime_error &err) {
+            printf("test_tfn_value: error parsing good literal \"%s\", : %s\n", str, err.what());
+            ok = false;
+        }
     }
+    auto bad_literals = {"nulll", "true\"", "fals ", "trueu", "nah", "null\\"};
+    for (auto &str : bad_literals) {
+        try {
+            switch (str[0]) {
+                case 'n':
+                    MercuryJson::parse_null(str);
+                    break;
+                case 't':
+                    MercuryJson::parse_true(str);
+                    break;
+                case 'f':
+                    MercuryJson::parse_false(str);
+                    break;
+                default:
+                    break;
+            }
+            printf("test_tfn_value: no error parsing bad literal \"%s\"\n", str);
+            ok = false;
+        } catch (const std::runtime_error &err) {}
+    }
+    if (ok) printf("test_tfn_value: passed\n");
 }
 
 using namespace MercuryJson;
