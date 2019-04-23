@@ -18,11 +18,17 @@
 #ifndef STATIC_CMPEQ_MASK
 #define STATIC_CMPEQ_MASK 0
 #endif
+
 #ifndef PARSE_STR_MODE
 #define PARSE_STR_MODE 1  // 0 for naive, 1 for avx, 2 for per_bit
 #endif
+
 #ifndef PARSE_STR_FULLY_AXV
 #define PARSE_STR_FULLY_AXV 0
+#endif
+
+#ifndef PARSE_NUMBER_AVX
+#define PARSE_NUMBER_AVX 1
 #endif
 
 namespace MercuryJson {
@@ -343,7 +349,26 @@ namespace MercuryJson {
         throw std::runtime_error(stream.str());
     }
 
-    inline std::variant<double, long long int> parseNumber(const char *input, bool *is_decimal, size_t offset) {
+    inline bool _all_digits(const char *s) {
+        u_int64_t val = *reinterpret_cast<const u_int64_t *>(s);
+        return (((val & 0xf0f0f0f0f0f0f0f0)
+                 | (((val + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0) >> 4U)) == 0x3333333333333333);
+    }
+
+    inline u_int32_t _parse_eight_digits(const char *s) {
+        const __m128i ascii0 = _mm_set1_epi8('0');
+        const __m128i mul_1_10 = _mm_setr_epi8(10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+        const __m128i mul_1_100 = _mm_setr_epi16(100, 1, 100, 1, 100, 1, 100, 1);
+        const __m128i mul_1_10000 = _mm_setr_epi16(10000, 1, 10000, 1, 10000, 1, 10000, 1);
+        __m128i in = _mm_sub_epi8(_mm_loadu_si128(reinterpret_cast<const __m128i *>(s)), ascii0);
+        __m128i t1 = _mm_maddubs_epi16(in, mul_1_10);
+        __m128i t2 = _mm_madd_epi16(t1, mul_1_100);
+        __m128i t3 = _mm_packus_epi32(t2, t2);
+        __m128i t4 = _mm_madd_epi16(t3, mul_1_10000);
+        return _mm_cvtsi128_si32(t4);
+    }
+
+    std::variant<double, long long int> parse_number(const char *input, bool *is_decimal, size_t offset) {
         const char *s = input + offset;
         long long int integer = 0LL;
         double decimal = 0.0;
@@ -357,6 +382,12 @@ namespace MercuryJson {
             if (*s >= '0' && *s <= '9')
                 __error("numbers cannot have leading zeros", input, offset);
         } else {
+#if PARSE_NUMBER_AVX
+            while (_all_digits(s)) {
+                integer = integer * 100000000 + _parse_eight_digits(s);
+                s += 8;
+            }
+#endif
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
         }
@@ -365,9 +396,16 @@ namespace MercuryJson {
             decimal = integer;
             double multiplier = 0.1;
             ++s;
+#if PARSE_NUMBER_AVX
+            while (_all_digits(s)) {
+                decimal += _parse_eight_digits(s) * multiplier * 0.0000001;  // 7 digits
+                multiplier *= 0.00000001;  // 8 digits
+                s += 8;
+            }
+#endif
             while (*s >= '0' && *s <= '9') {
                 decimal += (*s++ - '0') * multiplier;
-                multiplier /= 10.0;
+                multiplier *= 0.1;
             }
         }
         if (*s == 'e' || *s == 'E') {
@@ -591,7 +629,7 @@ namespace MercuryJson {
             case '9':
             case '-': {
                 bool is_decimal;
-                auto ret = parseNumber(input, &is_decimal, idx);
+                auto ret = parse_number(input, &is_decimal, idx);
                 if (is_decimal) value = allocator.construct(std::get<double>(ret));
                 else value = allocator.construct(std::get<long long int>(ret));
                 break;
@@ -951,16 +989,11 @@ namespace MercuryJson {
         return _pext_u64(((hi << 32U) | lo), escaper_mask);
     }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "portability-simd-intrinsics"
-
     inline __m256i __expand(u_int32_t input) {
         /* 0x00 for 1-bits, 0x01 for 0-bits */
         const __m256i ones = _mm256_set1_epi8(1);
         return _mm256_add_epi8(convert_to_mask(input), ones);
     }
-
-#pragma clang diagnostic pop
 
     inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
                                  u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {

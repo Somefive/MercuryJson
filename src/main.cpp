@@ -11,6 +11,21 @@
 const int REPEAT = 1000;
 
 int main(int argc, char **argv) {
+
+//    test_extract_mask();
+//    test_extract_warp_mask();
+//    test_tfn_value();
+
+//    test_parse(true);
+//    test_parse_str_naive();
+//    test_parse_str_avx();
+//    test_parse_str_per_bit();
+//    test_parse_string();
+//    test_parse_float();
+//    test_translate();
+
+//    test_remove_escaper();
+
     if (argc > 1) {
         size_t size;
         char *buf = read_file(argv[1], &size);
@@ -44,18 +59,5 @@ int main(int argc, char **argv) {
         printf("Best runtime: %.4lf s, speed: %.2lf MB/s\n",
                best_time, (size / 1024.0 / 1024.0) / best_time);
     }
-
-//    test_extract_mask();
-//    test_extract_warp_mask();
-//    test_tfn_value();
-
-//    test_parse(true);
-//    test_parse_str_naive();
-//    test_parse_str_avx();
-//    test_parse_str_per_bit();
-//    test_parse_string();
-//    test_translate();
-
-//    test_remove_escaper();
     return 0;
 }

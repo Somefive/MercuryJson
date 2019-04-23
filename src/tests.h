@@ -18,6 +18,8 @@ void test_parse_str_per_bit();
 
 void test_parse_string();
 
+void test_parse_float();
+
 void test_translate();
 void test_remove_escaper();
 

@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
+#include <cmath>
 
 #include "tests.h"
 #include "mercuryparser.h"
@@ -338,6 +339,25 @@ void test_parse_string() {
            static_cast<float>(t_baseline) / CLOCKS_PER_SEC,
            static_cast<float>(t_avx) / CLOCKS_PER_SEC,
            static_cast<float>(t_per_bit) / CLOCKS_PER_SEC);
+}
+
+#define xstr(x) ___str___(x)
+#define ___str___(x) #x
+
+void test_parse_float() {
+#define FLOAT_VAL 0.00001234556
+    double expected = FLOAT_VAL;
+    const char *s = xstr(FLOAT_VAL);
+    bool is_decimal;
+    auto ret = parse_number(s, &is_decimal);
+    if (!is_decimal) printf("test_parse_float: is_decimal flag incorrect\n");
+    else {
+        auto val = std::get<double>(ret);
+        if (fabs(val - 0.00001234556) > 1e-8) {
+            printf("test_parse_float: expected %.10lf, received %.10lf\n", expected, val);
+        } else printf("test_parse_float: passed\n");
+    }
+#undef FLOAT_VAL
 }
 
 void test_translate() {
