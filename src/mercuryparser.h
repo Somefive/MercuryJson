@@ -109,6 +109,14 @@ namespace MercuryJson {
         static constexpr size_t alignment = sizeof(default_class);
 #endif
 
+        inline void check_alloc(size_t size) {
+            if (allocated + size > block_size) {
+                all_memory.push_back(mem);
+                allocated = 0;
+                ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
+            }
+        }
+
     public:
         BlockedAllocator(size_t block_size) {
 #if USE_BLOCK_ALLOCATOR
@@ -129,14 +137,24 @@ namespace MercuryJson {
 #endif
         }
 
+        template <typename T = default_class>
+        T *allocate(size_t size, size_t ensure_extra = 0) {
+#if USE_BLOCK_ALLOCATOR
+            size_t alloc_size = round_up(size * sizeof(T), alignment);
+            check_alloc(alloc_size + ensure_extra);
+            T *ret = new(ptr) T[size];
+            ptr += alloc_size;
+            allocated += alloc_size;
+#else
+            T *ret = new T[size];
+#endif
+            return ret;
+        }
+
         template <typename T = default_class, typename ...Args>
         T *construct(Args ...args) {
 #if USE_BLOCK_ALLOCATOR
-            if (allocated + sizeof(T) > block_size) {
-                all_memory.push_back(mem);
-                allocated = 0;
-                ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
-            }
+            check_alloc(sizeof(T));
             static constexpr size_t size = round_up(sizeof(T), alignment);
             T *ret = new(ptr) T(std::forward<Args>(args)...);
             ptr += size;
@@ -162,6 +180,8 @@ namespace MercuryJson {
 
         BlockedAllocator<JsonValue> allocator;
 
+        char *_parse_str(size_t idx);
+
     public:
         JsonValue *document;
 
@@ -178,6 +198,7 @@ namespace MercuryJson {
     bool parse_false(const char *s);
     void parse_null(const char *s);
 
+    void parse_str_per_bit(char *src, char *dest, size_t *len = nullptr);
     char *parse_str_avx(char *s, size_t *len = nullptr);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);

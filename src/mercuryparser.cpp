@@ -16,7 +16,7 @@
 #include "mercuryparser.h"
 
 #define STATIC_CMPEQ_MASK 0
-#define USE_PARSE_STR_AVX 1
+#define PARSE_STR_MODE 2  // 0 for naive, 1 for avx, 2 for per_bit
 #define PARSE_STR_FULLY_AXV 0
 
 namespace MercuryJson {
@@ -355,8 +355,8 @@ namespace MercuryJson {
 
     char *parse_str_naive(char *s, size_t *len) {
         bool escape = false;
-        char *ptr = s + 1;
-        for (char *end = s + 1; escape || *end != '"'; ++end) {
+        char *ptr = s;
+        for (char *end = s; escape || *end != '"'; ++end) {
             if (escape) {
                 switch (*end) {
                     case '"':
@@ -398,8 +398,8 @@ namespace MercuryJson {
             }
         }
         *ptr++ = 0;
-        if (len != nullptr) *len = ptr - (s + 1);
-        return s + 1;
+        if (len != nullptr) *len = ptr - s;
+        return s;
     }
 
     bool parse_true(const char *s) {
@@ -423,7 +423,7 @@ namespace MercuryJson {
         std::memcpy(&local, s, 4);
         if (mask != local || !structural_or_whitespace[s[4]])
             throw std::runtime_error("invalid null value");
-   }
+    }
 
     void JSON::_error(const char *expected, char encountered, size_t index) {
         std::stringstream stream;
@@ -451,7 +451,7 @@ namespace MercuryJson {
     })
 
     JsonValue *JSON::_parse_object() {
-        size_t idx, len;
+        size_t idx;
         char ch;
         peek_char();
         if (ch == '}') {
@@ -460,12 +460,7 @@ namespace MercuryJson {
         }
 
         expect('"');
-#if USE_PARSE_STR_AVX
-        char *str = parse_str_avx(input + idx, &len);
-#else
-        char *str = parse_str_naive(input + idx, &len);  // keys are probably short strings
-#endif
-//            std::string_view key(str, len);
+        char *str = _parse_str(idx);
         next_char();
         next_char();
         expect(':');
@@ -477,12 +472,7 @@ namespace MercuryJson {
             expect(',');
             peek_char();
             expect('"');
-#if USE_PARSE_STR_AVX
-            str = parse_str_avx(input + idx, &len);
-#else
-            str = parse_str_naive(input + idx, &len);  // keys are probably short strings
-#endif
-//            std::string_view key(str, len);
+            str = _parse_str(idx);
             next_char();
             next_char();
             expect(':');
@@ -512,6 +502,19 @@ namespace MercuryJson {
         return allocator.construct(array);
     }
 
+    inline char *JSON::_parse_str(size_t idx) {
+#if PARSE_STR_MODE == 2
+        size_t len = *idx_ptr - idx;
+        char *dest = allocator.allocate<char>(len, 32);
+        parse_str_per_bit(input + idx + 1, dest);
+        return dest;
+#elif PARSE_STR_MODE == 1
+        return parse_str_avx(input + idx + 1);
+#else
+        return parse_str_naive(input + idx + 1);
+#endif
+    }
+
     JsonValue *JSON::_parse_value() {
         size_t idx;
         char ch;
@@ -519,11 +522,7 @@ namespace MercuryJson {
         JsonValue *value;
         switch (ch) {
             case '"':
-#if USE_PARSE_STR_AVX
-                value = allocator.construct(parse_str_avx(input + idx));
-#else
-                value = allocator.construct(parse_str_naive(input + idx));
-#endif
+                value = allocator.construct(_parse_str(idx));
                 break;
             case 't':
                 value = allocator.construct(parse_true(input + idx));
@@ -569,7 +568,13 @@ namespace MercuryJson {
 #undef expect
 #undef error
 
-    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size) {
+    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(
+#if PARSE_STR_MODE == 2
+            size * 2  // when using parse_str_per_bit, we allocate memory for parsed strings
+#else
+            size
+#endif
+    ) {
         this->input = document;
         this->input_len = size;
 
@@ -765,8 +770,47 @@ namespace MercuryJson {
 //        }
 //    }
 
+    void parse_str_per_bit(char *src, char *dest, size_t *len) {
+        char *base = dest;
+        while (true) {
+            __m256i input = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
+            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input);
+            __mmask32 backslash_mask = __cmpeq_mask<'\\'>(input);
+            __mmask32 quote_mask = __cmpeq_mask<'"'>(input);
+
+            if (((backslash_mask - 1) & quote_mask) != 0) {
+                // quotes first
+                size_t quote_offset = _tzcnt_u32(quote_mask);
+                dest[quote_offset] = 0;
+                if (len != nullptr) *len = (dest - base) + quote_offset;
+                break;
+            } else if (((quote_mask - 1) & backslash_mask) != 0) {
+                // backslash first
+                size_t backslash_offset = _tzcnt_u32(backslash_mask);
+                uint8_t escape_char = src[backslash_offset + 1];
+                if (escape_char == 'u') {
+                    // TODO: deal with unicode characters
+                    char unicode[6];  // don't escape as of now
+                    memcpy(dest + backslash_offset, src + backslash_offset, 6);
+                    src += backslash_offset + 6;
+                    dest += backslash_offset + 6;
+                } else {
+                    u_int8_t escaped = escape_map[escape_char];
+                    if (escaped == 0U)
+                        __error("invalid escape character '" + std::string(1, escape_char) + "'", src);
+                    dest[backslash_offset] = escape_map[escape_char];
+                    src += backslash_offset + 2;
+                    dest += backslash_offset + 1;
+                }
+            } else {
+                // nothing here
+                src += sizeof(__mmask32);
+                dest += sizeof(__mmask32);
+            }
+        }
+    }
+
     char *parse_str_avx(char *s, size_t *len) {
-        ++s;  // skip the " character
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
         char *dest = s, *base = s;
         while (true) {
@@ -818,10 +862,10 @@ namespace MercuryJson {
                     size_t offset = _tzcnt_u64(escape_mask);
                     length = offset - last_offset;
                     char escaper = s[offset];
-                    memmove(dest, s+last_offset, length);
+                    memmove(dest, s + last_offset, length);
                     dest += length;
                     if (offset >= ending_offset) break;
-                    *(dest-1) = escape_map[escaper];
+                    *(dest - 1) = escape_map[escaper];
                     last_offset = offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }

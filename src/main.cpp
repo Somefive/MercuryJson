@@ -50,9 +50,10 @@ int main(int argc, char **argv) {
 //    test_tfn_value();
 
 //    test_parse(true);
-//    test_parseStr();
-//    test_parseStrAVX();
-//    test_parseString();
+//    test_parse_str_naive();
+//    test_parse_str_avx();
+//    test_parse_str_per_bit();
+//    test_parse_string();
 //    test_translate();
 
 //    test_remove_escaper();

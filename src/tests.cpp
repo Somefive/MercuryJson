@@ -207,25 +207,35 @@ void test_parse(bool print) {
     if (print) print_json(json.document);
 }
 
-void test_parseStr() {
+void test_parse_str_naive() {
     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;")";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parse_str_naive(text);
+    char *p = parse_str_naive(text + 1);
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
 
-void test_parseStrAVX() {
+void test_parse_str_avx() {
     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
                      R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
     // char text[512] = "\"fLA[/wsxV\\r&Io#`G\\t5XBZM|;/|HvoxPWE\\n0Rf%K:\\tOcaRD)DWag/0aJ<\\\\o3Lia!,P2^84(O)T4g'UpK*O0:\\\\\\raxOR\"!";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parse_str_avx(text);
+    char *p = parse_str_avx(text + 1);
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
 
-char *generate_randomString(size_t length) {
+void test_parse_str_per_bit() {
+    char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
+                     R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
+    std::cout << "Original:" << std::endl << text << std::endl;
+    char dest[256];
+    parse_str_per_bit(text + 1, dest);
+    std::cout << "Parsed: " << std::endl << dest << std::endl;
+    std::cout << std::endl;
+}
+
+char *generate_random_string(size_t length) {
     char *text = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
     char *base = text;
     *base++ = '"';
@@ -253,36 +263,43 @@ char *generate_randomString(size_t length) {
     return text;
 }
 
-void test_parseString() {
+void test_parse_string() {
     srand(time(nullptr));
-    clock_t t_baseline = 0, t_avx = 0;
+    clock_t t_baseline = 0, t_avx = 0, t_per_bit = 0;
     for (int i = 0; i < 10; ++i) {
-        size_t length = static_cast<size_t>(1e8);
-        // const char *base = generate_randomString(length);
-        // printf("base: %s\n", base);
-        // char *text = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
-        char *text = generate_randomString(length);
-        char *text2 = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
-        // strcpy(text, base);
-        // printf("base: %s\n", text);
-        strcpy(text2, text);
+        auto length = static_cast<size_t>(1e8);
+        char *text_naive = generate_random_string(length);
+        char *text_avx = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
+        char *p_per_bit = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
+        strcpy(text_avx, text_naive);
         printf("test[%d]: ", i);
         fflush(stdout);
+        size_t l_naive, l_avx, l_per_bit;
         clock_t t0 = clock();
-        char *p1 = parse_str_naive(text);
+        char *p_naive = parse_str_naive(text_naive + 1, &l_naive);
         clock_t t1 = clock();
-        char *p2 = parse_str_avx(text2);
+        parse_str_per_bit(text_avx + 1, p_per_bit, &l_per_bit);
         clock_t t2 = clock();
+        char *p_avx = parse_str_avx(text_avx + 1, &l_avx);
+        clock_t t3 = clock();
         t_baseline += (t1 - t0);
         t_avx += (t2 - t1);
-        // printf("%s\n\n\n%s\n\n\n", p1, p2);
-        int result = strcmp(p1, p2);
-        if (result == 0) printf("passed\n");
-        else printf("incorrect: %d\n", result);
-        aligned_free(text);
-        aligned_free(text2);
+        t_per_bit += (t3 - t2);
+        int result_avx = strncmp(p_naive, p_avx, l_naive);
+        int result_per_bit = strncmp(p_naive, p_per_bit, l_naive);
+        if (result_avx == 0 && result_per_bit == 0) printf("passed\n");
+        else {
+            if (result_avx != 0) printf("parse_str_avx incorrect: %d\n", result_avx);
+            if (result_per_bit != 0) printf("parse_str_per_bit incorrect: %d\n", result_per_bit);
+        }
+        aligned_free(text_naive);
+        aligned_free(text_avx);
+        aligned_free(p_per_bit);
     }
-    printf("baseline: %.4f sec, avx: %.4f sec\n", float(t_baseline) / CLOCKS_PER_SEC, float(t_avx) / CLOCKS_PER_SEC);
+    printf("baseline: %.4f sec, avx: %.4f sec, per_bit: %.4f sec\n",
+           static_cast<float>(t_baseline) / CLOCKS_PER_SEC,
+           static_cast<float>(t_avx) / CLOCKS_PER_SEC,
+           static_cast<float>(t_per_bit) / CLOCKS_PER_SEC);
 }
 
 void test_translate() {
