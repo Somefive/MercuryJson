@@ -16,7 +16,7 @@
 #include "mercuryparser.h"
 
 #define STATIC_CMPEQ_MASK 0
-#define PARSE_STR_MODE 2  // 0 for naive, 1 for avx, 2 for per_bit
+#define PARSE_STR_MODE 1  // 0 for naive, 1 for avx, 2 for per_bit
 #define PARSE_STR_FULLY_AXV 0
 
 namespace MercuryJson {

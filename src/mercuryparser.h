@@ -109,6 +109,7 @@ namespace MercuryJson {
         static constexpr size_t alignment = sizeof(default_class);
 #endif
 
+#if USE_BLOCK_ALLOCATOR
         inline void check_alloc(size_t size) {
             if (allocated + size > block_size) {
                 all_memory.push_back(mem);
@@ -116,6 +117,7 @@ namespace MercuryJson {
                 ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
             }
         }
+#endif
 
     public:
         BlockedAllocator(size_t block_size) {
@@ -146,7 +148,7 @@ namespace MercuryJson {
             ptr += alloc_size;
             allocated += alloc_size;
 #else
-            T *ret = new T[size];
+            T *ret = new T[size + ensure_extra];
 #endif
             return ret;
         }
