@@ -17,6 +17,7 @@ set(SOURCE_FILES
         src/mercuryparser.cpp
         src/tests.cpp
         src/utils.cpp
+        src/tape.cpp
         )
 
 add_executable(main ${SOURCE_FILES})
