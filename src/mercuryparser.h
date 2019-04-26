@@ -162,6 +162,19 @@ namespace MercuryJson {
         u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
         return (hi << 32U) | lo;
     }
+
+    const __mmask32 __even_mask = 0x55555555U;
+    const __mmask32 __odd_mask = ~__even_mask;
+
+    template <char c>
+    inline __mmask32 __cmpeq_mask(__m256i raw) {
+#if STATIC_CMPEQ_MASK
+        static __m256i vec_c = _mm256_set1_epi8(c);
+#else
+        __m256i vec_c = _mm256_set1_epi8(c);
+#endif
+        return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, vec_c)));
+    }
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H

@@ -125,19 +125,6 @@ namespace MercuryJson {
         *base = next_base;
     }
 
-    const __mmask32 __even_mask = 0x55555555U;
-    const __mmask32 __odd_mask = ~__even_mask;
-
-    template <char c>
-    inline __mmask32 __cmpeq_mask(__m256i raw) {
-#if STATIC_CMPEQ_MASK
-        static __m256i vec_c = _mm256_set1_epi8(c);
-#else
-        __m256i vec_c = _mm256_set1_epi8(c);
-#endif
-        return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, vec_c)));
-    }
-
     void __print_m256i(__m256i raw) {
         u_int8_t *vals = reinterpret_cast<u_int8_t *>(&raw);
         for (size_t i = 0; i < 32; ++i) printf("%2x ", vals[i]);
