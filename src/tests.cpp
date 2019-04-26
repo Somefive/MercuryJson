@@ -1,4 +1,8 @@
+#include <cmath>
+#include <cstdlib>
 #include <cstdio>
+#include <cstring>
+#include <ctime>
 #include <immintrin.h>
 
 #include <algorithm>
@@ -6,15 +10,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <ctime>
-#include <cstring>
-#include <cmath>
 
-#include "tests.h"
 #include "mercuryparser.h"
-#include "utils.h"
 #include "tape.h"
+#include "tests.h"
+#include "utils.h"
+
 
 template <typename T>
 inline std::string to_binary(T x) {
@@ -348,7 +349,7 @@ void test_parse_float() {
     if (!is_decimal) printf("test_parse_float: is_decimal flag incorrect\n");
     else {
         auto val = std::get<double>(ret);
-        if (fabs(val - 0.00001234556) > 1e-8) {
+        if (fabs(val - 0.00001234556) > 1e-10) {
             printf("test_parse_float: expected %.10lf, received %.10lf\n", expected, val);
         } else printf("test_parse_float: passed\n");
     }

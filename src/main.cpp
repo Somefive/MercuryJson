@@ -1,16 +1,15 @@
 #include <chrono>
+#include <vector>
 
 #include <cstdio>
 #include <cstring>
 #include <immintrin.h>
 
+#include "linux-perf-events.h"
 #include "mercuryparser.h"
+#include "tape.h"
 #include "tests.h"
 #include "utils.h"
-#include "tape.h"
-
-#include "linux-perf-events.h"
-#include <vector>
 
 #ifndef FORCEONEITERATION
 #define FORCEONEITERATION 0
@@ -24,7 +23,15 @@
 #define USETAPE 0
 #endif
 
+#ifdef __linux__
+#define PERF_EVENTS 1
+#else
+#define PERF_EVENTS 0
+#endif
+
+
 void run(int argc, char **argv) {
+#if PERF_EVENTS
     std::vector<int> evts;
     evts.push_back(PERF_COUNT_HW_CPU_CYCLES);
     evts.push_back(PERF_COUNT_HW_INSTRUCTIONS);
@@ -39,58 +46,69 @@ void run(int argc, char **argv) {
     unsigned long mis0 = 0, mis1 = 0, mis2 = 0;
     unsigned long cref0 = 0, cref1 = 0, cref2 = 0;
     unsigned long cmis0 = 0, cmis1 = 0, cmis2 = 0;
+#endif
 
     if (argc > 1) {
 
         size_t size;
         char *buf = read_file(argv[1], &size);
         printf("File size: %lu\n", size);
+        char *input = (char *)aligned_malloc(ALIGNMENT_SIZE, size + 2 * ALIGNMENT_SIZE);
 
         double total_time = 0.0, best_time = 1e10, total_stage1_time = 0.0, total_stage2_time = 0.0;
         size_t iterations = FORCEONEITERATION ? 1 : (size < 1 * 1000 * 1000 ? 1000 : 10);
 
         for (size_t i = 0; i < iterations; ++i) {
-
+#if PERF_EVENTS
             unified.start();
-            char *input = (char *)aligned_malloc(ALIGNMENT_SIZE, size + 2 * ALIGNMENT_SIZE);
+#endif
             memcpy(input, buf, size);
             auto json = MercuryJson::JSON(input, size, true);
 #if USETAPE
             MercuryJson::Tape tape(size, size);
 #endif
+#if PERF_EVENTS
             unified.end(results);
             cy0 += results[0];
             cl0 += results[1];
             mis0 += results[2];
             cref0 += results[3];
             cmis0 += results[4];
-
+#endif
 
             auto start_time = std::chrono::steady_clock::now();
+#if PERF_EVENTS
             unified.start();
+#endif
             json.exec_stage1();
+#if PERF_EVENTS
             unified.end(results);
             cy1 += results[0];
             cl1 += results[1];
             mis1 += results[2];
             cref1 += results[3];
             cmis1 += results[4];
+#endif
             auto stage1_end_time = std::chrono::steady_clock::now();
             std::chrono::duration<double> stage1_time = stage1_end_time - start_time;
 
+#if PERF_EVENTS
             unified.start();
+#endif
 #if USETAPE
             MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
             tape_writer._parse_value();
 #else
             json.exec_stage2();
 #endif
+#if PERF_EVENTS
             unified.end(results);
             cy2 += results[0];
             cl2 += results[1];
             mis2 += results[2];
             cref2 += results[3];
             cmis2 += results[4];
+#endif
             std::chrono::duration<double> stage2_time = std::chrono::steady_clock::now() - stage1_end_time;
             double runtime = stage1_time.count() + stage2_time.count();
 
@@ -104,17 +122,20 @@ void run(int argc, char **argv) {
 #else
             if (PRINTJSON && i == iterations - 1) print_json(json.document);
 #endif
-
+#if PERF_EVENTS
             unified.start();
-            aligned_free(input);
             unified.end(results);
             cy0 += results[0];
             cl0 += results[1];
             mis0 += results[2];
             cref0 += results[3];
             cmis0 += results[4];
+#endif
         }
 
+        aligned_free(input);
+
+#if PERF_EVENTS
         unsigned long total = cy0 + cy1 + cy2;
         printf("> mem alloc/free instructions: %10lu \n\tcycles: \t\t%10lu (%.2f %%) \n\tins/cycles: "
             "\t\t%10.2f \n\tmis. branches: \t\t%10lu (cycles/mis.branch %.2f) \n\tcache accesses: "
@@ -143,7 +164,7 @@ void run(int argc, char **argv) {
             (double)cy2 / (iterations * size));
         printf("=== all stages: %.2f cycles per input byte. ===\n",
             (double)total / (iterations * size));
-
+#endif
 
         printf("Average runtime: %.6lf s, speed: %.2lf MB/s\n",
                total_time / iterations, (size * iterations / 1024.0 / 1024.0) / total_time);

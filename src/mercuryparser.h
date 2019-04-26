@@ -9,8 +9,6 @@
 
 #include "block_allocator.hpp"
 
-using std::size_t;
-
 #ifndef STATIC_CMPEQ_MASK
 #define STATIC_CMPEQ_MASK 0
 #endif
@@ -26,6 +24,7 @@ using std::size_t;
 #ifndef PARSE_NUMBER_AVX
 #define PARSE_NUMBER_AVX 1
 #endif
+
 
 namespace MercuryJson {
     /* Stage 1 */

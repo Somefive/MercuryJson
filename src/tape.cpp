@@ -1,50 +1,71 @@
 #include <cstring>
 
-#include "tape.h"
-#include "mercuryparser.h"
 #include "constants.h"
+#include "mercuryparser.h"
+#include "tape.h"
 #include "utils.h"
+
 
 namespace MercuryJson {
 
     size_t Tape::print_json(size_t tape_idx, size_t indent) {
         u_int64_t section = tape[tape_idx];
         switch (section & TYPE_MASK) {
-            case TYPE_NULL: printf("null"); return 1;
-            case TYPE_FALSE: printf("false"); return 1;
-            case TYPE_TRUE: printf("true"); return 1;
-            case TYPE_STR: printf("\"%s\"", literals + (section >> 4)); return 1;
-            case TYPE_INT: printf("%lld", static_cast<long long int>(tape[tape_idx+1])); return 2;
-            case TYPE_DEC: printf("%lf", plain_convert(static_cast<long long int>(tape[tape_idx+1]))); return 2;
-            case TYPE_ARR:
-            {
-                size_t elem_idx = tape_idx + 1; bool first = true;
+            case TYPE_NULL:
+                printf("null");
+                return 1;
+            case TYPE_FALSE:
+                printf("false");
+                return 1;
+            case TYPE_TRUE:
+                printf("true");
+                return 1;
+            case TYPE_STR:
+                printf("\"%s\"", literals + (section >> 4U));
+                return 1;
+            case TYPE_INT:
+                printf("%lld", static_cast<long long int>(tape[tape_idx + 1]));
+                return 2;
+            case TYPE_DEC:
+                printf("%lf", plain_convert(static_cast<long long int>(tape[tape_idx + 1])));
+                return 2;
+            case TYPE_ARR: {
+                size_t elem_idx = tape_idx + 1;
+                bool first = true;
                 printf("[");
-                while (elem_idx < (section >> 4)) {
+                while (elem_idx < (section >> 4U)) {
                     if (first) first = false; else printf(",");
-                    printf("\n"); print_indent(indent+2);
-                    elem_idx += print_json(elem_idx, indent+2);
+                    printf("\n");
+                    print_indent(indent + 2);
+                    elem_idx += print_json(elem_idx, indent + 2);
                 }
-                printf("\n"); print_indent(indent); printf("]");
+                printf("\n");
+                print_indent(indent);
+                printf("]");
                 return elem_idx + 1 - tape_idx;
             }
-            case TYPE_OBJ:
-            {
-                size_t elem_idx = tape_idx + 1; bool first = true;
+            case TYPE_OBJ: {
+                size_t elem_idx = tape_idx + 1;
+                bool first = true;
                 printf("{");
-                while (elem_idx < (section >> 4)) {
+                while (elem_idx < (section >> 4U)) {
                     if (first) first = false; else printf(",");
-                    printf("\n"); print_indent(indent+2);
-                    printf("\"%s\": ", literals + (tape[elem_idx++] >> 4));
-                    elem_idx += print_json(elem_idx, indent+2);
+                    printf("\n");
+                    print_indent(indent + 2);
+                    printf("\"%s\": ", literals + (tape[elem_idx++] >> 4U));
+                    elem_idx += print_json(elem_idx, indent + 2);
                 }
-                printf("\n"); print_indent(indent); printf("}");
+                printf("\n");
+                print_indent(indent);
+                printf("}");
                 return elem_idx + 1 - tape_idx;
             }
+            default:
+                throw std::runtime_error("unexpected element on tape");
         }
     }
 
-    #define __expect(__char) ({ \
+#define __expect(__char) ({ \
         if (ch != (__char)) throw std::runtime_error("unexpected character"); \
     })
 
@@ -77,24 +98,21 @@ namespace MercuryJson {
             case '7':
             case '8':
             case '9':
-            case '-':
-            {
+            case '-': {
                 bool is_decimal;
                 auto ret = parse_number(input, &is_decimal, idx);
                 if (is_decimal) tape->write_decimal(std::get<double>(ret));
                 else tape->write_integer(std::get<long long int>(ret));
                 break;
             }
-            case '[':
-            {
+            case '[': {
                 size_t left_tape_idx = tape->write_array();
                 size_t right_tape_idx = _parse_array();
                 tape->write_content(right_tape_idx, left_tape_idx);
                 tape->write_content(left_tape_idx, right_tape_idx);
                 break;
             }
-            case '{':
-            {
+            case '{': {
                 size_t left_tape_idx = tape->write_object();
                 size_t right_tape_idx = _parse_object();
                 tape->write_content(right_tape_idx, left_tape_idx);
@@ -108,7 +126,10 @@ namespace MercuryJson {
 
     size_t TapeWriter::_parse_array() {
         char ch = input[*idxptr];
-        if (ch == ']') { idxptr++; return tape->write_array(); }
+        if (ch == ']') {
+            idxptr++;
+            return tape->write_array();
+        }
         while (true) {
             _parse_value();
             ch = input[*idxptr++];

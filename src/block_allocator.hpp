@@ -7,6 +7,7 @@
 #define USE_BLOCK_ALLOCATOR 1
 #endif
 
+
 namespace MercuryJson {
     template <typename default_class>
     class BlockAllocator {

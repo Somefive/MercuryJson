@@ -9,6 +9,7 @@
 
 using namespace rapidjson;
 
+
 const size_t REPEAT = 1000;
 
 int main(int argc, char **argv) {

@@ -5,6 +5,7 @@
 
 #include "utils.h"
 
+
 char *read_file(const char *filename, size_t *size) {
     std::FILE *pfile = std::fopen(filename, "rb");
     if (pfile == nullptr) throw std::runtime_error("file open error");
