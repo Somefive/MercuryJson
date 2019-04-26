@@ -155,97 +155,20 @@ namespace MercuryJson {
         }
     }
 
-    // size_t TapeWriter::_parse_str(size_t idx) {
-    //     char *src = input + idx + 1;
-    //     size_t index = tape->literals_size;
-    //     char *dest = tape->literals + index;
-    //     char *base = dest;
-    //     u_int64_t prev_odd_backslash_ending_mask = 0ULL;
-    //     while (true) {
-    //         Warp input(src);
-    //         u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
-    //         u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
-    //         size_t ending_offset = _tzcnt_u64(quote_mask);
-
-    //         if (ending_offset < 64) {
-    //             size_t last_offset = 0, length;
-    //             while (true) {
-    //                 size_t this_offset = _tzcnt_u64(escape_mask);
-    //                 if (this_offset >= ending_offset) {
-    //                     memmove(dest, src + last_offset, ending_offset - last_offset);
-    //                     dest += ending_offset - last_offset;
-    //                     *dest++ = '\0';
-    //                     break;
-    //                 }
-    //                 length = this_offset - last_offset;
-    //                 char escaper = src[this_offset];
-    //                 memmove(dest, src + last_offset, length);
-    //                 dest += length;
-    //                 *(dest - 1) = escape_map[escaper];
-    //                 last_offset = this_offset + 1;
-    //                 escape_mask = _blsr_u64(escape_mask);
-    //             }
-    //             break;
-    //         } else {
-    //             size_t last_offset = 0, length;
-    //             while (true) {
-    //                 size_t this_offset = _tzcnt_u64(escape_mask);
-    //                 length = this_offset - last_offset;
-    //                 char escaper = src[this_offset];
-    //                 memmove(dest, src + last_offset, length);
-    //                 dest += length;
-    //                 if (this_offset >= ending_offset) break;
-    //                 *(dest - 1) = escape_map[escaper];
-    //                 last_offset = this_offset + 1;
-    //                 escape_mask = _blsr_u64(escape_mask);
-    //             }
-    //             src += 64;
-    //         }
-    //     }
-    //     tape->literals_size += dest - base;
-    //     return index;
-    // }
+//     size_t TapeWriter::_parse_str(size_t idx) {
+//         size_t index = tape->literals_size;
+//         char *dest = tape->literals + index;
+//         size_t len;
+//         parse_str_avx(input, dest, &len, idx + 1);
+//         tape->literals_size += len;
+//         return index;
+//     }
 
     size_t TapeWriter::_parse_str(size_t idx) {
-        char *src = input + idx + 1;
         size_t index = tape->literals_size;
         char *dest = tape->literals + index;
-        const char *_src = src;
-        char *base = dest;
-        while (true) {
-            __m256i input = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
-            _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input);
-            __mmask32 backslash_mask = __cmpeq_mask<'\\'>(input);
-            __mmask32 quote_mask = __cmpeq_mask<'"'>(input);
-
-            if (((backslash_mask - 1) & quote_mask) != 0) {
-                // quotes first
-                size_t quote_offset = _tzcnt_u32(quote_mask);
-                dest[quote_offset] = 0;
-                break;
-            } else if (((quote_mask - 1) & backslash_mask) != 0) {
-                // backslash first
-                size_t backslash_offset = _tzcnt_u32(backslash_mask);
-                uint8_t escape_char = src[backslash_offset + 1];
-                if (escape_char == 'u') {
-                    // TODO: deal with unicode characters
-                    memcpy(dest + backslash_offset, src + backslash_offset, 6);
-                    src += backslash_offset + 6;
-                    dest += backslash_offset + 6;
-                } else {
-                    u_int8_t escaped = escape_map[escape_char];
-                    if (escaped == 0U)
-                        throw std::runtime_error("invalid escape character");
-                    dest[backslash_offset] = escape_map[escape_char];
-                    src += backslash_offset + 2;
-                    dest += backslash_offset + 1;
-                }
-            } else {
-                // nothing here
-                src += sizeof(__mmask32);
-                dest += sizeof(__mmask32);
-            }
-        }
-        return dest - base + 1;
+        size_t len;
+        parse_str_per_bit(input, dest, &len, idx + 1);
+        return len;
     }
 }

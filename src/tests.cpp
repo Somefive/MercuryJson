@@ -311,11 +311,11 @@ void test_parse_string() {
         fflush(stdout);
         size_t l_naive, l_avx, l_per_bit;
         clock_t t0 = clock();
-        char *p_naive = parse_str_naive(text_naive + 1, &l_naive);
+        char *p_naive = parse_str_naive(text_naive + 1, nullptr, &l_naive);
         clock_t t1 = clock();
         parse_str_per_bit(text_avx + 1, p_per_bit, &l_per_bit);
         clock_t t2 = clock();
-        char *p_avx = parse_str_avx(text_avx + 1, &l_avx);
+        char *p_avx = parse_str_avx(text_avx + 1, nullptr, &l_avx);
         clock_t t3 = clock();
         t_baseline += (t1 - t0);
         t_avx += (t2 - t1);

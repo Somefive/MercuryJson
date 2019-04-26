@@ -360,10 +360,10 @@ namespace MercuryJson {
         }
     }
 
-    char *parse_str_naive(char *s, size_t *len, size_t offset) {
+    char *parse_str_naive(char *src, char *dest, size_t *len, size_t offset) {
         bool escape = false;
-        char *ptr = s + offset;
-        for (char *end = s + offset; escape || *end != '"'; ++end) {
+        char *ptr = dest == nullptr ? src : dest, *base = ptr;
+        for (char *end = src + offset; escape || *end != '"'; ++end) {
             if (escape) {
                 switch (*end) {
                     case '"':
@@ -396,7 +396,7 @@ namespace MercuryJson {
                         *ptr++ = 'u';
                         break;
                     default:
-                        __error("invalid escape sequence", s, end - s);
+                        __error("invalid escape sequence", src, end - src);
                 }
                 escape = false;
             } else {
@@ -405,8 +405,8 @@ namespace MercuryJson {
             }
         }
         *ptr++ = 0;
-        if (len != nullptr) *len = ptr - s;
-        return s;
+        if (len != nullptr) *len = ptr - base;
+        return base;
     }
 
     bool parse_true(const char *s, size_t offset) {
@@ -514,12 +514,12 @@ namespace MercuryJson {
 #if PARSE_STR_MODE == 2
         size_t len = *idx_ptr - idx;
         char *dest = allocator.allocate<char>(len, 32);
-        parse_str_per_bit(input + idx + 1, dest);
+        parse_str_per_bit(input, dest, nullptr, idx + 1);
         return dest;
 #elif PARSE_STR_MODE == 1
-        return parse_str_avx(input + idx + 1);
+        return parse_str_avx(input, nullptr, nullptr, idx + 1);
 #else
-        return parse_str_naive(input + idx + 1);
+        return parse_str_naive(input, nullptr, nullptr, idx + 1);
 #endif
     }
 
@@ -819,10 +819,11 @@ namespace MercuryJson {
         }
     }
 
-    char *parse_str_avx(char *src, size_t *len, size_t offset) {
+    char *parse_str_avx(char *src, char *dest, size_t *len, size_t offset) {
         char *_src = src;
         src += offset;
-        char *dest = src, *base = src;
+        if (dest == nullptr) dest = src;
+        char *base = dest;
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
         while (true) {
             Warp input(src);
