@@ -360,7 +360,7 @@ namespace MercuryJson {
         }
     }
 
-    char *parse_str_naive(char *src, char *dest, size_t *len, size_t offset) {
+    void parse_str_naive(char *src, char *dest, size_t *len, size_t offset) {
         bool escape = false;
         char *ptr = dest == nullptr ? src : dest, *base = ptr;
         for (char *end = src + offset; escape || *end != '"'; ++end) {
@@ -406,7 +406,6 @@ namespace MercuryJson {
         }
         *ptr++ = 0;
         if (len != nullptr) *len = ptr - base;
-        return base;
     }
 
     bool parse_true(const char *s, size_t offset) {
@@ -517,9 +516,11 @@ namespace MercuryJson {
         parse_str_per_bit(input, dest, nullptr, idx + 1);
         return dest;
 #elif PARSE_STR_MODE == 1
-        return parse_str_avx(input, nullptr, nullptr, idx + 1);
+        parse_str_avx(input, nullptr, nullptr, idx + 1);
+        return input + idx + 1;
 #else
-        return parse_str_naive(input, nullptr, nullptr, idx + 1);
+        parse_str_naive(input, nullptr, nullptr, idx + 1);
+        return input + idx + 1;
 #endif
     }
 
@@ -819,7 +820,7 @@ namespace MercuryJson {
         }
     }
 
-    char *parse_str_avx(char *src, char *dest, size_t *len, size_t offset) {
+    void parse_str_avx(char *src, char *dest, size_t *len, size_t offset) {
         char *_src = src;
         src += offset;
         if (dest == nullptr) dest = src;
@@ -885,7 +886,6 @@ namespace MercuryJson {
 #endif
             }
         }
-        return base;
     }
 
     inline __m256i convert_to_mask(u_int32_t input) {

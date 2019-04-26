@@ -54,10 +54,7 @@ namespace MercuryJson {
             tape[tape_size++] = plain_convert(value);
         }
 
-        size_t write_str(u_int64_t literal_idx) {
-            tape[tape_size] = TYPE_STR | (literal_idx << 4U);
-            return tape_size++;
-        }
+        void write_str(u_int64_t literal_idx) { tape[tape_size++] = TYPE_STR | (literal_idx << 4U); }
 
         size_t write_array() {
             tape[tape_size] = TYPE_ARR;

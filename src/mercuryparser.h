@@ -138,8 +138,8 @@ namespace MercuryJson {
     std::variant<double, long long int> parse_number(const char *s, bool *is_decimal, size_t offset = 0U);
 
     void parse_str_per_bit(const char *src, char *dest, size_t *len = nullptr, size_t offset = 0U);
-    char *parse_str_naive(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
-    char *parse_str_avx(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
+    void parse_str_naive(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
+    void parse_str_avx(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
 

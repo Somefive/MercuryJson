@@ -245,7 +245,8 @@ void test_parse(bool print) {
 void test_parse_str_naive() {
     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;")";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parse_str_naive(text + 1);
+    parse_str_naive(text + 1);
+    char *p = text + 1;
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
@@ -255,7 +256,8 @@ void test_parse_str_avx() {
                      R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
     // char text[512] = "\"fLA[/wsxV\\r&Io#`G\\t5XBZM|;/|HvoxPWE\\n0Rf%K:\\tOcaRD)DWag/0aJ<\\\\o3Lia!,P2^84(O)T4g'UpK*O0:\\\\\\raxOR\"!";
     std::cout << "Original:" << std::endl << text << std::endl;
-    char *p = parse_str_avx(text + 1);
+    parse_str_avx(text + 1);
+    char *p = text + 1;
     std::cout << "Parsed: " << std::endl << p << std::endl;
     std::cout << std::endl;
 }
@@ -311,11 +313,13 @@ void test_parse_string() {
         fflush(stdout);
         size_t l_naive, l_avx, l_per_bit;
         clock_t t0 = clock();
-        char *p_naive = parse_str_naive(text_naive + 1, nullptr, &l_naive);
+        parse_str_naive(text_naive + 1, nullptr, &l_naive);
+        char *p_naive = text_naive + 1;
         clock_t t1 = clock();
         parse_str_per_bit(text_avx + 1, p_per_bit, &l_per_bit);
         clock_t t2 = clock();
-        char *p_avx = parse_str_avx(text_avx + 1, nullptr, &l_avx);
+        parse_str_avx(text_avx + 1, nullptr, &l_avx);
+        char *p_avx = text_avx + 1;
         clock_t t3 = clock();
         t_baseline += (t1 - t0);
         t_avx += (t2 - t1);

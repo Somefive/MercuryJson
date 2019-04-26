@@ -151,24 +151,22 @@ namespace MercuryJson {
             ch = input[*idxptr++];
             if (ch == '}') return tape->write_object();
             __expect(',');
-            ch = input[*idxptr++];
+            ch = input[idx = *idxptr++];
         }
     }
-
-//     size_t TapeWriter::_parse_str(size_t idx) {
-//         size_t index = tape->literals_size;
-//         char *dest = tape->literals + index;
-//         size_t len;
-//         parse_str_avx(input, dest, &len, idx + 1);
-//         tape->literals_size += len;
-//         return index;
-//     }
 
     size_t TapeWriter::_parse_str(size_t idx) {
         size_t index = tape->literals_size;
         char *dest = tape->literals + index;
         size_t len;
+#if PARSE_STR_MODE == 2
         parse_str_per_bit(input, dest, &len, idx + 1);
-        return len;
+#elif PARSE_STR_MODE == 1
+        parse_str_avx(input, dest, &len, idx + 1);
+#else
+        parse_str_naive(input, dest, &len, idx + 1);
+#endif
+        tape->literals_size += len + 1;
+        return index;
     }
 }

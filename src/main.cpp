@@ -11,16 +11,16 @@
 #include "tests.h"
 #include "utils.h"
 
-#ifndef FORCEONEITERATION
-#define FORCEONEITERATION 0
+#ifndef FORCE_ONE_ITERATION
+#define FORCE_ONE_ITERATION 0
 #endif
 
-#ifndef PRINTJSON
-#define PRINTJSON 0
+#ifndef PRINT_JSON
+#define PRINT_JSON 0
 #endif
 
-#ifndef USETAPE
-#define USETAPE 0
+#ifndef USE_TAPE
+#define USE_TAPE 1
 #endif
 
 #ifdef __linux__
@@ -56,7 +56,7 @@ void run(int argc, char **argv) {
         char *input = (char *)aligned_malloc(ALIGNMENT_SIZE, size + 2 * ALIGNMENT_SIZE);
 
         double total_time = 0.0, best_time = 1e10, total_stage1_time = 0.0, total_stage2_time = 0.0;
-        size_t iterations = FORCEONEITERATION ? 1 : (size < 1 * 1000 * 1000 ? 1000 : 10);
+        size_t iterations = FORCE_ONE_ITERATION ? 1 : (size < 1 * 1000 * 1000 ? 1000 : 10);
 
         for (size_t i = 0; i < iterations; ++i) {
 #if PERF_EVENTS
@@ -64,7 +64,7 @@ void run(int argc, char **argv) {
 #endif
             memcpy(input, buf, size);
             auto json = MercuryJson::JSON(input, size, true);
-#if USETAPE
+#if USE_TAPE
             MercuryJson::Tape tape(size, size);
 #endif
 #if PERF_EVENTS
@@ -95,7 +95,7 @@ void run(int argc, char **argv) {
 #if PERF_EVENTS
             unified.start();
 #endif
-#if USETAPE
+#if USE_TAPE
             MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
             tape_writer._parse_value();
 #else
@@ -117,10 +117,10 @@ void run(int argc, char **argv) {
             total_stage1_time += stage1_time.count();
             total_stage2_time += stage2_time.count();
 
-#if USETAPE
-            if (PRINTJSON && i == iterations - 1) tape.print_json();
+#if USE_TAPE
+            if (PRINT_JSON && i == iterations - 1) tape.print_json();
 #else
-            if (PRINTJSON && i == iterations - 1) print_json(json.document);
+            if (PRINT_JSON && i == iterations - 1) print_json(json.document);
 #endif
 #if PERF_EVENTS
             unified.start();
