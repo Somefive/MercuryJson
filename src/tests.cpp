@@ -14,6 +14,7 @@
 #include "tests.h"
 #include "mercuryparser.h"
 #include "utils.h"
+#include "tape.h"
 
 template <typename T>
 inline std::string to_binary(T x) {
@@ -380,7 +381,6 @@ void test_remove_escaper() {
     __printChar(input);
 }
 
-#include "tape.h"
 void test_tape(const char *filename) {
     size_t size;
     char *input = read_file(filename, &size);

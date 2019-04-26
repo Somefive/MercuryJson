@@ -8,18 +8,18 @@
 
 namespace MercuryJson {
 
-    #define TYPE_MASK   0xf
-    #define TYPE_NULL   0xf
-    #define TYPE_FALSE  0x0
-    #define TYPE_TRUE   0x1
-    #define TYPE_STR    0x2
-    #define TYPE_INT    0x3
-    #define TYPE_DEC    0x4
-    #define TYPE_OBJ    0x5
-    #define TYPE_ARR    0x6
-
     struct Tape
     {
+        static const int TYPE_MASK = 0xf;
+        static const int TYPE_NULL = 0xf;
+        static const int TYPE_FALSE = 0x0;
+        static const int TYPE_TRUE = 0x1;
+        static const int TYPE_STR = 0x2;
+        static const int TYPE_INT = 0x3;
+        static const int TYPE_DEC = 0x4;
+        static const int TYPE_OBJ = 0x5;
+        static const int TYPE_ARR = 0x6;
+
         u_int64_t *tape;
         char *literals;
         size_t tape_size, literals_size;
