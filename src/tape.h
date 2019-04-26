@@ -50,7 +50,7 @@ namespace MercuryJson {
         char *input;
         size_t *idxptr;
         TapeWriter(Tape *_tape, char *_input, size_t *_idxptr): tape(_tape), input(_input), idxptr(_idxptr) {}
-        
+
         void _parse_value();
         size_t _parse_str(size_t idx); // Parse String from input[idx](") and return the index of parsed string in tape literals
         size_t _parse_array();

@@ -1,7 +1,7 @@
 #include <immintrin.h>
 
 namespace MercuryJson {
-    
+
     const u_int64_t structural_or_whitespace[256] = {
             1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
