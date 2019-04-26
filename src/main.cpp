@@ -20,7 +20,7 @@
 #endif
 
 #ifndef USE_TAPE
-#define USE_TAPE 1
+#define USE_TAPE 0
 #endif
 
 #ifdef __linux__

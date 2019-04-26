@@ -233,39 +233,52 @@ namespace MercuryJson {
 
     inline void __error_maybe_escape(char *context, size_t *length, char ch) {
         if (ch == '\t' || ch == '\n' || ch == '\b' || ch == '\0') {
-            context[*length++] = '\\';
-            context[*length++] = '[';
+            context[(*length)++] = '\\';
+//            context[(*length)++] = '[';
             switch (ch) {
                 case '\t':
-                    context[*length++] = 't';
+                    context[(*length)++] = 't';
                     break;
                 case '\n':
-                    context[*length++] = 'n';
+                    context[(*length)++] = 'n';
                     break;
                 case '\b':
-                    context[*length++] = 'b';
+                    context[(*length)++] = 'b';
                     break;
                 case '\0':
-                    context[*length++] = '0';
+                    context[(*length)++] = '0';
                     break;
             }
-            context[*length++] = ']';
+//            context[(*length)++] = ']';
         } else {
-            context[*length++] = ch;
+            context[(*length)++] = ch;
         }
     }
 
     [[noreturn]] void __error(const std::string &message, const char *input, size_t offset) {
         static const size_t context_len = 20;
-        char *context = new char[(2 * context_len + 1) * 2];  // add space for escaped chars
-        size_t length = 0U;
+        char *context = new char[(2 * context_len + 1) * 4];  // add space for escaped chars
+        size_t length = 0;
+        if (offset > context_len) {
+            context[0] = context[1] = context[2] = '.';
+            length = 3;
+        }
         for (size_t i = offset > context_len ? offset - context_len : 0U; i < offset; ++i)
             __error_maybe_escape(context, &length, input[i]);
         size_t left = length;
+        bool end = false;
         for (size_t i = offset; i < offset + context_len; ++i) {
-            if (input[i] == '\0') break;
+            if (input[i] == '\0') {
+                end = true;
+                break;
+            }
             __error_maybe_escape(context, &length, input[i]);
         }
+        if (!end) {
+            context[length] = context[length + 1] = context[length + 2] = '.';
+            length += 3;
+        }
+        context[length] = 0;
         std::stringstream stream;
         stream << message << std::endl;
         stream << "context: " << context << std::endl;
@@ -434,7 +447,11 @@ namespace MercuryJson {
 
     void JSON::_error(const char *expected, char encountered, size_t index) {
         std::stringstream stream;
-        stream << "expected " << expected << " at index " << index << ", but encountered '" << encountered << "'";
+        char _encounter[3];
+        size_t len = 0;
+        __error_maybe_escape(_encounter, &len, encountered);
+        _encounter[len] = 0;
+        stream << "expected " << expected << " at index " << index << ", but encountered '" << _encounter << "'";
         MercuryJson::__error(stream.str(), input, index);
     }
 
@@ -511,9 +528,10 @@ namespace MercuryJson {
 
     inline char *JSON::_parse_str(size_t idx) {
 #if PARSE_STR_MODE == 2
-        size_t len = *idx_ptr - idx;
-        char *dest = allocator.allocate<char>(len, 32);
-        parse_str_per_bit(input, dest, nullptr, idx + 1);
+        char *dest = this->literals + this->literals_size;
+        size_t len;
+        parse_str_per_bit(input, dest, &len, idx + 1);
+        this->literals_size += len;
         return dest;
 #elif PARSE_STR_MODE == 1
         parse_str_avx(input, nullptr, nullptr, idx + 1);
@@ -572,11 +590,6 @@ namespace MercuryJson {
         return value;
     }
 
-#undef next_char
-#undef peek_char
-#undef expect
-#undef error
-
     JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(
 #if PARSE_STR_MODE == 2
             size * 2  // when using parse_str_per_bit, we allocate memory for parsed strings
@@ -589,6 +602,10 @@ namespace MercuryJson {
         this->document = nullptr;
 
         this->idx_ptr = this->indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+#if PARSE_STR_MODE == 2
+        this->literals = new char[size];
+        this->literals_size = 0;
+#endif
 
         if (!manual_construct) {
             exec_stage1();
@@ -618,11 +635,24 @@ namespace MercuryJson {
 
     void JSON::exec_stage2() {
         this->document = _parse_value();
+        size_t idx;
+        char ch;
+        peek_char();
+        if (ch != 0) error("file end");
         delete[] this->indices;
         this->indices = nullptr;
     }
 
-    JSON::~JSON() = default;
+#undef next_char
+#undef peek_char
+#undef expect
+#undef error
+
+    JSON::~JSON() {
+#if PARSE_STR_MODE == 2
+        delete[] this->literals;
+#endif
+    }
 
 //    void parse(char *input, size_t len, size_t *indices) {
 //        std::deque<JsonValue> values(MAX_DEPTH);

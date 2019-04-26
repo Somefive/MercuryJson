@@ -110,6 +110,10 @@ namespace MercuryJson {
         char *input;
         size_t input_len;
         size_t *indices, *idx_ptr;
+#if PARSE_STR_MODE == 2
+        char *literals;
+        size_t literals_size;
+#endif
 
         void _error(const char *expected, char encountered, size_t index);
 
