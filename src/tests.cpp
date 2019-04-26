@@ -180,12 +180,6 @@ void test_tfn_value() {
 
 using namespace MercuryJson;
 
-void print_indent(int indent) {
-    if (indent > 0) {
-        std::cout << std::string(indent, ' ');
-    }
-}
-
 void print_json(JsonValue *value, int indent) {
     int cnt;
     switch (value->type) {
@@ -384,4 +378,16 @@ void test_remove_escaper() {
     deescape(input, escaper_mask);
     printf("output: ");
     __printChar(input);
+}
+
+#include "tape.h"
+void test_tape(const char *filename) {
+    size_t size;
+    char *input = read_file(filename, &size);
+    auto json = MercuryJson::JSON(input, size, true);
+    json.exec_stage1();
+    Tape tape(size, size);
+    TapeWriter tape_writer(&tape, json.input, json.indices);
+    tape_writer._parse_value();
+    tape.print_json();
 }

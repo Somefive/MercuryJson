@@ -23,4 +23,6 @@ void test_parse_float();
 void test_translate();
 void test_remove_escaper();
 
+void test_tape(const char *filename);
+
 #endif // MERCURYJSON_TESTS_H

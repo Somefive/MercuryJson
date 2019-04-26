@@ -25,3 +25,19 @@ char *read_file(const char *filename, size_t *size) {
     *size = _size;
     return buffer;
 }
+
+void print_indent(int indent) {
+    if (indent > 0) {
+        std::cout << std::string(indent, ' ');
+    }
+}
+
+double plain_convert(long long int value) {
+    union { long long int integer; double decimal; };
+    integer = value; return decimal;
+}
+
+long long int plain_convert(double value) {
+    union { long long int integer; double decimal; };
+    decimal = value; return integer;
+}

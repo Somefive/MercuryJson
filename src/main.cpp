@@ -7,6 +7,7 @@
 #include "mercuryparser.h"
 #include "tests.h"
 #include "utils.h"
+#include "tape.h"
 
 #include "linux-perf-events.h"
 #include <vector>
@@ -19,8 +20,11 @@
 #define PRINTJSON 0
 #endif
 
-int main(int argc, char **argv) {
+#ifndef USETAPE
+#define USETAPE 0
+#endif
 
+void run(int argc, char **argv) {
     std::vector<int> evts;
     evts.push_back(PERF_COUNT_HW_CPU_CYCLES);
     evts.push_back(PERF_COUNT_HW_INSTRUCTIONS);
@@ -36,20 +40,6 @@ int main(int argc, char **argv) {
     unsigned long cref0 = 0, cref1 = 0, cref2 = 0;
     unsigned long cmis0 = 0, cmis1 = 0, cmis2 = 0;
 
-//    test_extract_mask();
-//    test_extract_warp_mask();
-//    test_tfn_value();
-
-//    test_parse(true);
-//    test_parse_str_naive();
-//    test_parse_str_avx();
-//    test_parse_str_per_bit();
-//    test_parse_string();
-//    test_parse_float();
-//    test_translate();
-
-//    test_remove_escaper();
-
     if (argc > 1) {
 
         size_t size;
@@ -58,21 +48,24 @@ int main(int argc, char **argv) {
 
         double total_time = 0.0, best_time = 1e10, total_stage1_time = 0.0, total_stage2_time = 0.0;
         size_t iterations = FORCEONEITERATION ? 1 : (size < 1 * 1000 * 1000 ? 1000 : 10);
-      
+
         for (size_t i = 0; i < iterations; ++i) {
-            
+
             unified.start();
             char *input = (char *)aligned_malloc(ALIGNMENT_SIZE, size + 2 * ALIGNMENT_SIZE);
             memcpy(input, buf, size);
             auto json = MercuryJson::JSON(input, size, true);
+#if USETAPE
+            MercuryJson::Tape tape(size, size);
+#endif
             unified.end(results);
             cy0 += results[0];
             cl0 += results[1];
             mis0 += results[2];
             cref0 += results[3];
             cmis0 += results[4];
-            
-            
+
+
             auto start_time = std::chrono::steady_clock::now();
             unified.start();
             json.exec_stage1();
@@ -86,7 +79,12 @@ int main(int argc, char **argv) {
             std::chrono::duration<double> stage1_time = stage1_end_time - start_time;
 
             unified.start();
+#if USETAPE
+            MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
+            tape_writer._parse_value();
+#else
             json.exec_stage2();
+#endif
             unified.end(results);
             cy2 += results[0];
             cl2 += results[1];
@@ -95,13 +93,17 @@ int main(int argc, char **argv) {
             cmis2 += results[4];
             std::chrono::duration<double> stage2_time = std::chrono::steady_clock::now() - stage1_end_time;
             double runtime = stage1_time.count() + stage2_time.count();
-            
+
             total_time += runtime;
             best_time = std::min(best_time, runtime);
             total_stage1_time += stage1_time.count();
             total_stage2_time += stage2_time.count();
 
+#if USETAPE
+            if (PRINTJSON && i == iterations - 1) tape.print_json();
+#else
             if (PRINTJSON && i == iterations - 1) print_json(json.document);
+#endif
 
             unified.start();
             aligned_free(input);
@@ -150,5 +152,29 @@ int main(int argc, char **argv) {
         printf("Best runtime: %.6lf s, speed: %.2lf MB/s\n",
                best_time, (size / 1024.0 / 1024.0) / best_time);
     }
+}
+
+int main(int argc, char **argv) {
+
+//    test_extract_mask();
+//    test_extract_warp_mask();
+//    test_tfn_value();
+
+//    test_parse(true);
+//    test_parse_str_naive();
+//    test_parse_str_avx();
+//    test_parse_str_per_bit();
+//    test_parse_string();
+//    test_parse_float();
+//    test_translate();
+
+//    test_remove_escaper();
+
+//    if (argc > 1) {
+//        test_tape(argv[1]);
+//    }
+
+    run(argc, argv);
+
     return 0;
 }

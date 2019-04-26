@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 
 static const size_t ALIGNMENT_SIZE = 64;
 
@@ -29,5 +30,11 @@ template <typename T>
 static inline void aligned_free(const T *memblock) {
     aligned_free<T>(const_cast<T *>(memblock));
 }
+
+void print_indent(int indent);
+
+double plain_convert(long long int value);
+
+long long int plain_convert(double value);
 
 #endif // MERCURYJSON_UTILS_H
