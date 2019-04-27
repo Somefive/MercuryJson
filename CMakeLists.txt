@@ -9,7 +9,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 else ()
     message("Using non-Clang compiler ${CMAKE_CXX_COMPILER_ID}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mpclmul -mbmi -mbmi2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx2 -mpclmul -mbmi -mbmi2 -pthread")
 endif ()
 
 set(SOURCE_FILES
