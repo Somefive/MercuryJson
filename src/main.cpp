@@ -117,10 +117,14 @@ void run(int argc, char **argv) {
             total_stage1_time += stage1_time.count();
             total_stage2_time += stage2_time.count();
 
-#if USE_TAPE
-            if (PRINT_JSON && i == iterations - 1) tape.print_json();
-#else
-            if (PRINT_JSON && i == iterations - 1) print_json(json.document);
+#if PRINT_JSON
+            if (i == iterations - 1) {
+# if USE_TAPE
+                tape.print_json();
+# else
+                print_json(json.document);
+# endif
+            }
 #endif
 #if PERF_EVENTS
             unified.start();

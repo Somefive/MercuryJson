@@ -1,11 +1,8 @@
 #ifndef MERCURYJSON_BLOCK_ALLOCATOR_HPP
 #define MERCURYJSON_BLOCK_ALLOCATOR_HPP
 
+#include "flags.h"
 #include "utils.h"
-
-#ifndef USE_BLOCK_ALLOCATOR
-#define USE_BLOCK_ALLOCATOR 1
-#endif
 
 
 namespace MercuryJson {

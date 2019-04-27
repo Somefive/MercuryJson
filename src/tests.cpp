@@ -1,3 +1,5 @@
+#include "tests.h"
+
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -13,7 +15,6 @@
 
 #include "mercuryparser.h"
 #include "tape.h"
-#include "tests.h"
 #include "utils.h"
 
 

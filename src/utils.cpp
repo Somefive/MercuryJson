@@ -1,9 +1,9 @@
+#include "utils.h"
+
 #include <stdexcept>
 
 #include <cstdio>
 #include <cstdlib>
-
-#include "utils.h"
 
 
 char *read_file(const char *filename, size_t *size) {

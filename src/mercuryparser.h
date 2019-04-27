@@ -1,6 +1,8 @@
 #ifndef MERCURYJSON_MERCURYPARSER_H
 #define MERCURYJSON_MERCURYPARSER_H
 
+#include <immintrin.h>
+
 #include <map>
 #include <string>
 #include <string_view>
@@ -8,22 +10,7 @@
 #include <vector>
 
 #include "block_allocator.hpp"
-
-#ifndef STATIC_CMPEQ_MASK
-#define STATIC_CMPEQ_MASK 0
-#endif
-
-#ifndef PARSE_STR_MODE
-#define PARSE_STR_MODE 1  // 0 for naive, 1 for avx, 2 for per_bit
-#endif
-
-#ifndef PARSE_STR_FULLY_AXV
-#define PARSE_STR_FULLY_AXV 0
-#endif
-
-#ifndef PARSE_NUMBER_AVX
-#define PARSE_NUMBER_AVX 1
-#endif
+#include "flags.h"
 
 
 namespace MercuryJson {
@@ -108,14 +95,14 @@ namespace MercuryJson {
     class JSON {
     public:
         char *input;
-        size_t input_len;
-        size_t *indices, *idx_ptr;
-#if PARSE_STR_MODE == 2
+        size_t input_len, num_indices;
+        size_t *indices;
+        const size_t *idx_ptr;
+#if ALLOC_PARSED_STR
         char *literals;
-        size_t literals_size;
 #endif
 
-        void _error(const char *expected, char encountered, size_t index);
+        [[noreturn]] void _error(const char *expected, char encountered, size_t index);
 
         JsonValue *_parse_value();
         JsonValue *_parse_object();
@@ -149,9 +136,7 @@ namespace MercuryJson {
 
     inline __m256i convert_to_mask(u_int32_t input);
 
-    void __print_m256i(__m256i raw);
     void __printChar_m256i(__m256i raw);
-    void __print(Warp &raw);
     void __printChar(Warp &raw);
 
     template <char c>

@@ -1,3 +1,5 @@
+#include "mercuryparser.h"
+
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -10,20 +12,15 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <thread>
 #include <variant>
 #include <vector>
 
-#include "mercuryparser.h"
 #include "constants.h"
 
 
 namespace MercuryJson {
 
-    void __print(Warp &raw) {
-        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
-        for (size_t i = 0; i < 64; ++i) printf("%2x ", vals[i]);
-        printf("\n");
-    }
 
     void __printChar(Warp &raw) {
         auto *vals = reinterpret_cast<u_int8_t *>(&raw);
@@ -126,14 +123,8 @@ namespace MercuryJson {
         *base = next_base;
     }
 
-    void __print_m256i(__m256i raw) {
-        u_int8_t *vals = reinterpret_cast<u_int8_t *>(&raw);
-        for (size_t i = 0; i < 32; ++i) printf("%2x ", vals[i]);
-        printf("\n");
-    }
-
     void __printChar_m256i(__m256i raw) {
-        u_int8_t *vals = reinterpret_cast<u_int8_t *>(&raw);
+        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
         for (size_t i = 0; i < 32; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
@@ -247,6 +238,8 @@ namespace MercuryJson {
                     break;
                 case '\0':
                     context[(*length)++] = '0';
+                    break;
+                default:
                     break;
             }
 //            context[(*length)++] = ']';
@@ -445,7 +438,7 @@ namespace MercuryJson {
             __error("invalid null value", s, offset);
     }
 
-    void JSON::_error(const char *expected, char encountered, size_t index) {
+    [[noreturn]] void JSON::_error(const char *expected, char encountered, size_t index) {
         std::stringstream stream;
         char _encounter[3];
         size_t len = 0;
@@ -590,21 +583,15 @@ namespace MercuryJson {
         return value;
     }
 
-    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(
-#if PARSE_STR_MODE == 2
-            size * 2  // when using parse_str_per_bit, we allocate memory for parsed strings
-#else
-            size
-#endif
-    ) {
-        this->input = document;
-        this->input_len = size;
+    JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size) {
+        input = document;
+        input_len = size;
         this->document = nullptr;
 
-        this->idx_ptr = this->indices = new size_t[size];  // TODO: Make this a dynamic-sized array
-#if PARSE_STR_MODE == 2
-        this->literals = new char[size];
-        this->literals_size = 0;
+        idx_ptr = indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+        num_indices = 0;
+#if ALLOC_PARSED_STR
+        literals = new char[size];
 #endif
 
         if (!manual_construct) {
@@ -614,13 +601,12 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage1() {
-        size_t base = 0;
         u_int64_t prev_escape_mask = 0;
         u_int64_t prev_quote_mask = 0;
         u_int64_t prev_pseudo_mask = 0;
-        for (size_t offset = 0; offset < this->input_len; offset += 64) {
-            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(this->input + offset));
-            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(this->input + offset + 32));
+        for (size_t offset = 0; offset < input_len; offset += 64) {
+            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset));
+            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset + 32));
             Warp warp(_input2, _input1);
             u_int64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
             u_int64_t quote_mask = 0;
@@ -629,18 +615,18 @@ namespace MercuryJson {
             extract_structural_whitespace_characters(warp, literal_mask, &structural_mask, &whitespace_mask);
             u_int64_t pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
-            construct_structural_character_pointers(pseudo_mask, offset, this->indices, &base);
+            construct_structural_character_pointers(pseudo_mask, offset, indices, &num_indices);
         }
     }
 
     void JSON::exec_stage2() {
-        this->document = _parse_value();
+        document = _parse_value();
         size_t idx;
         char ch;
         peek_char();
         if (ch != 0) error("file end");
-        delete[] this->indices;
-        this->indices = nullptr;
+        delete[] indices;
+        indices = nullptr;
     }
 
 #undef next_char
@@ -648,11 +634,14 @@ namespace MercuryJson {
 #undef expect
 #undef error
 
+#if ALLOC_PARSED_STR
     JSON::~JSON() {
-#if PARSE_STR_MODE == 2
-        delete[] this->literals;
-#endif
+        delete[] literals;
     }
+#else
+    JSON::~JSON() = default;
+#endif
+
 
 //    void parse(char *input, size_t len, size_t *indices) {
 //        std::deque<JsonValue> values(MAX_DEPTH);

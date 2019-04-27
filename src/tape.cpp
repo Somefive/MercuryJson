@@ -1,8 +1,10 @@
+#include "tape.h"
+
 #include <cstring>
 
 #include "constants.h"
+#include "flags.h"
 #include "mercuryparser.h"
-#include "tape.h"
 #include "utils.h"
 
 
@@ -154,6 +156,8 @@ namespace MercuryJson {
             ch = input[idx = *idxptr++];
         }
     }
+
+#undef __expect
 
     size_t TapeWriter::_parse_str(size_t idx) {
         size_t index = tape->literals_size;
