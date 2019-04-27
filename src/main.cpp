@@ -81,6 +81,7 @@ void run(int argc, char **argv) {
             unified.start();
 #endif
             json.exec_stage1();
+            if (i == 0) printf("Structural characters: %lu\n", json.num_indices);
 #if PERF_EVENTS
             unified.end(results);
             cy1 += results[0];

@@ -544,17 +544,13 @@ namespace MercuryJson {
 
     void JSON::_thread_parse_str(size_t pid) {
         auto start_time = std::chrono::steady_clock::now();
-        size_t idx, cnt = 0;
-        const size_t *idx_ptr = indices;  // deliberate shadowing
+        size_t idx;
+        const size_t *idx_ptr = indices + pid * num_indices / kNumThreads;  // deliberate shadowing
+        const size_t *end_ptr = indices + (pid + 1) * num_indices / kNumThreads;
         char ch;
         do {
             peek_char();
             if (ch == '"') {
-                cnt += 1;
-                if (cnt % kNumThreads != pid) {
-                    ++idx_ptr;
-                    continue;
-                }
 #if ALLOC_PARSED_STR
                 char *dest = literals + idx + 1;
 #else
@@ -571,7 +567,7 @@ namespace MercuryJson {
                 (input, dest, nullptr, idx + 1);
             }
             ++idx_ptr;
-        } while (idx_ptr - indices < num_indices);
+        } while (idx_ptr != end_ptr);
         std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
         printf("parse str thread: %.6lf\n", runtime.count());
     }
