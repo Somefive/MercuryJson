@@ -21,6 +21,7 @@
 
 namespace MercuryJson {
 
+    static const size_t kNumThreads = 2;
 
     void __printChar(Warp &raw) {
         auto *vals = reinterpret_cast<u_int8_t *>(&raw);
@@ -366,10 +367,10 @@ namespace MercuryJson {
         }
     }
 
-    void parse_str_naive(char *src, char *dest, size_t *len, size_t offset) {
+    void parse_str_naive(const char *src, char *dest, size_t *len, size_t offset) {
         bool escape = false;
-        char *ptr = dest == nullptr ? src : dest, *base = ptr;
-        for (char *end = src + offset; escape || *end != '"'; ++end) {
+        char *ptr = dest == nullptr ? const_cast<char *>(src) : dest, *base = ptr;
+        for (const char *end = src + offset; escape || *end != '"'; ++end) {
             if (escape) {
                 switch (*end) {
                     case '"':
@@ -519,20 +520,60 @@ namespace MercuryJson {
         return allocator.construct(array);
     }
 
+    // TODO: Adopt producer-consumer logic here to move string parsing to other thread(s).
+
     inline char *JSON::_parse_str(size_t idx) {
-#if PARSE_STR_MODE == 2
-        char *dest = this->literals + this->literals_size;
-        size_t len;
-        parse_str_per_bit(input, dest, &len, idx + 1);
-        this->literals_size += len;
-        return dest;
-#elif PARSE_STR_MODE == 1
-        parse_str_avx(input, nullptr, nullptr, idx + 1);
-        return input + idx + 1;
+#if ALLOC_PARSED_STR
+        char *dest = literals + idx + 1;
 #else
-        parse_str_naive(input, nullptr, nullptr, idx + 1);
-        return input + idx + 1;
+        char *dest = input + idx + 1;
 #endif
+
+#if !PARSE_STR_MULTITHREAD
+# if PARSE_STR_MODE == 2
+        parse_str_per_bit
+# elif PARSE_STR_MODE == 1
+        parse_str_avx
+# elif PARSE_STR_MODE == 0
+        parse_str_naive
+# endif
+        (input, dest, nullptr, idx + 1);
+#endif
+        return dest;
+    }
+
+    void JSON::_thread_parse_str(size_t pid) {
+        auto start_time = std::chrono::steady_clock::now();
+        size_t idx, cnt = 0;
+        const size_t *idx_ptr = indices;  // deliberate shadowing
+        char ch;
+        do {
+            peek_char();
+            if (ch == '"') {
+                cnt += 1;
+                if (cnt % kNumThreads != pid) {
+                    ++idx_ptr;
+                    continue;
+                }
+#if ALLOC_PARSED_STR
+                char *dest = literals + idx + 1;
+#else
+                char *dest = input + idx + 1;
+#endif
+
+#if PARSE_STR_MODE == 2
+                parse_str_per_bit
+#elif PARSE_STR_MODE == 1
+                parse_str_avx
+#elif PARSE_STR_MODE == 0
+                parse_str_naive
+#endif
+                (input, dest, nullptr, idx + 1);
+            }
+            ++idx_ptr;
+        } while (idx_ptr - indices < num_indices);
+        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
+        printf("parse str thread: %.6lf\n", runtime.count());
     }
 
     JsonValue *JSON::_parse_value() {
@@ -620,11 +661,31 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage2() {
+        std::chrono::time_point<std::chrono::steady_clock> start_time;
+        std::chrono::duration<double> runtime;
+#if PARSE_STR_MULTITHREAD
+        start_time = std::chrono::steady_clock::now();
+        std::vector<std::thread> parse_str_threads;
+        for (size_t i = 0; i < kNumThreads; ++i)
+            parse_str_threads.emplace_back(&JSON::_thread_parse_str, this, i);
+        runtime = std::chrono::steady_clock::now() - start_time;
+        printf("thread spawn: %.6lf\n", runtime.count());
+#endif
+        start_time = std::chrono::steady_clock::now();
         document = _parse_value();
         size_t idx;
         char ch;
         peek_char();
         if (ch != 0) error("file end");
+        runtime = std::chrono::steady_clock::now() - start_time;
+        printf("parse document: %.6lf\n", runtime.count());
+#if PARSE_STR_MULTITHREAD
+        start_time = std::chrono::steady_clock::now();
+        for (std::thread &thread : parse_str_threads)
+            thread.join();
+        runtime = std::chrono::steady_clock::now() - start_time;
+        printf("wait join: %.6lf\n", runtime.count());
+#endif
         delete[] indices;
         indices = nullptr;
     }
@@ -839,10 +900,10 @@ namespace MercuryJson {
         }
     }
 
-    void parse_str_avx(char *src, char *dest, size_t *len, size_t offset) {
-        char *_src = src;
+    void parse_str_avx(const char *src, char *dest, size_t *len, size_t offset) {
+        const char *_src = src;
         src += offset;
-        if (dest == nullptr) dest = src;
+        if (dest == nullptr) dest = const_cast<char *>(src);
         char *base = dest;
         u_int64_t prev_odd_backslash_ending_mask = 0ULL;
         while (true) {

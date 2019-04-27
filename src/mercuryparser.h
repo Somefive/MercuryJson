@@ -94,6 +94,9 @@ namespace MercuryJson {
 
     class JSON {
     public:
+#if ALLOC_PARSED_STR
+        const
+#endif
         char *input;
         size_t input_len, num_indices;
         size_t *indices;
@@ -112,6 +115,8 @@ namespace MercuryJson {
 
         char *_parse_str(size_t idx);
 
+        void _thread_parse_str(size_t pid);
+
     public:
         JsonValue *document;
 
@@ -129,8 +134,8 @@ namespace MercuryJson {
     std::variant<double, long long int> parse_number(const char *s, bool *is_decimal, size_t offset = 0U);
 
     void parse_str_per_bit(const char *src, char *dest, size_t *len = nullptr, size_t offset = 0U);
-    void parse_str_naive(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
-    void parse_str_avx(char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
+    void parse_str_naive(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
+    void parse_str_avx(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, u_int64_t escaper_mask);
 

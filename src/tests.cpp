@@ -393,7 +393,7 @@ void test_tape(const char *filename) {
     auto json = MercuryJson::JSON(input, size, true);
     json.exec_stage1();
     Tape tape(size, size);
-    TapeWriter tape_writer(&tape, json.input, json.indices);
+    TapeWriter tape_writer(&tape, const_cast<char *>(json.input), json.indices);
     tape_writer._parse_value();
     tape.print_json();
 }
