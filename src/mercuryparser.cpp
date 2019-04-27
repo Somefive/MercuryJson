@@ -543,7 +543,7 @@ namespace MercuryJson {
     }
 
     void JSON::_thread_parse_str(size_t pid) {
-        auto start_time = std::chrono::steady_clock::now();
+//        auto start_time = std::chrono::steady_clock::now();
         size_t idx;
         const size_t *idx_ptr = indices + pid * num_indices / kNumThreads;  // deliberate shadowing
         const size_t *end_ptr = indices + (pid + 1) * num_indices / kNumThreads;
@@ -568,8 +568,8 @@ namespace MercuryJson {
             }
             ++idx_ptr;
         } while (idx_ptr != end_ptr);
-        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
-        printf("parse str thread: %.6lf\n", runtime.count());
+//        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
+//        printf("parse str thread: %.6lf\n", runtime.count());
     }
 
     JsonValue *JSON::_parse_value() {
@@ -657,30 +657,30 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage2() {
-        std::chrono::time_point<std::chrono::steady_clock> start_time;
-        std::chrono::duration<double> runtime;
+//        std::chrono::time_point<std::chrono::steady_clock> start_time;
+//        std::chrono::duration<double> runtime;
 #if PARSE_STR_MULTITHREAD
-        start_time = std::chrono::steady_clock::now();
+//        start_time = std::chrono::steady_clock::now();
         std::vector<std::thread> parse_str_threads;
         for (size_t i = 0; i < kNumThreads; ++i)
             parse_str_threads.emplace_back(&JSON::_thread_parse_str, this, i);
-        runtime = std::chrono::steady_clock::now() - start_time;
-        printf("thread spawn: %.6lf\n", runtime.count());
+//        runtime = std::chrono::steady_clock::now() - start_time;
+//        printf("thread spawn: %.6lf\n", runtime.count());
 #endif
-        start_time = std::chrono::steady_clock::now();
+//        start_time = std::chrono::steady_clock::now();
         document = _parse_value();
         size_t idx;
         char ch;
         peek_char();
         if (ch != 0) error("file end");
-        runtime = std::chrono::steady_clock::now() - start_time;
-        printf("parse document: %.6lf\n", runtime.count());
+//        runtime = std::chrono::steady_clock::now() - start_time;
+//        printf("parse document: %.6lf\n", runtime.count());
 #if PARSE_STR_MULTITHREAD
-        start_time = std::chrono::steady_clock::now();
+//        start_time = std::chrono::steady_clock::now();
         for (std::thread &thread : parse_str_threads)
             thread.join();
-        runtime = std::chrono::steady_clock::now() - start_time;
-        printf("wait join: %.6lf\n", runtime.count());
+//        runtime = std::chrono::steady_clock::now() - start_time;
+//        printf("wait join: %.6lf\n", runtime.count());
 #endif
         delete[] indices;
         indices = nullptr;

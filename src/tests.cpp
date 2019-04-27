@@ -238,7 +238,7 @@ void test_parse(bool print) {
     size_t size;
 //    char *buf = read_file("data/test_extract_escape_mask.json", &size);
 //    char *buf = read_file("data/pp.json", &size);
-    char *buf = read_file("data/demographic_statistics_by_zipcode.json", &size);
+    char *buf = read_file("data/non-ascii.json", &size);
     auto json = JSON(buf, size);
     if (print) print_json(json.document);
 }
