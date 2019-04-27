@@ -1,6 +1,6 @@
 #include "tape.h"
 
-#include <cstring>
+#include <string.h>
 
 #include "constants.h"
 #include "flags.h"

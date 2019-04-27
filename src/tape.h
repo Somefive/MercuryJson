@@ -1,8 +1,8 @@
 #ifndef MERCURYJSON_TAPE_H
 #define MERCURYJSON_TAPE_H
 
-#include <cstdio>
 #include <immintrin.h>
+#include <stdio.h>
 
 #include "mercuryparser.h"
 #include "utils.h"

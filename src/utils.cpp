@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 
 
 char *read_file(const char *filename, size_t *size) {

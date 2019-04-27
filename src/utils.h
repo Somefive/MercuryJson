@@ -1,9 +1,10 @@
 #ifndef MERCURYJSON_UTILS_H
 #define MERCURYJSON_UTILS_H
 
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
+
+#include <stdio.h>
+#include <stdlib.h>
 
 
 static const size_t ALIGNMENT_SIZE = 64;

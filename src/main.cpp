@@ -1,9 +1,9 @@
 #include <chrono>
 #include <vector>
 
-#include <cstdio>
-#include <cstring>
 #include <immintrin.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "linux-perf-events.h"
 #include "mercuryparser.h"

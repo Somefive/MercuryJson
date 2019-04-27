@@ -1,9 +1,9 @@
 #include "mercuryparser.h"
 
-#include <cmath>
-#include <cstdio>
-#include <cstring>
 #include <immintrin.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <algorithm>
 #include <bitset>

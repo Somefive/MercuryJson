@@ -1,6 +1,6 @@
 .vscode/
 dist/
-cmake-build-debug/
+cmake-build-*/
 cmake_install.cmake
 CMakeCache.txt
 main

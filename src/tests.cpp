@@ -1,11 +1,11 @@
 #include "tests.h"
 
-#include <cmath>
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
 #include <immintrin.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 #include <algorithm>
 #include <bitset>
