@@ -20,6 +20,11 @@
 # endif
 #endif
 
+// Whether to use stack-based shift-reduce parsing
+#ifndef SHIFT_REDUCE_PARSER
+# define SHIFT_REDUCE_PARSER 1
+#endif
+
 
 // Whether to use fully-vectorized string parsing implementation. Only works when PARSE_STR_MODE == 1.
 #ifndef PARSE_STR_FULLY_AXV

@@ -56,11 +56,11 @@ namespace MercuryJson {
 //    typedef std::vector<std::pair<std::string_view, JsonValue *>> JsonObject;
 //    typedef std::vector<JsonValue *> JsonArray;
     struct JsonObject {
-        char *key;
+        const char *key;
         JsonValue *value;
         JsonObject *next;
 
-        explicit JsonObject(char *key, JsonValue *value, JsonObject *next = nullptr)
+        explicit JsonObject(const char *key, JsonValue *value, JsonObject *next = nullptr)
                 : key(key), value(value), next(next) {}
     };
 
@@ -73,7 +73,7 @@ namespace MercuryJson {
     };
 
     struct JsonValue {
-        enum { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC } type;
+        enum ValueType : int { TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC } type;
         union {
             bool boolean;
             const char *str;
@@ -83,6 +83,7 @@ namespace MercuryJson {
             double decimal;
         };
 
+        //@formatter:off
         explicit JsonValue() : type(TYPE_NULL) {}
         explicit JsonValue(bool value) : type(TYPE_BOOL), boolean(value) {}
         explicit JsonValue(const char *value) : type(TYPE_STR), str(value) {}
@@ -90,6 +91,7 @@ namespace MercuryJson {
         explicit JsonValue(JsonArray *value) : type(TYPE_ARR), array(value) {}
         explicit JsonValue(long long int value) : type(TYPE_INT), integer(value) {}
         explicit JsonValue(double value) : type(TYPE_DEC), decimal(value) {}
+        //@formatter:on
     };
 
     class JSON {
@@ -117,6 +119,8 @@ namespace MercuryJson {
 
         void _thread_parse_str(size_t pid);
 
+        JsonValue *_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end);
+
     public:
         JsonValue *document;
 
@@ -127,6 +131,8 @@ namespace MercuryJson {
 
         ~JSON();
     };
+
+    void print_json(MercuryJson::JsonValue *value, int indent = 0);
 
     bool parse_true(const char *s, size_t offset = 0U);
     bool parse_false(const char *s, size_t offset = 0U);

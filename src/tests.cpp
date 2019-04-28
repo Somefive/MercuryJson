@@ -183,57 +183,6 @@ void test_tfn_value() {
 
 using namespace MercuryJson;
 
-void print_json(JsonValue *value, int indent) {
-    int cnt;
-    switch (value->type) {
-        case JsonValue::TYPE_NULL:
-            std::cout << "null";
-            break;
-        case JsonValue::TYPE_BOOL:
-            if (value->boolean) std::cout << "true";
-            else std::cout << "false";
-            break;
-        case JsonValue::TYPE_STR:
-            std::cout << "\"" << value->str << "\"";
-            break;
-        case JsonValue::TYPE_OBJ:
-            std::cout << "{" << std::endl;
-            cnt = 0;
-            for (auto *elem = value->object; elem; elem = elem->next) {
-                print_indent(indent + 2);
-                std::cout << "\"" << elem->key << "\": ";
-                print_json(elem->value, indent + 2);
-                if (elem->next != nullptr)
-                    std::cout << ",";
-                std::cout << std::endl;
-                ++cnt;
-            }
-            print_indent(indent);
-            std::cout << "}";
-            break;
-        case JsonValue::TYPE_ARR:
-            std::cout << "[" << std::endl;
-            cnt = 0;
-            for (auto *elem = value->array; elem; elem = elem->next) {
-                print_indent(indent + 2);
-                print_json(elem->value, indent + 2);
-                if (elem->next != nullptr)
-                    std::cout << ",";
-                std::cout << std::endl;
-                ++cnt;
-            }
-            print_indent(indent);
-            std::cout << "]";
-            break;
-        case JsonValue::TYPE_INT:
-            std::cout << value->integer;
-            break;
-        case JsonValue::TYPE_DEC:
-            std::cout << value->decimal;
-            break;
-    }
-}
-
 void test_parse(bool print) {
     size_t size;
 //    char *buf = read_file("data/test_extract_escape_mask.json", &size);

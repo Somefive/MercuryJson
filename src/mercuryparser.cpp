@@ -202,6 +202,57 @@ namespace MercuryJson {
         *base = next_base;
     }
 
+    void print_json(JsonValue *value, int indent) {
+        int cnt;
+        switch (value->type) {
+            case JsonValue::TYPE_NULL:
+                std::cout << "null";
+                break;
+            case JsonValue::TYPE_BOOL:
+                if (value->boolean) std::cout << "true";
+                else std::cout << "false";
+                break;
+            case JsonValue::TYPE_STR:
+                std::cout << "\"" << value->str << "\"";
+                break;
+            case JsonValue::TYPE_OBJ:
+                std::cout << "{" << std::endl;
+                cnt = 0;
+                for (auto *elem = value->object; elem; elem = elem->next) {
+                    print_indent(indent + 2);
+                    std::cout << "\"" << elem->key << "\": ";
+                    print_json(elem->value, indent + 2);
+                    if (elem->next != nullptr)
+                        std::cout << ",";
+                    std::cout << std::endl;
+                    ++cnt;
+                }
+                print_indent(indent);
+                std::cout << "}";
+                break;
+            case JsonValue::TYPE_ARR:
+                std::cout << "[" << std::endl;
+                cnt = 0;
+                for (auto *elem = value->array; elem; elem = elem->next) {
+                    print_indent(indent + 2);
+                    print_json(elem->value, indent + 2);
+                    if (elem->next != nullptr)
+                        std::cout << ",";
+                    std::cout << std::endl;
+                    ++cnt;
+                }
+                print_indent(indent);
+                std::cout << "]";
+                break;
+            case JsonValue::TYPE_INT:
+                std::cout << value->integer;
+                break;
+            case JsonValue::TYPE_DEC:
+                std::cout << value->decimal;
+                break;
+        }
+    }
+
     /* EBNF of JSON:
      *
      * json            = value
@@ -520,8 +571,6 @@ namespace MercuryJson {
         return allocator.construct(array);
     }
 
-    // TODO: Adopt producer-consumer logic here to move string parsing to other thread(s).
-
     inline char *JSON::_parse_str(size_t idx) {
 #if ALLOC_PARSED_STR
         char *dest = literals + idx + 1;
@@ -557,6 +606,7 @@ namespace MercuryJson {
                 char *dest = input + idx + 1;
 #endif
 
+                //@formatter:off
 #if PARSE_STR_MODE == 2
                 parse_str_per_bit
 #elif PARSE_STR_MODE == 1
@@ -565,6 +615,7 @@ namespace MercuryJson {
                 parse_str_naive
 #endif
                 (input, dest, nullptr, idx + 1);
+                //@formatter:on
             }
             ++idx_ptr;
         } while (idx_ptr != end_ptr);
@@ -620,6 +671,310 @@ namespace MercuryJson {
         return value;
     }
 
+    namespace shift_reduce_impl {
+        struct JsonPartialValue;
+
+        struct JsonPartialObject {
+            const char *key;
+            JsonPartialValue *value;
+            JsonPartialObject *next;
+            JsonPartialObject *final;
+
+            explicit JsonPartialObject(const char *key, JsonPartialValue *value, JsonPartialObject *next = nullptr)
+                    : key(key), value(value), next(next), final(this) {}
+        };
+
+        struct JsonPartialArray {
+            JsonPartialValue *value;
+            JsonPartialArray *next;
+            JsonPartialArray *final;
+
+            explicit JsonPartialArray(JsonPartialValue *value, JsonPartialArray *next = nullptr)
+                    : value(value), next(next), final(this) {}
+        };
+
+        struct JsonPartialValue {
+            enum ValueType : int {
+                TYPE_NULL, TYPE_BOOL, TYPE_STR, TYPE_OBJ, TYPE_ARR, TYPE_INT, TYPE_DEC,
+                TYPE_PARTIAL_OBJ, TYPE_PARTIAL_ARR, TYPE_CHAR
+            } type;
+
+            union {
+                bool boolean;
+                const char *str;
+                JsonObject *object;
+                JsonArray *array;
+                JsonPartialObject *partial_object;
+                JsonPartialArray *partial_array;
+                long long int integer;
+                double decimal;
+                char structural;
+            };
+
+            //@formatter:off
+            explicit JsonPartialValue() : type(TYPE_NULL) {}
+            explicit JsonPartialValue(bool value) : type(TYPE_BOOL), boolean(value) {}
+            explicit JsonPartialValue(const char *value) : type(TYPE_STR), str(value) {}
+            explicit JsonPartialValue(JsonObject *value) : type(TYPE_OBJ), object(value) {}
+            explicit JsonPartialValue(JsonArray *value) : type(TYPE_ARR), array(value) {}
+            explicit JsonPartialValue(long long int value) : type(TYPE_INT), integer(value) {}
+            explicit JsonPartialValue(double value) : type(TYPE_DEC), decimal(value) {}
+
+            explicit JsonPartialValue(JsonPartialObject *value) : type(TYPE_PARTIAL_OBJ), partial_object(value) {}
+            explicit JsonPartialValue(JsonPartialArray *value) : type(TYPE_PARTIAL_ARR), partial_array(value) {}
+            explicit JsonPartialValue(char value) : type(TYPE_CHAR), structural(value) {}
+            //@formatter:on
+        };
+
+        static std::deque<JsonPartialValue *> stack;
+
+        template <typename ...Args>
+        inline bool check_stack_top();
+        // Must forward declare, otherwise recursive invocation in top-most specialization would match itself with
+        // implicitly converted first argument.
+        template <typename ...Args>
+        inline bool check_stack_top(char first, Args ...args);
+        template <typename ...Args>
+        inline bool check_stack_top(JsonPartialValue::ValueType first, Args ...args);
+
+        template <>
+        inline bool check_stack_top() { return true; }
+
+        template <typename ...Args>
+        inline bool check_stack_top(bool first, Args ...args) {  // true for any fully-parsed JSON value
+            if (stack.size() <= sizeof...(args)) return false;
+            assert(first);
+            auto *top = stack[stack.size() - sizeof...(args) - 1];
+            switch (top->type) {
+                case JsonPartialValue::TYPE_PARTIAL_OBJ:
+                case JsonPartialValue::TYPE_PARTIAL_ARR:
+                case JsonPartialValue::TYPE_CHAR:
+                    return false;
+                default:
+                    break;
+            }
+            return check_stack_top(args...);
+        }
+
+        template <typename ...Args>
+        inline bool check_stack_top(char first, Args ...args) {
+            if (stack.size() <= sizeof...(args)) return false;
+            auto *top = stack[stack.size() - sizeof...(args) - 1];
+            if (top->type != JsonPartialValue::TYPE_CHAR || top->structural != first) return false;
+            return check_stack_top(args...);
+        }
+
+        template <typename ...Args>
+        inline bool check_stack_top(JsonPartialValue::ValueType first, Args ...args) {
+            if (stack.size() <= sizeof...(args)) return false;
+            auto *top = stack[stack.size() - sizeof...(args) - 1];
+            if (top->type != first) return false;
+            return check_stack_top(args...);
+        }
+
+        template <size_t num_pops = 1>
+        inline void pop_stack() {
+            if constexpr(num_pops > 0) {
+                stack.pop_back();
+                pop_stack < num_pops - 1 > ();
+            }
+        }
+
+        inline bool check_stack_pos(size_t pos, char ch) {  // pos starts from 1, counts from stack top.
+            if (stack.size() < pos) return false;
+            auto *const &top = stack[stack.size() - pos];
+            return top->type == JsonPartialValue::TYPE_CHAR && top->structural == ch;
+        }
+
+        inline void print_json(JsonPartialValue *value, size_t indent = 0) {
+            switch (value->type) {
+                case JsonPartialValue::TYPE_PARTIAL_OBJ:
+                case JsonPartialValue::TYPE_PARTIAL_ARR:
+                    value->type = static_cast<JsonPartialValue::ValueType>(static_cast<int>(value->type) - 4);
+                    print_indent(indent);
+                    std::cout << "(partial) ";
+                case JsonPartialValue::TYPE_NULL:
+                case JsonPartialValue::TYPE_BOOL:
+                case JsonPartialValue::TYPE_STR:
+                case JsonPartialValue::TYPE_OBJ:
+                case JsonPartialValue::TYPE_ARR:
+                case JsonPartialValue::TYPE_INT:
+                case JsonPartialValue::TYPE_DEC:
+                    print_json(reinterpret_cast<JsonValue *>(value), indent);
+                    break;
+                case JsonPartialValue::TYPE_CHAR:
+                    print_indent(indent);
+                    std::cout << "'" << value->structural << "'";
+                    break;
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    JsonValue *JSON::_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end) {
+        using shift_reduce_impl::stack;
+        using shift_reduce_impl::JsonPartialValue;
+        using shift_reduce_impl::JsonPartialObject;
+        using shift_reduce_impl::JsonPartialArray;
+        using shift_reduce_impl::check_stack_top;
+        using shift_reduce_impl::check_stack_pos;
+
+#define push_stack(...) ({ \
+        stack.push_back(allocator.construct<JsonPartialValue>(__VA_ARGS__)); \
+    })
+#define pop_stack(_n) ({ \
+        shift_reduce_impl::pop_stack<_n>(); \
+    })
+#define get_stack(_x) (stack[stack.size() - (_x)])
+
+        stack.clear();
+        while (idx_begin != idx_end) {
+            size_t idx = *idx_begin;
+            char ch = input[idx];
+
+            // Shift current value onto stack.
+            switch (ch) {
+                case '"':
+                    push_stack(_parse_str(idx));
+                    break;
+                case 't':
+                    push_stack(parse_true(input, idx));
+                    break;
+                case 'f':
+                    push_stack(parse_false(input, idx));
+                    break;
+                case 'n':
+                    parse_null(input, idx);
+                    push_stack();
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '-': {
+                    bool is_decimal;
+                    auto ret = parse_number(input, &is_decimal, idx);
+                    if (is_decimal) {
+                        push_stack(std::get<double>(ret));
+                    } else {
+                        push_stack(std::get<long long int>(ret));
+                    }
+                    break;
+                }
+                case '{':
+                case '[':
+                case '}':
+                case ']':
+                case ',':
+                case ':':
+                    push_stack(ch);
+                    break;
+                default:
+                    error("JSON value");
+            }
+
+            // Perform reduce on the stack.
+            // There will be at most two consecutive reduce ops:
+            //   1. From a partial array to array, or from a partial object to object.
+            //   2. Merge the previously constructed value with a partial array or partial object.
+            if (ch == '}') {
+                // "{", partial-object, "}"  =>  object
+                if (check_stack_top('{', '}')) {
+                    // Emtpy object.
+                    pop_stack(2);
+                    push_stack(static_cast<JsonObject *>(nullptr));
+                } else if (check_stack_top('{', JsonPartialValue::TYPE_PARTIAL_OBJ, '}')) {
+                    auto *obj = reinterpret_cast<JsonObject *>(get_stack(2)->partial_object);
+                    pop_stack(3);
+                    push_stack(obj);
+                }
+            } else if (ch == ']') {
+                // "[", partial-array, "]"  =>  array
+                if (check_stack_top('[', ']')) {
+                    // Emtpy array.
+                    pop_stack(2);
+                    push_stack(static_cast<JsonArray *>(nullptr));
+                } else if (check_stack_top('[', JsonPartialValue::TYPE_PARTIAL_ARR, ']')) {
+                    auto *arr = reinterpret_cast<JsonArray *>(get_stack(2)->partial_array);
+                    pop_stack(3);
+                    push_stack(arr);
+                } else if (check_stack_top('[', true, ']')) {
+                    // Construct singleton array.
+                    auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(2)), nullptr);
+                    pop_stack(3);
+                    push_stack(arr);
+                } else if (check_stack_top('[', JsonPartialValue::TYPE_PARTIAL_ARR, true, ']')) {
+                    // We have to manually match the final element in the array, because we only reduce to partial
+                    // array on commas (,).
+                    auto *partial_arr = get_stack(3)->partial_array;
+                    partial_arr->final->next = reinterpret_cast<JsonPartialArray *>(allocator.construct<JsonArray>(
+                            reinterpret_cast<JsonValue *>(get_stack(2)), nullptr));
+                    auto *arr = reinterpret_cast<JsonArray *>(partial_arr);
+                    pop_stack(4);
+                    push_stack(arr);
+                } else if (check_stack_top('[', true, ',', true, ']')) {
+                    auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(2)), nullptr);
+                    arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(4)), arr);
+                    pop_stack(5);
+                    push_stack(arr);
+                }
+            }
+
+            if (check_stack_pos(2, ':')) {
+                if (check_stack_top(JsonPartialValue::TYPE_STR, ':', true)) {
+                    // Construct singleton partial object.
+                    auto *key = get_stack(3)->str;
+                    auto *value = get_stack(1);
+                    auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
+                    pop_stack(3);
+                    if (check_stack_top(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
+                        // Merge with previous partial object.
+                        auto *prev_obj = get_stack(2)->partial_object;
+                        prev_obj->final = prev_obj->final->next = partial_obj;
+                        partial_obj = prev_obj;
+                        pop_stack(2);
+                    }
+                    push_stack(partial_obj);
+                }
+            } else if (ch == ',') {
+                // value, ","  =>  partial-array
+                if (check_stack_top(true, ',')) {
+                    // Construct a singleton partial array. Note that previous value must be of complete type,
+                    // otherwise we might aggressively match partial objects.
+                    auto *elem = get_stack(2);
+                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
+                    pop_stack(2);
+                    if (check_stack_top(JsonPartialValue::TYPE_PARTIAL_ARR)) {  // no trailing comma!
+                        // Merge with previous partial array.
+                        auto *prev_arr = get_stack(1)->partial_array;
+                        prev_arr->final = prev_arr->final->next = partial_arr;
+                        partial_arr = prev_arr;
+                        pop_stack(1);
+                    }
+                    push_stack(partial_arr);
+                }
+            }
+
+            ++idx_begin;
+        }
+//        std::cout << "Stack size: " << stack.size() << std::endl;
+//        for (size_t i = 0; i < stack.size(); ++i) {
+//            std::cout << "Element #" << i << ": ";
+//            shift_reduce_impl::print_json(stack[i]);
+//        }
+        assert(stack.size() == 1);
+        idx_ptr = idx_end;  // Consume the indices to satisfy null ending check.
+        return reinterpret_cast<JsonValue *>(stack.front());
+#undef push_stack
+#undef pop_stack
+    }
+
     JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size) {
         input = document;
         input_len = size;
@@ -668,7 +1023,11 @@ namespace MercuryJson {
 //        printf("thread spawn: %.6lf\n", runtime.count());
 #endif
 //        start_time = std::chrono::steady_clock::now();
+#if SHIFT_REDUCE_PARSER
+        document = _shift_reduce_parsing(indices, indices + num_indices - 1);  // final index is '\0'
+#else
         document = _parse_value();
+#endif
         size_t idx;
         char ch;
         peek_char();
@@ -698,162 +1057,6 @@ namespace MercuryJson {
 #else
     JSON::~JSON() = default;
 #endif
-
-
-//    void parse(char *input, size_t len, size_t *indices) {
-//        std::deque<JsonValue> values(MAX_DEPTH);
-//        std::vector<int> state_stack(MAX_DEPTH);
-//
-//        size_t idx;
-//        ParserState state = START;
-//        std::string key;
-//        JsonObject *cur_obj;
-//        JsonArray *cur_arr;
-//        JsonValue value;
-//        while ((idx = *indices++) < len) {
-//            JsonValue *last = get_last(values);
-//            char ch = input[idx];
-//
-//            switch (state) {
-//                case START:
-//                    switch (ch) {
-//                        case '{':
-//                            state_stack.push_back(state);
-//                            state = OBJECT_BEGIN;
-//                            break;
-//                        case '[':
-//                            state_stack.push_back(state);
-//                            state = ARRAY_BEGIN;
-//                            break;
-//                        default:
-//                            error("'{' or '['");
-//                    }
-//                    break;
-//                case OBJECT_BEGIN:
-//                    switch (ch) {
-//                        case '}':
-//                            next_state(SCOPE_END);
-//                            break;
-//                        case '"':
-//                            key = parse_str_naive(input + idx + 1);
-//                            state = OBJECT_ELEMS;
-//                            break;
-//                        default:
-//                            error("'}' or '\"'");
-//                    }
-//                case OBJECT_ELEMS:
-//                    expect_next(':');
-//                    cur_obj = values.back().object;
-//                    switch (ch) {
-//                        case '"':
-//                            value = JsonValue(parse_str_naive(input + idx + 1));
-//                            break;
-//                        case 't':
-//                            value = JsonValue(parse_true(input + idx));
-//                            break;
-//                        case 'f':
-//                            value = JsonValue(parse_false(input + idx));
-//                            break;
-//                        case 'n':
-//                            parse_null(input + idx);
-//                            value = JsonValue();
-//                            break;
-//                        case '0':
-//                        case '1':
-//                        case '2':
-//                        case '3':
-//                        case '4':
-//                        case '5':
-//                        case '6':
-//                        case '7':
-//                        case '8':
-//                        case '9':
-//                        case '-':
-//                            value = parseNumeric(input + idx);
-//                            break;
-//                        case '[':
-//                            state_stack.push_back(state);
-//                            state =
-//                    }
-//                    break;
-//                case ARRAY_ELEMS:
-//                    break;
-//                case OBJECT_CONTINUE:
-//                    break;
-//                case ARRAY_BEGIN:
-//                    break;
-//                case SCOPE_END:
-//                    break;
-//                case ARRAY_ELEMS:
-//                    break;
-//            }
-//            switch (ch) {
-//                case '{':
-//                    if (last && (last->type == JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found '{' after non-structural character");
-//                    values.push_back(JsonValue('{'));
-//                    break;
-//                case '[':
-//                    if (last && (last->type == JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found '[' after non-structural character");
-//                    values.push_back(JsonValue('['));
-//                    break;
-//                case ']':
-//
-//                    break;
-//                case '}':
-//                    break;
-//                case ':':
-//                    if (last && last->type != JsonValue::TYPE_STR)
-//                        throw std::runtime_error("found ':' after non-string value");
-//                    values.push_back(JsonValue(':'));
-//                    break;
-//                case ',':
-//                    if (last && (last->type == JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found ',' after structural character");
-//                    values.push_back(JsonValue(','));
-//                    break;
-//                case '"':
-//                    if (last && (last->type != JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found string after non-structural character");
-//                    // values.push_back(JsonValue(parse_str_naive(input + idx + 1)));
-//                    break;
-//                case '0':
-//                case '1':
-//                case '2':
-//                case '3':
-//                case '4':
-//                case '5':
-//                case '6':
-//                case '7':
-//                case '8':
-//                case '9':
-//                case '-':
-//                    if (last && (last->type != JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found number after non-structural character");
-//                    // stack.push(JsonValue(parse_str_naive(input + idx + 1)));
-//                    break;
-//                case 'n':
-//                    if (last && (last->type != JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found null after non-structural character");
-//                    parse_null(input + idx);
-//                    values.push_back(JsonValue());
-//                    break;
-//                case 'f':
-//                    if (last && (last->type != JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found true/false after non-structural character");
-//                    values.push_back(JsonValue(parse_false(input + idx)));
-//                    break;
-//                case 't':
-//                    if (last && (last->type != JsonValue::TYPE_CHAR))
-//                        throw std::runtime_error("found true/false after non-structural character");
-//                    values.push_back(JsonValue(parse_true(input + idx)));
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-//    }
 
     void parse_str_per_bit(const char *src, char *dest, size_t *len, size_t offset) {
         const char *_src = src;
