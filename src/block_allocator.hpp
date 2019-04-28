@@ -21,7 +21,7 @@ namespace MercuryJson {
             if (allocated + size > block_size) {
                 all_memory.push_back(mem);
                 allocated = 0;
-                ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
+                ptr = mem = reinterpret_cast<char *>(aligned_malloc(block_size, alignment));
             }
         }
 #endif
@@ -30,7 +30,7 @@ namespace MercuryJson {
         explicit BlockAllocator(size_t block_size) {
 #if USE_BLOCK_ALLOCATOR
             block_size = round_up(block_size, alignment);
-            ptr = mem = reinterpret_cast<char *>(aligned_malloc(alignment, block_size));
+            ptr = mem = reinterpret_cast<char *>(aligned_malloc(block_size, alignment));
             allocated = 0;
             this->block_size = block_size;
 #endif

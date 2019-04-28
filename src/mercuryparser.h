@@ -26,17 +26,17 @@ namespace MercuryJson {
         }
     };
 
-    u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask);
+    uint64_t extract_escape_mask(const Warp &raw, uint64_t *prev_odd_backslash_ending_mask);
 
-    u_int64_t extract_literal_mask(
-            const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask);
+    uint64_t extract_literal_mask(
+            const Warp &raw, uint64_t escape_mask, uint64_t *prev_literal_ending, uint64_t *quote_mask);
     void extract_structural_whitespace_characters(
-            const Warp &raw, u_int64_t literal_mask, u_int64_t *structural_mask, u_int64_t *whitespace_mask);
-    u_int64_t extract_pseudo_structural_mask(
-            u_int64_t structural_mask, u_int64_t whitespace_mask, u_int64_t quote_mask, u_int64_t literal_mask,
-            u_int64_t *prev_pseudo_structural_end_mask);
+            const Warp &raw, uint64_t literal_mask, uint64_t *structural_mask, uint64_t *whitespace_mask);
+    uint64_t extract_pseudo_structural_mask(
+            uint64_t structural_mask, uint64_t whitespace_mask, uint64_t quote_mask, uint64_t literal_mask,
+            uint64_t *prev_pseudo_structural_end_mask);
     void construct_structural_character_pointers(
-            u_int64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base);
+            uint64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base);
 
     __mmask32 extract_escape_mask(__m256i raw, __mmask32 *prev_odd_backslash_ending_mask);
     __mmask32 extract_literal_mask(
@@ -117,7 +117,9 @@ namespace MercuryJson {
 
         char *_parse_str(size_t idx);
 
+#if PARSE_STR_NUM_THREADS
         void _thread_parse_str(size_t pid);
+#endif
 
         JsonValue *_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end);
 
@@ -143,22 +145,22 @@ namespace MercuryJson {
     void parse_str_naive(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
     void parse_str_avx(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
     __m256i translate_escape_characters(__m256i input);
-    void deescape(Warp &input, u_int64_t escaper_mask);
+    void deescape(Warp &input, uint64_t escaper_mask);
 
-    inline __m256i convert_to_mask(u_int32_t input);
+    inline __m256i convert_to_mask(uint32_t input);
 
     void __printChar_m256i(__m256i raw);
     void __printChar(Warp &raw);
 
     template <char c>
-    inline u_int64_t __cmpeq_mask(const Warp &raw) {
+    inline uint64_t __cmpeq_mask(const Warp &raw) {
 #if STATIC_CMPEQ_MASK
         static const __m256i vec_c = _mm256_set1_epi8(c);
 #else
         const __m256i vec_c = _mm256_set1_epi8(c);
 #endif
-        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, vec_c)));
-        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
+        uint64_t hi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, vec_c)));
+        uint64_t lo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
         return (hi << 32U) | lo;
     }
 

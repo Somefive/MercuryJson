@@ -89,27 +89,27 @@ void test_extract_warp_mask() {
     if (buf[size - 1] == '\n') buf[--size] = 0;
     printf("%15lu: %s\n", size, buf);
 
-    std::vector<u_int64_t> escape_masks;
-    std::vector<u_int64_t> quote_masks;
-    std::vector<u_int64_t> literal_masks;
-    std::vector<u_int64_t> structural_masks;
-    std::vector<u_int64_t> whitespace_masks;
-    std::vector<u_int64_t> pseudo_masks;
+    std::vector<uint64_t> escape_masks;
+    std::vector<uint64_t> quote_masks;
+    std::vector<uint64_t> literal_masks;
+    std::vector<uint64_t> structural_masks;
+    std::vector<uint64_t> whitespace_masks;
+    std::vector<uint64_t> pseudo_masks;
     size_t indices[64], base = 0;
 
-    u_int64_t prev_escape_mask = 0;
-    u_int64_t prev_quote_mask = 0;
-    u_int64_t prev_pseudo_mask = 0;
+    uint64_t prev_escape_mask = 0;
+    uint64_t prev_quote_mask = 0;
+    uint64_t prev_pseudo_mask = 0;
     for (size_t offset = 0; offset < size; offset += 64) {
         __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(buf + offset));
         __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(buf + offset + 32));
         MercuryJson::Warp input(_input2, _input1);
-        u_int64_t escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
-        u_int64_t quote_mask = 0;
-        u_int64_t literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
-        u_int64_t structural_mask = 0, whitespace_mask = 0;
+        uint64_t escape_mask = MercuryJson::extract_escape_mask(input, &prev_escape_mask);
+        uint64_t quote_mask = 0;
+        uint64_t literal_mask = MercuryJson::extract_literal_mask(input, escape_mask, &prev_quote_mask, &quote_mask);
+        uint64_t structural_mask = 0, whitespace_mask = 0;
         MercuryJson::extract_structural_whitespace_characters(input, literal_mask, &structural_mask, &whitespace_mask);
-        u_int64_t pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
+        uint64_t pseudo_mask = MercuryJson::extract_pseudo_structural_mask(
                 structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
         MercuryJson::construct_structural_character_pointers(pseudo_mask, offset, indices, &base);
 
@@ -223,7 +223,7 @@ void test_parse_str_per_bit() {
 }
 
 char *generate_random_string(size_t length) {
-    char *text = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
+    char *text = reinterpret_cast<char *>(aligned_malloc(length));
     char *base = text;
     *base++ = '"';
     for (size_t i = 0; i < length - 4; ++i) {
@@ -256,8 +256,8 @@ void test_parse_string() {
     for (int i = 0; i < 10; ++i) {
         auto length = static_cast<size_t>(1e8);
         char *text_naive = generate_random_string(length);
-        char *text_avx = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
-        char *p_per_bit = reinterpret_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, length));
+        char *text_avx = reinterpret_cast<char *>(aligned_malloc(length));
+        char *p_per_bit = reinterpret_cast<char *>(aligned_malloc(length));
         strcpy(text_avx, text_naive);
         printf("test[%d]: ", i);
         fflush(stdout);
@@ -325,10 +325,10 @@ void test_remove_escaper() {
     Warp input(s);
     printf("input: ");
     __printChar(input);
-    u_int64_t prev_odd_backslash_ending_mask = 0ULL;
-    u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
-    u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
-    auto masks = std::vector<u_int64_t>();
+    uint64_t prev_odd_backslash_ending_mask = 0ULL;
+    uint64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
+    uint64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
+    auto masks = std::vector<uint64_t>();
     masks.push_back(escaper_mask);
     print("escaper", masks);
     deescape(input, escaper_mask);

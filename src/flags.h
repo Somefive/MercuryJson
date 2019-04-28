@@ -36,9 +36,9 @@
 # define PARSE_NUMBER_AVX 1
 #endif
 
-// Whether to perform string parsing on a dedicated thread.
-#ifndef PARSE_STR_MULTITHREAD
-# define PARSE_STR_MULTITHREAD 1
+// Number of extra dedicated threads for string parsing. Set to 0 to disable.
+#ifndef PARSE_STR_NUM_THREADS
+# define PARSE_STR_NUM_THREADS 1
 #endif
 
 // Whether to use block allocator for dynamic memory allocation.

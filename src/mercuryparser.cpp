@@ -21,49 +21,47 @@
 
 namespace MercuryJson {
 
-    static const size_t kNumThreads = 2;
-
     void __printChar(Warp &raw) {
-        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
+        auto *vals = reinterpret_cast<uint8_t *>(&raw);
         for (size_t i = 0; i < 64; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
 
-    const u_int64_t __even_mask64 = 0x5555555555555555U;
-    const u_int64_t __odd_mask64 = ~__even_mask64;
+    static const uint64_t kEvenMask64 = 0x5555555555555555U;
+    static const uint64_t kOddMask64 = ~kEvenMask64;
 
     // @formatter:off
-    u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask) {
-        u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
-        u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ *prev_odd_backslash_ending_mask;
-        u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
-        u_int64_t even_escape_mask;
-        even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & __odd_mask64;
+    uint64_t extract_escape_mask(const Warp &raw, uint64_t *prev_odd_backslash_ending_mask) {
+        uint64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
+        uint64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
+        uint64_t even_start_backslash_mask = (start_backslash_mask & kEvenMask64) ^ *prev_odd_backslash_ending_mask;
+        uint64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
+        uint64_t even_escape_mask;
+        even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & kOddMask64;
 
-        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ *prev_odd_backslash_ending_mask;
-        u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
-        u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
+        uint64_t odd_start_backslash_mask = (start_backslash_mask & kOddMask64) ^ *prev_odd_backslash_ending_mask;
+        uint64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
+        uint64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
         *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
-        u_int64_t odd_escape_mask;
-        odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & __even_mask64;
+        uint64_t odd_escape_mask;
+        odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & kEvenMask64;
         return even_escape_mask | odd_escape_mask;
     }
     // @formatter:on
 
-    u_int64_t extract_literal_mask(
-            const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask) {
+    uint64_t extract_literal_mask(
+            const Warp &raw, uint64_t escape_mask, uint64_t *prev_literal_ending, uint64_t *quote_mask) {
         *quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
-        u_int64_t literal_mask = _mm_cvtsi128_si64(
+        uint64_t literal_mask = _mm_cvtsi128_si64(
                 _mm_clmulepi64_si128(_mm_set_epi64x(0ULL, *quote_mask), _mm_set1_epi8(0xFF), 0));
-        u_int64_t literal_reversor = *prev_literal_ending * ~0ULL;
+        uint64_t literal_reversor = *prev_literal_ending * ~0ULL;
         literal_mask ^= literal_reversor;
         *prev_literal_ending = literal_mask >> 63U;
         return literal_mask;
     }
 
     void extract_structural_whitespace_characters(
-            const Warp &raw, u_int64_t literal_mask, u_int64_t *structural_mask, u_int64_t *whitespace_mask) {
+            const Warp &raw, uint64_t literal_mask, uint64_t *structural_mask, uint64_t *whitespace_mask) {
         const __m256i upper_lookup = _mm256_setr_epi8(8, 0, 17, 2, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 17, 2, 0,
                                                       4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0);
         const __m256i lower_lookup = _mm256_setr_epi8(16, 0, 0, 0, 0, 0, 0, 0, 0, 8, 10, 4, 1, 12, 0, 0, 16, 0, 0, 0, 0,
@@ -86,12 +84,12 @@ namespace MercuryJson {
         *structural_mask = ~__cmpeq_mask<0>(Warp(hi_structural_mask, lo_structural_mask)) & (~literal_mask);
     }
 
-    u_int64_t extract_pseudo_structural_mask(
-            u_int64_t structural_mask, u_int64_t whitespace_mask, u_int64_t quote_mask, u_int64_t literal_mask,
-            u_int64_t *prev_pseudo_structural_end_mask) {
-        u_int64_t st_ws = structural_mask | whitespace_mask;
+    uint64_t extract_pseudo_structural_mask(
+            uint64_t structural_mask, uint64_t whitespace_mask, uint64_t quote_mask, uint64_t literal_mask,
+            uint64_t *prev_pseudo_structural_end_mask) {
+        uint64_t st_ws = structural_mask | whitespace_mask;
         structural_mask |= quote_mask;
-        u_int64_t pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
+        uint64_t pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
         *prev_pseudo_structural_end_mask = (st_ws >> 63U) & 1ULL;
         pseudo_structural_mask &= (~whitespace_mask) & (~literal_mask);
         structural_mask |= pseudo_structural_mask;
@@ -100,7 +98,7 @@ namespace MercuryJson {
     }
 
     void construct_structural_character_pointers(
-            u_int64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
+            uint64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
         size_t next_base = *base + __builtin_popcountll(pseudo_structural_mask);
         while (pseudo_structural_mask) {
             indices[*base] = offset + _tzcnt_u64(pseudo_structural_mask);
@@ -125,7 +123,7 @@ namespace MercuryJson {
     }
 
     void __printChar_m256i(__m256i raw) {
-        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
+        auto *vals = reinterpret_cast<uint8_t *>(&raw);
         for (size_t i = 0; i < 32; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
@@ -333,12 +331,12 @@ namespace MercuryJson {
     }
 
     inline bool _all_digits(const char *s) {
-        u_int64_t val = *reinterpret_cast<const u_int64_t *>(s);
+        uint64_t val = *reinterpret_cast<const uint64_t *>(s);
         return (((val & 0xf0f0f0f0f0f0f0f0)
                  | (((val + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0) >> 4U)) == 0x3333333333333333);
     }
 
-    inline u_int32_t _parse_eight_digits(const char *s) {
+    inline uint32_t _parse_eight_digits(const char *s) {
         const __m128i ascii0 = _mm_set1_epi8('0');
         const __m128i mul_1_10 = _mm_setr_epi8(10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
         const __m128i mul_1_100 = _mm_setr_epi16(100, 1, 100, 1, 100, 1, 100, 1);
@@ -467,26 +465,26 @@ namespace MercuryJson {
     }
 
     bool parse_true(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
-        u_int32_t target = 0x65757274;
-        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+        const auto *literal = reinterpret_cast<const uint32_t *>(s + offset);
+        uint32_t target = 0x65757274;
+        if (target != *literal || !kStructuralOrWhitespace[s[offset + 4]])
             __error("invalid true value", s, offset);
         return true;
     }
 
     bool parse_false(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int64_t *>(s + offset);
-        u_int64_t target = 0x00000065736c6166;
-        u_int64_t mask = 0x000000ffffffffff;
-        if (target != (*literal & mask) || !structural_or_whitespace[s[offset + 5]])
+        const auto *literal = reinterpret_cast<const uint64_t *>(s + offset);
+        uint64_t target = 0x00000065736c6166;
+        uint64_t mask = 0x000000ffffffffff;
+        if (target != (*literal & mask) || !kStructuralOrWhitespace[s[offset + 5]])
             __error("invalid false value", s, offset);
         return false;
     }
 
     void parse_null(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
-        u_int32_t target = 0x6c6c756e;
-        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+        const auto *literal = reinterpret_cast<const uint32_t *>(s + offset);
+        uint32_t target = 0x6c6c756e;
+        if (target != *literal || !kStructuralOrWhitespace[s[offset + 4]])
             __error("invalid null value", s, offset);
     }
 
@@ -578,7 +576,7 @@ namespace MercuryJson {
         char *dest = input + idx + 1;
 #endif
 
-#if !PARSE_STR_MULTITHREAD
+#if !PARSE_STR_NUM_THREADS
 # if PARSE_STR_MODE == 2
         parse_str_per_bit
 # elif PARSE_STR_MODE == 1
@@ -591,29 +589,30 @@ namespace MercuryJson {
         return dest;
     }
 
+#if PARSE_STR_NUM_THREADS
     void JSON::_thread_parse_str(size_t pid) {
 //        auto start_time = std::chrono::steady_clock::now();
         size_t idx;
-        const size_t *idx_ptr = indices + pid * num_indices / kNumThreads;  // deliberate shadowing
-        const size_t *end_ptr = indices + (pid + 1) * num_indices / kNumThreads;
+        const size_t *idx_ptr = indices + pid * num_indices / PARSE_STR_NUM_THREADS;  // deliberate shadowing
+        const size_t *end_ptr = indices + (pid + 1) * num_indices / PARSE_STR_NUM_THREADS;
         char ch;
         do {
             peek_char();
             if (ch == '"') {
-#if ALLOC_PARSED_STR
+# if ALLOC_PARSED_STR
                 char *dest = literals + idx + 1;
-#else
+# else
                 char *dest = input + idx + 1;
-#endif
+# endif
 
                 //@formatter:off
-#if PARSE_STR_MODE == 2
+# if PARSE_STR_MODE == 2
                 parse_str_per_bit
-#elif PARSE_STR_MODE == 1
+# elif PARSE_STR_MODE == 1
                 parse_str_avx
-#elif PARSE_STR_MODE == 0
+# elif PARSE_STR_MODE == 0
                 parse_str_naive
-#endif
+# endif
                 (input, dest, nullptr, idx + 1);
                 //@formatter:on
             }
@@ -622,6 +621,7 @@ namespace MercuryJson {
 //        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("parse str thread: %.6lf\n", runtime.count());
     }
+#endif
 
     JsonValue *JSON::_parse_value() {
         size_t idx;
@@ -726,8 +726,15 @@ namespace MercuryJson {
             //@formatter:on
         };
 
-        static JsonPartialValue *stack[4096];
-        static int _stack_top;
+        JsonPartialValue **stack;
+        int _stack_top;
+
+        static const size_t kDefaultStackSize = 4096;
+
+        inline void alloc_stack(size_t max_size = kDefaultStackSize) {
+            stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue *)));
+            _stack_top = 0;
+        }
 
         template <typename ...Args>
         inline bool _check_stack_top();
@@ -834,7 +841,7 @@ namespace MercuryJson {
         shift_reduce_impl::_stack_top -= (_n); \
     })
 
-        shift_reduce_impl::_stack_top = 0;
+        shift_reduce_impl::alloc_stack();
         while (idx_begin != idx_end) {
             size_t idx = *idx_begin;
             char ch = input[idx];
@@ -975,7 +982,9 @@ namespace MercuryJson {
 //        shift_reduce_impl::print_stack();
         assert(shift_reduce_impl::_stack_top == 1);
         idx_ptr = idx_end;  // Consume the indices to satisfy null ending check.
-        return reinterpret_cast<JsonValue *>(get_stack(1));
+        auto *ret = reinterpret_cast<JsonValue *>(get_stack(1));
+        aligned_free(shift_reduce_impl::stack);
+        return ret;
 #undef push_stack
 #undef pop_stack
     }
@@ -985,10 +994,10 @@ namespace MercuryJson {
         input_len = size;
         this->document = nullptr;
 
-        idx_ptr = indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+        idx_ptr = indices = static_cast<size_t *>(aligned_malloc(size * sizeof(size_t)));
         num_indices = 0;
 #if ALLOC_PARSED_STR
-        literals = new char[size];
+        literals = aligned_malloc(size);
 #endif
 
         if (!manual_construct) {
@@ -998,19 +1007,19 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage1() {
-        u_int64_t prev_escape_mask = 0;
-        u_int64_t prev_quote_mask = 0;
-        u_int64_t prev_pseudo_mask = 0;
+        uint64_t prev_escape_mask = 0;
+        uint64_t prev_quote_mask = 0;
+        uint64_t prev_pseudo_mask = 0;
         for (size_t offset = 0; offset < input_len; offset += 64) {
             __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset));
             __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset + 32));
             Warp warp(_input2, _input1);
-            u_int64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
-            u_int64_t quote_mask = 0;
-            u_int64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
-            u_int64_t structural_mask = 0, whitespace_mask = 0;
+            uint64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
+            uint64_t quote_mask = 0;
+            uint64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
+            uint64_t structural_mask = 0, whitespace_mask = 0;
             extract_structural_whitespace_characters(warp, literal_mask, &structural_mask, &whitespace_mask);
-            u_int64_t pseudo_mask = extract_pseudo_structural_mask(
+            uint64_t pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
             construct_structural_character_pointers(pseudo_mask, offset, indices, &num_indices);
         }
@@ -1019,11 +1028,11 @@ namespace MercuryJson {
     void JSON::exec_stage2() {
 //        std::chrono::time_point<std::chrono::steady_clock> start_time;
 //        std::chrono::duration<double> runtime;
-#if PARSE_STR_MULTITHREAD
+#if PARSE_STR_NUM_THREADS
 //        start_time = std::chrono::steady_clock::now();
-        std::vector<std::thread> parse_str_threads;
-        for (size_t i = 0; i < kNumThreads; ++i)
-            parse_str_threads.emplace_back(&JSON::_thread_parse_str, this, i);
+        std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
+        for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
+            parse_str_threads[i] = std::thread(&JSON::_thread_parse_str, this, i);
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("thread spawn: %.6lf\n", runtime.count());
 #endif
@@ -1039,14 +1048,14 @@ namespace MercuryJson {
         if (ch != 0) error("file end");
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("parse document: %.6lf\n", runtime.count());
-#if PARSE_STR_MULTITHREAD
+#if PARSE_STR_NUM_THREADS
 //        start_time = std::chrono::steady_clock::now();
         for (std::thread &thread : parse_str_threads)
             thread.join();
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("wait join: %.6lf\n", runtime.count());
 #endif
-        delete[] indices;
+        aligned_free(indices);
         indices = nullptr;
     }
 
@@ -1057,7 +1066,7 @@ namespace MercuryJson {
 
 #if ALLOC_PARSED_STR
     JSON::~JSON() {
-        delete[] literals;
+        aligned_free(literals);
     }
 #else
     JSON::~JSON() = default;
@@ -1089,10 +1098,10 @@ namespace MercuryJson {
                     src += backslash_offset + 6;
                     dest += backslash_offset + 6;
                 } else {
-                    u_int8_t escaped = escape_map[escape_char];
+                    uint8_t escaped = kEscapeMap[escape_char];
                     if (escaped == 0U)
                         __error("invalid escape character '" + std::string(1, escape_char) + "'", _src, offset);
-                    dest[backslash_offset] = escape_map[escape_char];
+                    dest[backslash_offset] = kEscapeMap[escape_char];
                     src += backslash_offset + 2;
                     dest += backslash_offset + 1;
                 }
@@ -1109,11 +1118,11 @@ namespace MercuryJson {
         src += offset;
         if (dest == nullptr) dest = const_cast<char *>(src);
         char *base = dest;
-        u_int64_t prev_odd_backslash_ending_mask = 0ULL;
+        uint64_t prev_odd_backslash_ending_mask = 0ULL;
         while (true) {
             Warp input(src);
-            u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
-            u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
+            uint64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
+            uint64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
             size_t ending_offset = _tzcnt_u64(quote_mask);
 
@@ -1131,7 +1140,7 @@ namespace MercuryJson {
                     char escaper = src[this_offset];
                     memmove(dest, src + last_offset, length);
                     dest += length;
-                    *(dest - 1) = escape_map[escaper];
+                    *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
@@ -1146,7 +1155,7 @@ namespace MercuryJson {
                 __m256i hi_trans = translate_escape_characters(input.hi);
                 input.lo = _mm256_blendv_epi8(lo_trans, input.lo, lo_mask);
                 input.hi = _mm256_blendv_epi8(hi_trans, input.hi, hi_mask);
-                u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
+                uint64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
 
                 deescape(input, escaper_mask);
                 _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
@@ -1162,7 +1171,7 @@ namespace MercuryJson {
                     memmove(dest, src + last_offset, length);
                     dest += length;
                     if (this_offset >= ending_offset) break;
-                    *(dest - 1) = escape_map[escaper];
+                    *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
@@ -1172,7 +1181,7 @@ namespace MercuryJson {
         }
     }
 
-    inline __m256i convert_to_mask(u_int32_t input) {
+    inline __m256i convert_to_mask(uint32_t input) {
         /* Create a mask based on each bit of `input`.
          *                    input : [0-31]
          * _mm256_set1_epi32(input) : [0-7] [8-15] [16-23] [24-31] * 8
@@ -1193,20 +1202,20 @@ namespace MercuryJson {
                 _mm256_set1_epi32(input), projector), masker), zeros);
     }
 
-    inline u_int64_t __extract_highestbit_pext(const Warp &input, int shift, u_int64_t escaper_mask) {
-        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.lo, shift)));
-        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.hi, shift)));
+    inline uint64_t __extract_highestbit_pext(const Warp &input, int shift, uint64_t escaper_mask) {
+        uint64_t lo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.lo, shift)));
+        uint64_t hi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.hi, shift)));
         return _pext_u64(((hi << 32U) | lo), escaper_mask);
     }
 
-    inline __m256i __expand(u_int32_t input) {
+    inline __m256i __expand(uint32_t input) {
         /* 0x00 for 1-bits, 0x01 for 0-bits */
         const __m256i ones = _mm256_set1_epi8(1);
         return _mm256_add_epi8(convert_to_mask(input), ones);
     }
 
-    inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
-                                 u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {
+    inline __m256i __reconstruct(uint32_t h0, uint32_t h1, uint32_t h2, uint32_t h3,
+                                 uint32_t h4, uint32_t h5, uint32_t h6, uint32_t h7) {
         /* Reconstruct a __m256i with 8-bit numbers specified by bits from h0~h7 */
         __m256i result = __expand(h0);
         result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h1), 1));
@@ -1219,18 +1228,18 @@ namespace MercuryJson {
         return result;
     }
 
-    void deescape(Warp &input, u_int64_t escaper_mask) {
+    void deescape(Warp &input, uint64_t escaper_mask) {
         /* Remove 8-bit characters specified by `escaper_mask` */
-        u_int64_t nonescaper_mask = ~escaper_mask;
+        uint64_t nonescaper_mask = ~escaper_mask;
         // Obtain each bit from each 8-bit character, keeping only non-escapers
-        u_int64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
-        u_int64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
-        u_int64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
-        u_int64_t h4 = __extract_highestbit_pext(input, 3, nonescaper_mask);
-        u_int64_t h3 = __extract_highestbit_pext(input, 4, nonescaper_mask);
-        u_int64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
-        u_int64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
-        u_int64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
+        uint64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
+        uint64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
+        uint64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
+        uint64_t h4 = __extract_highestbit_pext(input, 3, nonescaper_mask);
+        uint64_t h3 = __extract_highestbit_pext(input, 4, nonescaper_mask);
+        uint64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
+        uint64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
+        uint64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
         // _mm256_packus_epi32
         input.lo = __reconstruct(h0, h1, h2, h3, h4, h5, h6, h7);
         input.hi = __reconstruct(
