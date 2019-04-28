@@ -874,6 +874,7 @@ namespace MercuryJson {
                     }
                     break;
                 }
+
                 case '{':
                 case '[':
                 case ':':
@@ -891,10 +892,12 @@ namespace MercuryJson {
                         pop_stack(1);
                         push_stack(static_cast<JsonObject *>(nullptr));
                     } else if (check_stack_top('{', JsonPartialValue::TYPE_PARTIAL_OBJ)) {
+                        // Non-empty object.
                         auto *obj = reinterpret_cast<JsonObject *>(get_stack(1)->partial_object);
                         pop_stack(2);
                         push_stack(obj);
                     } else {
+                        // This should not happen when the input is well-formed.
                         push_stack(ch);
                     }
                     break;
@@ -904,10 +907,6 @@ namespace MercuryJson {
                         // Emtpy array.
                         pop_stack(1);
                         push_stack(static_cast<JsonArray *>(nullptr));
-                    } else if (check_stack_top('[', JsonPartialValue::TYPE_PARTIAL_ARR)) {
-                        auto *arr = reinterpret_cast<JsonArray *>(get_stack(1)->partial_array);
-                        pop_stack(2);
-                        push_stack(arr);
                     } else if (check_stack_top('[', true)) {
                         // Construct singleton array.
                         auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(1)), nullptr);
@@ -922,12 +921,8 @@ namespace MercuryJson {
                         auto *arr = reinterpret_cast<JsonArray *>(partial_arr);
                         pop_stack(3);
                         push_stack(arr);
-                    } else if (check_stack_top('[', true, ',', true)) {
-                        auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(1)), nullptr);
-                        arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(3)), arr);
-                        pop_stack(4);
-                        push_stack(arr);
                     } else {
+                        // This should not happen when the input is well-formed.
                         push_stack(ch);
                     }
                     break;
@@ -948,6 +943,7 @@ namespace MercuryJson {
                         }
                         push_stack(partial_arr);
                     } else {
+                        // No match, push value onto stack.
                         push_stack(ch);
                     }
                     break;
