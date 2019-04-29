@@ -15,6 +15,7 @@
 #include <thread>
 #include <variant>
 #include <vector>
+#include <cassert>
 
 #include "constants.h"
 
