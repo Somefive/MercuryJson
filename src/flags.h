@@ -22,7 +22,7 @@
 
 // Whether to use stack-based shift-reduce parsing
 #ifndef SHIFT_REDUCE_PARSER
-# define SHIFT_REDUCE_PARSER 1
+# define SHIFT_REDUCE_PARSER 0
 #endif
 
 // Number of threads to use for shift-reduce parsing
@@ -32,8 +32,17 @@
 
 
 // Whether to use fully-vectorized string parsing implementation. Only works when PARSE_STR_MODE == 1.
-#ifndef PARSE_STR_FULLY_AXV
-# define PARSE_STR_FULLY_AXV 0
+#ifndef PARSE_STR_FULLY_AVX
+# define PARSE_STR_FULLY_AVX 0
+#endif
+
+// Whether to use 32-bit blocks for string parsing. Only works when PARSE_STR_MODE == 1 and PARSE_STR_FULLY_AVX == 0.
+#if PARSE_STR_FULLY_AVX
+# define PARSE_STR_32BIT 0
+#else
+# ifndef PARSE_STR_32BIT
+#  define PARSE_STR_32BIT 0
+# endif
 #endif
 
 // Whether to enable vectorized operations for number parsing.
@@ -43,7 +52,7 @@
 
 // Number of extra dedicated threads for string parsing. Set to 0 to disable.
 #ifndef PARSE_STR_NUM_THREADS
-# define PARSE_STR_NUM_THREADS 0
+# define PARSE_STR_NUM_THREADS 4
 #endif
 
 #endif // MERCURYJSON_FLAGS_H
