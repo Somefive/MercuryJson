@@ -94,6 +94,8 @@ namespace MercuryJson {
         //@formatter:on
     };
 
+    namespace shift_reduce_impl { struct ParseStack; }
+
     class JSON {
     public:
 #if ALLOC_PARSED_STR
@@ -121,7 +123,10 @@ namespace MercuryJson {
         void _thread_parse_str(size_t pid);
 #endif
 
-        JsonValue *_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end);
+        void _thread_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end,
+                                          shift_reduce_impl::ParseStack *stack);
+
+        JsonValue *_shift_reduce_parsing();
 
     public:
         JsonValue *document;

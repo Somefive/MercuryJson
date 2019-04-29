@@ -25,6 +25,11 @@
 # define SHIFT_REDUCE_PARSER 1
 #endif
 
+// Number of threads to use for shift-reduce parsing
+#ifndef SHIFT_REDUCE_NUM_THREADS
+# define SHIFT_REDUCE_NUM_THREADS 2
+#endif
+
 
 // Whether to use fully-vectorized string parsing implementation. Only works when PARSE_STR_MODE == 1.
 #ifndef PARSE_STR_FULLY_AXV
@@ -39,11 +44,6 @@
 // Number of extra dedicated threads for string parsing. Set to 0 to disable.
 #ifndef PARSE_STR_NUM_THREADS
 # define PARSE_STR_NUM_THREADS 1
-#endif
-
-// Whether to use block allocator for dynamic memory allocation.
-#ifndef USE_BLOCK_ALLOCATOR
-# define USE_BLOCK_ALLOCATOR 1
 #endif
 
 #endif // MERCURYJSON_FLAGS_H
