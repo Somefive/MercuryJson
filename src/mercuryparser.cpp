@@ -1,5 +1,6 @@
 #include "mercuryparser.h"
 
+#include <assert.h>
 #include <immintrin.h>
 #include <math.h>
 #include <stdio.h>
@@ -790,39 +791,16 @@ namespace MercuryJson {
             inline JsonPartialValue *operator [](size_t idx) const { return stack[idx]; }
 
             template <typename ...Args>
-            inline bool _check_stack_top() const;
-
-            template <>
-            inline bool _check_stack_top() const { return true; }
+            inline bool _check_stack_top(Args ...) const;
 
             template <typename ...Args>
-            inline bool _check_stack_top(bool first, Args ...args) const {  // true for any fully-parsed JSON value
-//            assert(first);
-                auto *top = stack[stack_top - sizeof...(args) - 1];
-                switch (top->type) {
-                    case JsonPartialValue::TYPE_PARTIAL_OBJ:
-                    case JsonPartialValue::TYPE_PARTIAL_ARR:
-                    case JsonPartialValue::TYPE_CHAR:
-                        return false;
-                    default:
-                        break;
-                }
-                return _check_stack_top(args...);
-            }
+            inline bool _check_stack_top(bool, Args ...) const;
 
             template <typename ...Args>
-            inline bool _check_stack_top(char first, Args ...args) const {
-                auto *top = stack[stack_top - sizeof...(args) - 1];
-                if (top->type != JsonPartialValue::TYPE_CHAR || top->structural != first) return false;
-                return _check_stack_top(args...);
-            }
+            inline bool _check_stack_top(char, Args ...) const;
 
             template <typename ...Args>
-            inline bool _check_stack_top(JsonPartialValue::ValueType first, Args ...args) const {
-                auto *top = stack[stack_top - sizeof...(args) - 1];
-                if (top->type != first) return false;
-                return _check_stack_top(args...);
-            }
+            inline bool _check_stack_top(JsonPartialValue::ValueType, Args ...) const;
 
             template <typename ...Args>
             inline bool check(Args ...args) const {
@@ -949,6 +927,40 @@ namespace MercuryJson {
                 return false;
             }
         };
+
+        template <>
+        inline bool ParseStack::_check_stack_top<>() const { return true; }
+
+        // true for any fully-parsed JSON value
+        template <typename ...Args>
+        inline bool ParseStack::_check_stack_top(bool first, Args ...args) const {
+//            assert(first);
+            auto *top = stack[stack_top - sizeof...(args) - 1];
+            switch (top->type) {
+                case JsonPartialValue::TYPE_PARTIAL_OBJ:
+                case JsonPartialValue::TYPE_PARTIAL_ARR:
+                case JsonPartialValue::TYPE_CHAR:
+                    return false;
+                default:
+                    break;
+            }
+            return _check_stack_top(args...);
+        }
+
+        template <typename ...Args>
+        inline bool ParseStack::_check_stack_top(char first, Args ...args) const {
+            auto *top = stack[stack_top - sizeof...(args) - 1];
+            if (top->type != JsonPartialValue::TYPE_CHAR || top->structural != first) return false;
+            return _check_stack_top(args...);
+        }
+
+        template <typename ...Args>
+        inline bool ParseStack::_check_stack_top(JsonPartialValue::ValueType first, Args ...args) const {
+            auto *top = stack[stack_top - sizeof...(args) - 1];
+            if (top->type != first) return false;
+            return _check_stack_top(args...);
+        }
+
     }
 
     void JSON::_thread_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end,
