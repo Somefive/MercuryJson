@@ -11,7 +11,7 @@ char *read_file(const char *filename, size_t *size) {
     if (pfile == nullptr) throw std::runtime_error("file open error");
     std::fseek(pfile, 0, SEEK_END);
     size_t _size = std::ftell(pfile);
-    char *buffer = (char *)aligned_malloc(ALIGNMENT_SIZE, _size + 2 * ALIGNMENT_SIZE);
+    char *buffer = (char *)aligned_malloc(_size + 2 * ALIGNMENT_SIZE);
     if (buffer == nullptr) {
         std::fclose(pfile);
         throw std::runtime_error("allocate memory failed");

@@ -15,7 +15,7 @@ inline constexpr size_t round_up(size_t size, size_t alignment) {
     return (size + alignment - 1) / alignment * alignment;
 }
 
-static inline void *aligned_malloc(size_t alignment, size_t size) {
+static inline void *aligned_malloc(size_t size, size_t alignment = ALIGNMENT_SIZE) {
     void *p;
     size = round_up(size, alignment);
     if (posix_memalign(&p, alignment, size) != 0) { return nullptr; }

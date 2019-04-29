@@ -22,49 +22,47 @@
 
 namespace MercuryJson {
 
-    static const size_t kNumThreads = 2;
-
     void __printChar(Warp &raw) {
-        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
+        auto *vals = reinterpret_cast<uint8_t *>(&raw);
         for (size_t i = 0; i < 64; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
 
-    const u_int64_t __even_mask64 = 0x5555555555555555U;
-    const u_int64_t __odd_mask64 = ~__even_mask64;
+    static const uint64_t kEvenMask64 = 0x5555555555555555U;
+    static const uint64_t kOddMask64 = ~kEvenMask64;
 
     // @formatter:off
-    u_int64_t extract_escape_mask(const Warp &raw, u_int64_t *prev_odd_backslash_ending_mask) {
-        u_int64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
-        u_int64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
-        u_int64_t even_start_backslash_mask = (start_backslash_mask & __even_mask64) ^ *prev_odd_backslash_ending_mask;
-        u_int64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
-        u_int64_t even_escape_mask;
-        even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & __odd_mask64;
+    uint64_t extract_escape_mask(const Warp &raw, uint64_t *prev_odd_backslash_ending_mask) {
+        uint64_t backslash_mask = __cmpeq_mask<'\\'>(raw);
+        uint64_t start_backslash_mask = backslash_mask & ~(backslash_mask << 1U);
+        uint64_t even_start_backslash_mask = (start_backslash_mask & kEvenMask64) ^ *prev_odd_backslash_ending_mask;
+        uint64_t even_carrier_backslash_mask = even_start_backslash_mask + backslash_mask;
+        uint64_t even_escape_mask;
+        even_escape_mask = (even_carrier_backslash_mask ^ backslash_mask) & kOddMask64;
 
-        u_int64_t odd_start_backslash_mask = (start_backslash_mask & __odd_mask64) ^ *prev_odd_backslash_ending_mask;
-        u_int64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
-        u_int64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
+        uint64_t odd_start_backslash_mask = (start_backslash_mask & kOddMask64) ^ *prev_odd_backslash_ending_mask;
+        uint64_t odd_carrier_backslash_mask = odd_start_backslash_mask + backslash_mask;
+        uint64_t odd_backslash_ending_mask = odd_carrier_backslash_mask < odd_start_backslash_mask;
         *prev_odd_backslash_ending_mask = odd_backslash_ending_mask;
-        u_int64_t odd_escape_mask;
-        odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & __even_mask64;
+        uint64_t odd_escape_mask;
+        odd_escape_mask = (odd_carrier_backslash_mask ^ backslash_mask) & kEvenMask64;
         return even_escape_mask | odd_escape_mask;
     }
     // @formatter:on
 
-    u_int64_t extract_literal_mask(
-            const Warp &raw, u_int64_t escape_mask, u_int64_t *prev_literal_ending, u_int64_t *quote_mask) {
+    uint64_t extract_literal_mask(
+            const Warp &raw, uint64_t escape_mask, uint64_t *prev_literal_ending, uint64_t *quote_mask) {
         *quote_mask = __cmpeq_mask<'"'>(raw) & ~escape_mask;
-        u_int64_t literal_mask = _mm_cvtsi128_si64(
+        uint64_t literal_mask = _mm_cvtsi128_si64(
                 _mm_clmulepi64_si128(_mm_set_epi64x(0ULL, *quote_mask), _mm_set1_epi8(0xFF), 0));
-        u_int64_t literal_reversor = *prev_literal_ending * ~0ULL;
+        uint64_t literal_reversor = *prev_literal_ending * ~0ULL;
         literal_mask ^= literal_reversor;
         *prev_literal_ending = literal_mask >> 63U;
         return literal_mask;
     }
 
     void extract_structural_whitespace_characters(
-            const Warp &raw, u_int64_t literal_mask, u_int64_t *structural_mask, u_int64_t *whitespace_mask) {
+            const Warp &raw, uint64_t literal_mask, uint64_t *structural_mask, uint64_t *whitespace_mask) {
         const __m256i upper_lookup = _mm256_setr_epi8(8, 0, 17, 2, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 17, 2, 0,
                                                       4, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0);
         const __m256i lower_lookup = _mm256_setr_epi8(16, 0, 0, 0, 0, 0, 0, 0, 0, 8, 10, 4, 1, 12, 0, 0, 16, 0, 0, 0, 0,
@@ -87,12 +85,12 @@ namespace MercuryJson {
         *structural_mask = ~__cmpeq_mask<0>(Warp(hi_structural_mask, lo_structural_mask)) & (~literal_mask);
     }
 
-    u_int64_t extract_pseudo_structural_mask(
-            u_int64_t structural_mask, u_int64_t whitespace_mask, u_int64_t quote_mask, u_int64_t literal_mask,
-            u_int64_t *prev_pseudo_structural_end_mask) {
-        u_int64_t st_ws = structural_mask | whitespace_mask;
+    uint64_t extract_pseudo_structural_mask(
+            uint64_t structural_mask, uint64_t whitespace_mask, uint64_t quote_mask, uint64_t literal_mask,
+            uint64_t *prev_pseudo_structural_end_mask) {
+        uint64_t st_ws = structural_mask | whitespace_mask;
         structural_mask |= quote_mask;
-        u_int64_t pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
+        uint64_t pseudo_structural_mask = (st_ws << 1U) | *prev_pseudo_structural_end_mask;
         *prev_pseudo_structural_end_mask = (st_ws >> 63U) & 1ULL;
         pseudo_structural_mask &= (~whitespace_mask) & (~literal_mask);
         structural_mask |= pseudo_structural_mask;
@@ -101,7 +99,7 @@ namespace MercuryJson {
     }
 
     void construct_structural_character_pointers(
-            u_int64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
+            uint64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base) {
         size_t next_base = *base + __builtin_popcountll(pseudo_structural_mask);
         while (pseudo_structural_mask) {
             indices[*base] = offset + _tzcnt_u64(pseudo_structural_mask);
@@ -126,7 +124,7 @@ namespace MercuryJson {
     }
 
     void __printChar_m256i(__m256i raw) {
-        auto *vals = reinterpret_cast<u_int8_t *>(&raw);
+        auto *vals = reinterpret_cast<uint8_t *>(&raw);
         for (size_t i = 0; i < 32; ++i) printf("%2x(%c) ", vals[i], vals[i]);
         printf("\n");
     }
@@ -334,12 +332,12 @@ namespace MercuryJson {
     }
 
     inline bool _all_digits(const char *s) {
-        u_int64_t val = *reinterpret_cast<const u_int64_t *>(s);
+        uint64_t val = *reinterpret_cast<const uint64_t *>(s);
         return (((val & 0xf0f0f0f0f0f0f0f0)
                  | (((val + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0) >> 4U)) == 0x3333333333333333);
     }
 
-    inline u_int32_t _parse_eight_digits(const char *s) {
+    inline uint32_t _parse_eight_digits(const char *s) {
         const __m128i ascii0 = _mm_set1_epi8('0');
         const __m128i mul_1_10 = _mm_setr_epi8(10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
         const __m128i mul_1_100 = _mm_setr_epi16(100, 1, 100, 1, 100, 1, 100, 1);
@@ -468,26 +466,26 @@ namespace MercuryJson {
     }
 
     bool parse_true(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
-        u_int32_t target = 0x65757274;
-        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+        const auto *literal = reinterpret_cast<const uint32_t *>(s + offset);
+        uint32_t target = 0x65757274;
+        if (target != *literal || !kStructuralOrWhitespace[s[offset + 4]])
             __error("invalid true value", s, offset);
         return true;
     }
 
     bool parse_false(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int64_t *>(s + offset);
-        u_int64_t target = 0x00000065736c6166;
-        u_int64_t mask = 0x000000ffffffffff;
-        if (target != (*literal & mask) || !structural_or_whitespace[s[offset + 5]])
+        const auto *literal = reinterpret_cast<const uint64_t *>(s + offset);
+        uint64_t target = 0x00000065736c6166;
+        uint64_t mask = 0x000000ffffffffff;
+        if (target != (*literal & mask) || !kStructuralOrWhitespace[s[offset + 5]])
             __error("invalid false value", s, offset);
         return false;
     }
 
     void parse_null(const char *s, size_t offset) {
-        const auto *literal = reinterpret_cast<const u_int32_t *>(s + offset);
-        u_int32_t target = 0x6c6c756e;
-        if (target != *literal || !structural_or_whitespace[s[offset + 4]])
+        const auto *literal = reinterpret_cast<const uint32_t *>(s + offset);
+        uint32_t target = 0x6c6c756e;
+        if (target != *literal || !kStructuralOrWhitespace[s[offset + 4]])
             __error("invalid null value", s, offset);
     }
 
@@ -579,7 +577,7 @@ namespace MercuryJson {
         char *dest = input + idx + 1;
 #endif
 
-#if !PARSE_STR_MULTITHREAD
+#if !PARSE_STR_NUM_THREADS
 # if PARSE_STR_MODE == 2
         parse_str_per_bit
 # elif PARSE_STR_MODE == 1
@@ -592,29 +590,31 @@ namespace MercuryJson {
         return dest;
     }
 
+#if PARSE_STR_NUM_THREADS
+
     void JSON::_thread_parse_str(size_t pid) {
 //        auto start_time = std::chrono::steady_clock::now();
         size_t idx;
-        const size_t *idx_ptr = indices + pid * num_indices / kNumThreads;  // deliberate shadowing
-        const size_t *end_ptr = indices + (pid + 1) * num_indices / kNumThreads;
+        const size_t *idx_ptr = indices + pid * num_indices / PARSE_STR_NUM_THREADS;  // deliberate shadowing
+        const size_t *end_ptr = indices + (pid + 1) * num_indices / PARSE_STR_NUM_THREADS;
         char ch;
         do {
             peek_char();
             if (ch == '"') {
-#if ALLOC_PARSED_STR
+# if ALLOC_PARSED_STR
                 char *dest = literals + idx + 1;
-#else
+# else
                 char *dest = input + idx + 1;
-#endif
+# endif
 
                 //@formatter:off
-#if PARSE_STR_MODE == 2
+# if PARSE_STR_MODE == 2
                 parse_str_per_bit
-#elif PARSE_STR_MODE == 1
+# elif PARSE_STR_MODE == 1
                 parse_str_avx
-#elif PARSE_STR_MODE == 0
+# elif PARSE_STR_MODE == 0
                 parse_str_naive
-#endif
+# endif
                 (input, dest, nullptr, idx + 1);
                 //@formatter:on
             }
@@ -623,6 +623,8 @@ namespace MercuryJson {
 //        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("parse str thread: %.6lf\n", runtime.count());
     }
+
+#endif
 
     JsonValue *JSON::_parse_value() {
         size_t idx;
@@ -727,73 +729,16 @@ namespace MercuryJson {
             //@formatter:on
         };
 
-        static std::deque<JsonPartialValue *> stack;
-
-        template <typename ...Args>
-        inline bool check_stack_top();
-        // Must forward declare, otherwise recursive invocation in top-most specialization would match itself with
-        // implicitly converted first argument.
-        template <typename ...Args>
-        inline bool check_stack_top(char first, Args ...args);
-        template <typename ...Args>
-        inline bool check_stack_top(JsonPartialValue::ValueType first, Args ...args);
-
-        template <>
-        inline bool check_stack_top() { return true; }
-
-        template <typename ...Args>
-        inline bool check_stack_top(bool first, Args ...args) {  // true for any fully-parsed JSON value
-            if (stack.size() <= sizeof...(args)) return false;
-            assert(first);
-            auto *top = stack[stack.size() - sizeof...(args) - 1];
-            switch (top->type) {
-                case JsonPartialValue::TYPE_PARTIAL_OBJ:
-                case JsonPartialValue::TYPE_PARTIAL_ARR:
-                case JsonPartialValue::TYPE_CHAR:
-                    return false;
-                default:
-                    break;
-            }
-            return check_stack_top(args...);
-        }
-
-        template <typename ...Args>
-        inline bool check_stack_top(char first, Args ...args) {
-            if (stack.size() <= sizeof...(args)) return false;
-            auto *top = stack[stack.size() - sizeof...(args) - 1];
-            if (top->type != JsonPartialValue::TYPE_CHAR || top->structural != first) return false;
-            return check_stack_top(args...);
-        }
-
-        template <typename ...Args>
-        inline bool check_stack_top(JsonPartialValue::ValueType first, Args ...args) {
-            if (stack.size() <= sizeof...(args)) return false;
-            auto *top = stack[stack.size() - sizeof...(args) - 1];
-            if (top->type != first) return false;
-            return check_stack_top(args...);
-        }
-
-        template <size_t num_pops = 1>
-        inline void pop_stack() {
-            if constexpr(num_pops > 0) {
-                stack.pop_back();
-                pop_stack < num_pops - 1 > ();
-            }
-        }
-
-        inline bool check_stack_pos(size_t pos, char ch) {  // pos starts from 1, counts from stack top.
-            if (stack.size() < pos) return false;
-            auto *const &top = stack[stack.size() - pos];
-            return top->type == JsonPartialValue::TYPE_CHAR && top->structural == ch;
-        }
-
-        inline void print_json(JsonPartialValue *value, size_t indent = 0) {
+        void print_json(JsonPartialValue *value, size_t indent = 0) {
             switch (value->type) {
                 case JsonPartialValue::TYPE_PARTIAL_OBJ:
-                case JsonPartialValue::TYPE_PARTIAL_ARR:
-                    value->type = static_cast<JsonPartialValue::ValueType>(static_cast<int>(value->type) - 4);
+                case JsonPartialValue::TYPE_PARTIAL_ARR: {
                     print_indent(indent);
                     std::cout << "(partial) ";
+                    JsonValue new_value = *reinterpret_cast<JsonValue *>(value);
+                    new_value.type = static_cast<JsonValue::ValueType>(static_cast<int>(value->type) - 4);
+                    print_json(&new_value, indent);
+                }
                 case JsonPartialValue::TYPE_NULL:
                 case JsonPartialValue::TYPE_BOOL:
                 case JsonPartialValue::TYPE_STR:
@@ -810,25 +755,210 @@ namespace MercuryJson {
             }
             std::cout << std::endl;
         }
+
+        static const size_t kDefaultStackSize = 4096;
+
+        class ParseStack {
+            JsonPartialValue **stack;
+            size_t stack_top;
+            BlockAllocator<JsonValue> &&allocator;
+
+        public:
+            ParseStack(BlockAllocator<JsonValue> &allocator, size_t max_size = kDefaultStackSize)
+                    : allocator(std::move(allocator)) {
+                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
+                stack_top = 0;
+            }
+
+            ParseStack(BlockAllocator<JsonValue> &&allocator, size_t max_size = kDefaultStackSize)
+                    : allocator(std::move(allocator)) {
+                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
+                stack_top = 0;
+            }
+
+            ParseStack(ParseStack &&other) : allocator(std::move(other.allocator)) {
+                stack = other.stack;
+                stack_top = other.stack_top;
+                other.stack = nullptr;
+            }
+
+            ~ParseStack() {
+                aligned_free(stack);
+            }
+
+            inline size_t size() const { return stack_top; }
+
+            inline JsonPartialValue *operator [](size_t idx) const { return stack[idx]; }
+
+            template <typename ...Args>
+            inline bool _check_stack_top() const;
+
+            template <>
+            inline bool _check_stack_top() const { return true; }
+
+            template <typename ...Args>
+            inline bool _check_stack_top(bool first, Args ...args) const {  // true for any fully-parsed JSON value
+//            assert(first);
+                auto *top = stack[stack_top - sizeof...(args) - 1];
+                switch (top->type) {
+                    case JsonPartialValue::TYPE_PARTIAL_OBJ:
+                    case JsonPartialValue::TYPE_PARTIAL_ARR:
+                    case JsonPartialValue::TYPE_CHAR:
+                        return false;
+                    default:
+                        break;
+                }
+                return _check_stack_top(args...);
+            }
+
+            template <typename ...Args>
+            inline bool _check_stack_top(char first, Args ...args) const {
+                auto *top = stack[stack_top - sizeof...(args) - 1];
+                if (top->type != JsonPartialValue::TYPE_CHAR || top->structural != first) return false;
+                return _check_stack_top(args...);
+            }
+
+            template <typename ...Args>
+            inline bool _check_stack_top(JsonPartialValue::ValueType first, Args ...args) const {
+                auto *top = stack[stack_top - sizeof...(args) - 1];
+                if (top->type != first) return false;
+                return _check_stack_top(args...);
+            }
+
+            template <typename ...Args>
+            inline bool check(Args ...args) const {
+                if (stack_top < sizeof...(args)) return false;
+                return _check_stack_top(args...);
+            }
+
+            inline bool check_pos(size_t pos, char ch) const {  // pos starts from 1, counts from stack top.
+                if (stack_top < pos) return false;
+                auto *top = stack[stack_top - pos];
+                return top->type == JsonPartialValue::TYPE_CHAR && top->structural == ch;
+            }
+
+            inline JsonPartialValue *get(size_t pos) const {
+                return stack[stack_top - pos];
+            }
+
+            template <typename ...Args>
+            inline void push(Args ...args) {
+                stack[stack_top++] = allocator.construct<JsonPartialValue>(std::forward<Args>(args)...);
+            }
+
+            inline void push(JsonPartialValue *value) {
+                stack[stack_top++] = value;
+            }
+
+            inline void pop(size_t n) {
+                stack_top -= n;
+            }
+
+            void print() {
+                std::cout << "Stack size: " << stack_top << std::endl;
+                for (size_t i = 0; i < stack_top; ++i) {
+                    std::cout << "Element #" << i << ": ";
+                    print_json(stack[i]);
+                }
+            }
+
+            // "{", partial-object, "}"  =>  object
+            inline void reduce_object() {
+                if (check('{')) {
+                    // Emtpy object.
+                    pop(1);
+                    push(static_cast<JsonObject *>(nullptr));
+                } else if (check('{', JsonPartialValue::TYPE_PARTIAL_OBJ)) {
+                    // Non-empty object.
+                    auto *obj = reinterpret_cast<JsonObject *>(get(1)->partial_object);
+                    pop(2);
+                    push(obj);
+                } else {
+                    // This should not happen when the input is well-formed.
+                    push('}');
+                }
+            }
+
+            // "[", partial-array, "]"  =>  array
+            inline void reduce_array() {
+                if (check('[')) {
+                    // Emtpy array.
+                    pop(1);
+                    push(static_cast<JsonArray *>(nullptr));
+                } else if (check('[', true)) {
+                    // Construct singleton array.
+                    auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get(1)), nullptr);
+                    pop(2);
+                    push(arr);
+                } else if (check('[', JsonPartialValue::TYPE_PARTIAL_ARR, ',', true)) {
+                    // We have to manually match the final element in the array, because we only reduce to partial
+                    // array on commas (,).
+                    auto *partial_arr = get(3)->partial_array;
+                    partial_arr->final->next = reinterpret_cast<JsonPartialArray *>(
+                            allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get(1)), nullptr));
+                    auto *arr = reinterpret_cast<JsonArray *>(partial_arr);
+                    pop(4);
+                    push(arr);
+                } else {
+                    // This should not happen when the input is well-formed.
+                    push(']');
+                }
+            }
+
+            // ( partial-array, "," | "[" ), value, ","  =>  partial-array, ","
+            inline void reduce_partial_array() {
+                if (check('[', true)) {
+                    // Construct a singleton partial array. Note that previous value must be of complete type,
+                    // otherwise we might aggressively match partial objects.
+                    auto *elem = get(1);
+                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
+                    pop(1);
+                    push(partial_arr);
+                    push(',');
+                } else if (check(JsonPartialValue::TYPE_PARTIAL_ARR, ',', true)) {
+                    // Merge with previous partial array.
+                    auto *elem = get(1);
+                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
+                    auto *prev_arr = get(3)->partial_array;
+                    prev_arr->final = prev_arr->final->next = partial_arr;
+                    pop(1);  // No need to push ',' --- just re-use the previous one.
+                } else {
+                    push(',');
+                }
+            }
+
+            // [ partial-object ], ",", string, ":", value  =>  partial-object
+            inline bool reduce_partial_object() {
+                if (check_pos(2, ':')) {
+                    if (check(JsonPartialValue::TYPE_STR, ':', true)) {
+                        // Construct singleton partial object.
+                        auto *key = get(3)->str;
+                        auto *value = get(1);
+                        auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
+                        pop(3);
+                        if (check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
+                            // Merge with previous partial object.
+                            auto *prev_obj = get(2)->partial_object;
+                            prev_obj->final = prev_obj->final->next = partial_obj;
+                            partial_obj = prev_obj;
+                            pop(2);
+                        }
+                        push(partial_obj);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
     }
 
-    JsonValue *JSON::_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end) {
-        using shift_reduce_impl::stack;
+    void JSON::_thread_shift_reduce_parsing(const size_t *idx_begin, const size_t *idx_end,
+                                            shift_reduce_impl::ParseStack *stack) {
         using shift_reduce_impl::JsonPartialValue;
         using shift_reduce_impl::JsonPartialObject;
         using shift_reduce_impl::JsonPartialArray;
-        using shift_reduce_impl::check_stack_top;
-        using shift_reduce_impl::check_stack_pos;
+        using shift_reduce_impl::ParseStack;
 
-#define push_stack(...) ({ \
-        stack.push_back(allocator.construct<JsonPartialValue>(__VA_ARGS__)); \
-    })
-#define pop_stack(_n) ({ \
-        shift_reduce_impl::pop_stack<_n>(); \
-    })
-#define get_stack(_x) (stack[stack.size() - (_x)])
-
-        stack.clear();
         while (idx_begin != idx_end) {
             size_t idx = *idx_begin;
             char ch = input[idx];
@@ -836,17 +966,17 @@ namespace MercuryJson {
             // Shift current value onto stack.
             switch (ch) {
                 case '"':
-                    push_stack(_parse_str(idx));
+                    stack->push(_parse_str(idx));
                     break;
                 case 't':
-                    push_stack(parse_true(input, idx));
+                    stack->push(parse_true(input, idx));
                     break;
                 case 'f':
-                    push_stack(parse_false(input, idx));
+                    stack->push(parse_false(input, idx));
                     break;
                 case 'n':
                     parse_null(input, idx);
-                    push_stack();
+                    stack->push();
                     break;
                 case '0':
                 case '1':
@@ -862,118 +992,144 @@ namespace MercuryJson {
                     bool is_decimal;
                     auto ret = parse_number(input, &is_decimal, idx);
                     if (is_decimal) {
-                        push_stack(std::get<double>(ret));
+                        stack->push(std::get<double>(ret));
                     } else {
-                        push_stack(std::get<long long int>(ret));
+                        stack->push(std::get<long long int>(ret));
                     }
                     break;
                 }
+
                 case '{':
                 case '[':
-                case '}':
-                case ']':
-                case ',':
                 case ':':
-                    push_stack(ch);
+                    stack->push(ch);
+                    break;
+
+                    // Perform reduce on the stack.
+                    // There will be at most two consecutive reduce ops:
+                    //   1. From a partial array to array, or from a partial object to object.
+                    //   2. Merge the previously constructed value with a partial array or partial object.
+                case '}':
+                    // "{", partial-object, "}"  =>  object
+                    stack->reduce_object();
+                    break;
+                case ']':
+                    // "[", partial-array, "]"  =>  array
+                    stack->reduce_array();
+                    break;
+                case ',':
+                    // value, ","  =>  partial-array
+                    stack->reduce_partial_array();
                     break;
                 default:
                     error("JSON value");
             }
 
-            // Perform reduce on the stack.
-            // There will be at most two consecutive reduce ops:
-            //   1. From a partial array to array, or from a partial object to object.
-            //   2. Merge the previously constructed value with a partial array or partial object.
-            if (ch == '}') {
-                // "{", partial-object, "}"  =>  object
-                if (check_stack_top('{', '}')) {
-                    // Emtpy object.
-                    pop_stack(2);
-                    push_stack(static_cast<JsonObject *>(nullptr));
-                } else if (check_stack_top('{', JsonPartialValue::TYPE_PARTIAL_OBJ, '}')) {
-                    auto *obj = reinterpret_cast<JsonObject *>(get_stack(2)->partial_object);
-                    pop_stack(3);
-                    push_stack(obj);
-                }
-            } else if (ch == ']') {
-                // "[", partial-array, "]"  =>  array
-                if (check_stack_top('[', ']')) {
-                    // Emtpy array.
-                    pop_stack(2);
-                    push_stack(static_cast<JsonArray *>(nullptr));
-                } else if (check_stack_top('[', JsonPartialValue::TYPE_PARTIAL_ARR, ']')) {
-                    auto *arr = reinterpret_cast<JsonArray *>(get_stack(2)->partial_array);
-                    pop_stack(3);
-                    push_stack(arr);
-                } else if (check_stack_top('[', true, ']')) {
-                    // Construct singleton array.
-                    auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(2)), nullptr);
-                    pop_stack(3);
-                    push_stack(arr);
-                } else if (check_stack_top('[', JsonPartialValue::TYPE_PARTIAL_ARR, true, ']')) {
-                    // We have to manually match the final element in the array, because we only reduce to partial
-                    // array on commas (,).
-                    auto *partial_arr = get_stack(3)->partial_array;
-                    partial_arr->final->next = reinterpret_cast<JsonPartialArray *>(allocator.construct<JsonArray>(
-                            reinterpret_cast<JsonValue *>(get_stack(2)), nullptr));
-                    auto *arr = reinterpret_cast<JsonArray *>(partial_arr);
-                    pop_stack(4);
-                    push_stack(arr);
-                } else if (check_stack_top('[', true, ',', true, ']')) {
-                    auto *arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(2)), nullptr);
-                    arr = allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get_stack(4)), arr);
-                    pop_stack(5);
-                    push_stack(arr);
-                }
-            }
-
-            if (check_stack_pos(2, ':')) {
-                if (check_stack_top(JsonPartialValue::TYPE_STR, ':', true)) {
-                    // Construct singleton partial object.
-                    auto *key = get_stack(3)->str;
-                    auto *value = get_stack(1);
-                    auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
-                    pop_stack(3);
-                    if (check_stack_top(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
-                        // Merge with previous partial object.
-                        auto *prev_obj = get_stack(2)->partial_object;
-                        prev_obj->final = prev_obj->final->next = partial_obj;
-                        partial_obj = prev_obj;
-                        pop_stack(2);
-                    }
-                    push_stack(partial_obj);
-                }
-            } else if (ch == ',') {
-                // value, ","  =>  partial-array
-                if (check_stack_top(true, ',')) {
-                    // Construct a singleton partial array. Note that previous value must be of complete type,
-                    // otherwise we might aggressively match partial objects.
-                    auto *elem = get_stack(2);
-                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
-                    pop_stack(2);
-                    if (check_stack_top(JsonPartialValue::TYPE_PARTIAL_ARR)) {  // no trailing comma!
-                        // Merge with previous partial array.
-                        auto *prev_arr = get_stack(1)->partial_array;
-                        prev_arr->final = prev_arr->final->next = partial_arr;
-                        partial_arr = prev_arr;
-                        pop_stack(1);
-                    }
-                    push_stack(partial_arr);
-                }
-            }
+            // Possible second step of reduce.
+            stack->reduce_partial_object();
 
             ++idx_begin;
         }
-//        std::cout << "Stack size: " << stack.size() << std::endl;
-//        for (size_t i = 0; i < stack.size(); ++i) {
-//            std::cout << "Element #" << i << ": ";
-//            shift_reduce_impl::print_json(stack[i]);
-//        }
-        assert(stack.size() == 1);
-        idx_ptr = idx_end;  // Consume the indices to satisfy null ending check.
-        return reinterpret_cast<JsonValue *>(stack.front());
-#undef push_stack
-#undef pop_stack
+    }
+
+    JsonValue *JSON::_shift_reduce_parsing() {
+        using shift_reduce_impl::JsonPartialValue;
+        using shift_reduce_impl::ParseStack;
+#if SHIFT_REDUCE_NUM_THREADS > 1
+        std::thread shift_reduce_threads[SHIFT_REDUCE_NUM_THREADS - 1];
+        std::vector<ParseStack> stacks;
+        stacks.emplace_back(allocator);
+        for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i) {
+            size_t idx_begin = (num_indices - 1) * (i + 1) / SHIFT_REDUCE_NUM_THREADS;
+            size_t idx_end = (num_indices - 1) * (i + 2) / SHIFT_REDUCE_NUM_THREADS;
+            stacks.emplace_back(allocator.fork(2 * (idx_end - idx_begin) * sizeof(JsonPartialValue)));
+            shift_reduce_threads[i] = std::thread(&JSON::_thread_shift_reduce_parsing, this,
+                                                  indices + idx_begin, indices + idx_end, &stacks[i + 1]);
+        }
+        size_t idx_end = (num_indices - 1) / SHIFT_REDUCE_NUM_THREADS;
+        _thread_shift_reduce_parsing(indices, indices + idx_end, &stacks[0]);
+        // Join threads and merge.
+        ParseStack &main_stack = stacks[0];
+//        main_stack.print();
+        for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i) {
+            shift_reduce_threads[i].join();
+            ParseStack &merge_stack = stacks[i + 1];
+//            merge_stack.print();
+            for (size_t idx = 0; idx < merge_stack.size(); ++idx) {
+                auto *value = merge_stack[idx];
+                switch (value->type) {
+                    case JsonPartialValue::TYPE_NULL:
+                    case JsonPartialValue::TYPE_BOOL:
+                    case JsonPartialValue::TYPE_STR:
+                    case JsonPartialValue::TYPE_OBJ:
+                    case JsonPartialValue::TYPE_ARR:
+                    case JsonPartialValue::TYPE_INT:
+                    case JsonPartialValue::TYPE_DEC:
+                        main_stack.push(value);
+                        break;
+                    case JsonPartialValue::TYPE_PARTIAL_OBJ:
+                        if (main_stack.check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
+                            // Merge with partial object from previous stack.
+                            auto *prev_obj = main_stack.get(2)->partial_object;
+                            prev_obj->final->next = value->partial_object;
+                            prev_obj->final = value->partial_object->final;
+                            main_stack.pop(1);
+                        } else {
+                            main_stack.push(value);
+                        }
+                        break;
+                    case JsonPartialValue::TYPE_PARTIAL_ARR:
+                        if (main_stack.check(JsonPartialValue::TYPE_PARTIAL_ARR, ',')) {
+                            // Merge with partial array from previous stack.
+                            auto *prev_arr = main_stack.get(2)->partial_array;
+                            prev_arr->final->next = value->partial_array;
+                            prev_arr->final = value->partial_array->final;
+                            main_stack.pop(1);
+                        } else {
+                            main_stack.push(value);
+                        }
+                        break;
+                    case JsonPartialValue::TYPE_CHAR:
+                        switch (char ch = value->structural) {
+                            case '{':
+                            case '[':
+                            case ':':
+                                main_stack.push(ch);
+                                break;
+
+                                // Perform reduce on the stack.
+                                // There will be at most two consecutive reduce ops:
+                                //   1. From a partial array to array, or from a partial object to object.
+                                //   2. Merge the previously constructed value with a partial array or partial object.
+                            case '}':
+                                // "{", partial-object, "}"  =>  object
+                                main_stack.reduce_object();
+                                break;
+                            case ']':
+                                // "[", partial-array, "]"  =>  array
+                                main_stack.reduce_array();
+                                break;
+                            case ',':
+                                // value, ","  =>  partial-array
+                                main_stack.reduce_partial_array();
+                                break;
+                            default:
+                                error("JSON value");
+                        }
+                        break;
+                }
+                while (main_stack.reduce_partial_object()) {}
+            }
+        }
+#else
+        ParseStack main_stack(allocator);
+        _thread_shift_reduce_parsing(indices, indices + num_indices - 1, &main_stack);
+#endif
+//        main_stack.print();
+        assert(main_stack.size() == 1);
+        auto *ret = reinterpret_cast<JsonValue *>(main_stack[0]);
+        idx_ptr += num_indices - 1;  // Consume the indices to satisfy null ending check.
+        return ret;
     }
 
     JSON::JSON(char *document, size_t size, bool manual_construct) : allocator(size) {
@@ -981,10 +1137,10 @@ namespace MercuryJson {
         input_len = size;
         this->document = nullptr;
 
-        idx_ptr = indices = new size_t[size];  // TODO: Make this a dynamic-sized array
+        idx_ptr = indices = static_cast<size_t *>(aligned_malloc(size * sizeof(size_t)));
         num_indices = 0;
 #if ALLOC_PARSED_STR
-        literals = new char[size];
+        literals = aligned_malloc(size);
 #endif
 
         if (!manual_construct) {
@@ -994,19 +1150,19 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage1() {
-        u_int64_t prev_escape_mask = 0;
-        u_int64_t prev_quote_mask = 0;
-        u_int64_t prev_pseudo_mask = 0;
+        uint64_t prev_escape_mask = 0;
+        uint64_t prev_quote_mask = 0;
+        uint64_t prev_pseudo_mask = 0;
         for (size_t offset = 0; offset < input_len; offset += 64) {
             __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset));
             __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset + 32));
             Warp warp(_input2, _input1);
-            u_int64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
-            u_int64_t quote_mask = 0;
-            u_int64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
-            u_int64_t structural_mask = 0, whitespace_mask = 0;
+            uint64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
+            uint64_t quote_mask = 0;
+            uint64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
+            uint64_t structural_mask = 0, whitespace_mask = 0;
             extract_structural_whitespace_characters(warp, literal_mask, &structural_mask, &whitespace_mask);
-            u_int64_t pseudo_mask = extract_pseudo_structural_mask(
+            uint64_t pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
             construct_structural_character_pointers(pseudo_mask, offset, indices, &num_indices);
         }
@@ -1015,17 +1171,17 @@ namespace MercuryJson {
     void JSON::exec_stage2() {
 //        std::chrono::time_point<std::chrono::steady_clock> start_time;
 //        std::chrono::duration<double> runtime;
-#if PARSE_STR_MULTITHREAD
+#if PARSE_STR_NUM_THREADS
 //        start_time = std::chrono::steady_clock::now();
-        std::vector<std::thread> parse_str_threads;
-        for (size_t i = 0; i < kNumThreads; ++i)
-            parse_str_threads.emplace_back(&JSON::_thread_parse_str, this, i);
+        std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
+        for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
+            parse_str_threads[i] = std::thread(&JSON::_thread_parse_str, this, i);
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("thread spawn: %.6lf\n", runtime.count());
 #endif
 //        start_time = std::chrono::steady_clock::now();
 #if SHIFT_REDUCE_PARSER
-        document = _shift_reduce_parsing(indices, indices + num_indices - 1);  // final index is '\0'
+        document = _shift_reduce_parsing();  // final index is '\0'
 #else
         document = _parse_value();
 #endif
@@ -1035,14 +1191,14 @@ namespace MercuryJson {
         if (ch != 0) error("file end");
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("parse document: %.6lf\n", runtime.count());
-#if PARSE_STR_MULTITHREAD
+#if PARSE_STR_NUM_THREADS
 //        start_time = std::chrono::steady_clock::now();
         for (std::thread &thread : parse_str_threads)
             thread.join();
 //        runtime = std::chrono::steady_clock::now() - start_time;
 //        printf("wait join: %.6lf\n", runtime.count());
 #endif
-        delete[] indices;
+        aligned_free(indices);
         indices = nullptr;
     }
 
@@ -1053,7 +1209,7 @@ namespace MercuryJson {
 
 #if ALLOC_PARSED_STR
     JSON::~JSON() {
-        delete[] literals;
+        aligned_free(literals);
     }
 #else
     JSON::~JSON() = default;
@@ -1085,10 +1241,10 @@ namespace MercuryJson {
                     src += backslash_offset + 6;
                     dest += backslash_offset + 6;
                 } else {
-                    u_int8_t escaped = escape_map[escape_char];
+                    uint8_t escaped = kEscapeMap[escape_char];
                     if (escaped == 0U)
                         __error("invalid escape character '" + std::string(1, escape_char) + "'", _src, offset);
-                    dest[backslash_offset] = escape_map[escape_char];
+                    dest[backslash_offset] = kEscapeMap[escape_char];
                     src += backslash_offset + 2;
                     dest += backslash_offset + 1;
                 }
@@ -1105,11 +1261,11 @@ namespace MercuryJson {
         src += offset;
         if (dest == nullptr) dest = const_cast<char *>(src);
         char *base = dest;
-        u_int64_t prev_odd_backslash_ending_mask = 0ULL;
+        uint64_t prev_odd_backslash_ending_mask = 0ULL;
         while (true) {
             Warp input(src);
-            u_int64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
-            u_int64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
+            uint64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
+            uint64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
             size_t ending_offset = _tzcnt_u64(quote_mask);
 
@@ -1127,7 +1283,7 @@ namespace MercuryJson {
                     char escaper = src[this_offset];
                     memmove(dest, src + last_offset, length);
                     dest += length;
-                    *(dest - 1) = escape_map[escaper];
+                    *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
@@ -1142,7 +1298,7 @@ namespace MercuryJson {
                 __m256i hi_trans = translate_escape_characters(input.hi);
                 input.lo = _mm256_blendv_epi8(lo_trans, input.lo, lo_mask);
                 input.hi = _mm256_blendv_epi8(hi_trans, input.hi, hi_mask);
-                u_int64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
+                uint64_t escaper_mask = (escape_mask >> 1U) | (prev_odd_backslash_ending_mask << 63U);
 
                 deescape(input, escaper_mask);
                 _mm256_storeu_si256(reinterpret_cast<__m256i *>(dest), input.lo);
@@ -1158,7 +1314,7 @@ namespace MercuryJson {
                     memmove(dest, src + last_offset, length);
                     dest += length;
                     if (this_offset >= ending_offset) break;
-                    *(dest - 1) = escape_map[escaper];
+                    *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
                     escape_mask = _blsr_u64(escape_mask);
                 }
@@ -1168,7 +1324,7 @@ namespace MercuryJson {
         }
     }
 
-    inline __m256i convert_to_mask(u_int32_t input) {
+    inline __m256i convert_to_mask(uint32_t input) {
         /* Create a mask based on each bit of `input`.
          *                    input : [0-31]
          * _mm256_set1_epi32(input) : [0-7] [8-15] [16-23] [24-31] * 8
@@ -1189,20 +1345,20 @@ namespace MercuryJson {
                 _mm256_set1_epi32(input), projector), masker), zeros);
     }
 
-    inline u_int64_t __extract_highestbit_pext(const Warp &input, int shift, u_int64_t escaper_mask) {
-        u_int64_t lo = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.lo, shift)));
-        u_int64_t hi = static_cast<u_int32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.hi, shift)));
+    inline uint64_t __extract_highestbit_pext(const Warp &input, int shift, uint64_t escaper_mask) {
+        uint64_t lo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.lo, shift)));
+        uint64_t hi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_slli_epi16(input.hi, shift)));
         return _pext_u64(((hi << 32U) | lo), escaper_mask);
     }
 
-    inline __m256i __expand(u_int32_t input) {
+    inline __m256i __expand(uint32_t input) {
         /* 0x00 for 1-bits, 0x01 for 0-bits */
         const __m256i ones = _mm256_set1_epi8(1);
         return _mm256_add_epi8(convert_to_mask(input), ones);
     }
 
-    inline __m256i __reconstruct(u_int32_t h0, u_int32_t h1, u_int32_t h2, u_int32_t h3,
-                                 u_int32_t h4, u_int32_t h5, u_int32_t h6, u_int32_t h7) {
+    inline __m256i __reconstruct(uint32_t h0, uint32_t h1, uint32_t h2, uint32_t h3,
+                                 uint32_t h4, uint32_t h5, uint32_t h6, uint32_t h7) {
         /* Reconstruct a __m256i with 8-bit numbers specified by bits from h0~h7 */
         __m256i result = __expand(h0);
         result = _mm256_or_si256(result, _mm256_slli_epi16(__expand(h1), 1));
@@ -1215,18 +1371,18 @@ namespace MercuryJson {
         return result;
     }
 
-    void deescape(Warp &input, u_int64_t escaper_mask) {
+    void deescape(Warp &input, uint64_t escaper_mask) {
         /* Remove 8-bit characters specified by `escaper_mask` */
-        u_int64_t nonescaper_mask = ~escaper_mask;
+        uint64_t nonescaper_mask = ~escaper_mask;
         // Obtain each bit from each 8-bit character, keeping only non-escapers
-        u_int64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
-        u_int64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
-        u_int64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
-        u_int64_t h4 = __extract_highestbit_pext(input, 3, nonescaper_mask);
-        u_int64_t h3 = __extract_highestbit_pext(input, 4, nonescaper_mask);
-        u_int64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
-        u_int64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
-        u_int64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
+        uint64_t h7 = __extract_highestbit_pext(input, 0, nonescaper_mask);
+        uint64_t h6 = __extract_highestbit_pext(input, 1, nonescaper_mask);
+        uint64_t h5 = __extract_highestbit_pext(input, 2, nonescaper_mask);
+        uint64_t h4 = __extract_highestbit_pext(input, 3, nonescaper_mask);
+        uint64_t h3 = __extract_highestbit_pext(input, 4, nonescaper_mask);
+        uint64_t h2 = __extract_highestbit_pext(input, 5, nonescaper_mask);
+        uint64_t h1 = __extract_highestbit_pext(input, 6, nonescaper_mask);
+        uint64_t h0 = __extract_highestbit_pext(input, 7, nonescaper_mask);
         // _mm256_packus_epi32
         input.lo = __reconstruct(h0, h1, h2, h3, h4, h5, h6, h7);
         input.hi = __reconstruct(

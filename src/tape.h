@@ -11,24 +11,24 @@
 namespace MercuryJson {
 
     struct Tape {
-        static const u_int64_t TYPE_MASK = 0xf;
-        static const u_int64_t TYPE_NULL = 0xf;
-        static const u_int64_t TYPE_FALSE = 0x0;
-        static const u_int64_t TYPE_TRUE = 0x1;
-        static const u_int64_t TYPE_STR = 0x2;
-        static const u_int64_t TYPE_INT = 0x3;
-        static const u_int64_t TYPE_DEC = 0x4;
-        static const u_int64_t TYPE_OBJ = 0x5;
-        static const u_int64_t TYPE_ARR = 0x6;
+        static const uint64_t TYPE_MASK = 0xf;
+        static const uint64_t TYPE_NULL = 0xf;
+        static const uint64_t TYPE_FALSE = 0x0;
+        static const uint64_t TYPE_TRUE = 0x1;
+        static const uint64_t TYPE_STR = 0x2;
+        static const uint64_t TYPE_INT = 0x3;
+        static const uint64_t TYPE_DEC = 0x4;
+        static const uint64_t TYPE_OBJ = 0x5;
+        static const uint64_t TYPE_ARR = 0x6;
 
-        u_int64_t *tape;
+        uint64_t *tape;
         char *literals;
         size_t tape_size, literals_size;
 
         Tape(size_t string_size, size_t structual_size) {
-            tape = static_cast<u_int64_t *>(
-                    aligned_malloc(ALIGNMENT_SIZE, 2 * sizeof(u_int64_t) * (structual_size + ALIGNMENT_SIZE)));
-            literals = static_cast<char *>(aligned_malloc(ALIGNMENT_SIZE, string_size + ALIGNMENT_SIZE));
+            tape = static_cast<uint64_t *>(
+                    aligned_malloc(2 * sizeof(uint64_t) * (structual_size + ALIGNMENT_SIZE)));
+            literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
             tape_size = 0;
             literals_size = 0;
         }
@@ -54,7 +54,7 @@ namespace MercuryJson {
             tape[tape_size++] = plain_convert(value);
         }
 
-        void write_str(u_int64_t literal_idx) { tape[tape_size++] = TYPE_STR | (literal_idx << 4U); }
+        void write_str(uint64_t literal_idx) { tape[tape_size++] = TYPE_STR | (literal_idx << 4U); }
 
         size_t write_array() {
             tape[tape_size] = TYPE_ARR;
@@ -66,7 +66,7 @@ namespace MercuryJson {
             return tape_size++;
         }
 
-        void write_content(u_int64_t content, size_t idx) { tape[idx] = (tape[idx] & TYPE_MASK) | (content << 4U); }
+        void write_content(uint64_t content, size_t idx) { tape[idx] = (tape[idx] & TYPE_MASK) | (content << 4U); }
 
         size_t print_json(size_t tape_idx = 0, size_t indent = 0);
     };

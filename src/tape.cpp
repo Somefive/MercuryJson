@@ -11,7 +11,7 @@
 namespace MercuryJson {
 
     size_t Tape::print_json(size_t tape_idx, size_t indent) {
-        u_int64_t section = tape[tape_idx];
+        uint64_t section = tape[tape_idx];
         switch (section & TYPE_MASK) {
             case TYPE_NULL:
                 printf("null");
