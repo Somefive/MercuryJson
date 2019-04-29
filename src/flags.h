@@ -43,7 +43,7 @@
 
 // Number of extra dedicated threads for string parsing. Set to 0 to disable.
 #ifndef PARSE_STR_NUM_THREADS
-# define PARSE_STR_NUM_THREADS 1
+# define PARSE_STR_NUM_THREADS 0
 #endif
 
 #endif // MERCURYJSON_FLAGS_H

@@ -578,6 +578,7 @@ namespace MercuryJson {
         char *dest = input + idx + 1;
 #endif
 
+        //@formatter:off
 #if !PARSE_STR_NUM_THREADS
 # if PARSE_STR_MODE == 2
         parse_str_per_bit
@@ -588,6 +589,7 @@ namespace MercuryJson {
 # endif
         (input, dest, nullptr, idx + 1);
 #endif
+        //@formatter:on
         return dest;
     }
 
@@ -762,22 +764,16 @@ namespace MercuryJson {
         class ParseStack {
             JsonPartialValue **stack;
             size_t stack_top;
-            BlockAllocator<JsonValue> &&allocator;
+            BlockAllocator<JsonValue> &allocator;
 
         public:
             ParseStack(BlockAllocator<JsonValue> &allocator, size_t max_size = kDefaultStackSize)
-                    : allocator(std::move(allocator)) {
-                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
+                    : allocator(allocator) {
+                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue *)));
                 stack_top = 0;
             }
 
-            ParseStack(BlockAllocator<JsonValue> &&allocator, size_t max_size = kDefaultStackSize)
-                    : allocator(std::move(allocator)) {
-                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
-                stack_top = 0;
-            }
-
-            ParseStack(ParseStack &&other) : allocator(std::move(other.allocator)) {
+            ParseStack(ParseStack &&other) : allocator(other.allocator) {
                 stack = other.stack;
                 stack_top = other.stack_top;
                 other.stack = nullptr;
@@ -809,10 +805,18 @@ namespace MercuryJson {
                 return _check_stack_top(args...);
             }
 
-            inline bool check_pos(size_t pos, char ch) const {  // pos starts from 1, counts from stack top.
+            inline bool check_pos(size_t pos, char ch) const {
+                // pos starts from 1, counts from stack top.
                 if (stack_top < pos) return false;
                 auto *top = stack[stack_top - pos];
                 return top->type == JsonPartialValue::TYPE_CHAR && top->structural == ch;
+            }
+
+            inline bool check_pos(size_t pos, JsonPartialValue::ValueType type) const {
+                // pos starts from 1, counts from stack top.
+                if (stack_top < pos) return false;
+                auto *top = stack[stack_top - pos];
+                return top->type == type;
             }
 
             inline JsonPartialValue *get(size_t pos) const {
@@ -883,7 +887,7 @@ namespace MercuryJson {
                 }
             }
 
-            // ( partial-array, "," | "[" ), value, ","  =>  partial-array, ","
+            // ( [ partial-array ], "," | "[" ), value, ","  =>  partial-array, ","
             inline void reduce_partial_array() {
                 if (check('[', true)) {
                     // Construct a singleton partial array. Note that previous value must be of complete type,
@@ -893,19 +897,25 @@ namespace MercuryJson {
                     pop(1);
                     push(partial_arr);
                     push(',');
-                } else if (check(JsonPartialValue::TYPE_PARTIAL_ARR, ',', true)) {
+                } else if (check(',', true)) {
                     // Merge with previous partial array.
                     auto *elem = get(1);
                     auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
-                    auto *prev_arr = get(3)->partial_array;
-                    prev_arr->final = prev_arr->final->next = partial_arr;
-                    pop(1);  // No need to push ',' --- just re-use the previous one.
+                    if (check_pos(3, JsonPartialValue::TYPE_PARTIAL_ARR)) {
+                        auto *prev_arr = get(3)->partial_array;
+                        prev_arr->final = prev_arr->final->next = partial_arr;
+                        pop(1);  // No need to push ',' --- just re-use the previous one.
+                    } else {
+                        pop(1);
+                        push(partial_arr);
+                        push(',');
+                    }
                 } else {
                     push(',');
                 }
             }
 
-            // [ partial-object ], ",", string, ":", value  =>  partial-object
+            // [ partial-object, "," ], string, ":", value  =>  partial-object
             inline bool reduce_partial_object() {
                 if (check_pos(2, ':')) {
                     if (check(JsonPartialValue::TYPE_STR, ':', true)) {
@@ -1030,7 +1040,7 @@ namespace MercuryJson {
                     stack->reduce_array();
                     break;
                 case ',':
-                    // value, ","  =>  partial-array
+                    // ( [ partial-array ], "," | "[" ), value, ","  =>  partial-array, ","
                     stack->reduce_partial_array();
                     break;
                 default:
@@ -1049,12 +1059,17 @@ namespace MercuryJson {
         using shift_reduce_impl::ParseStack;
 #if SHIFT_REDUCE_NUM_THREADS > 1
         std::thread shift_reduce_threads[SHIFT_REDUCE_NUM_THREADS - 1];
+        std::vector<BlockAllocator<JsonValue>> allocators;
         std::vector<ParseStack> stacks;
         stacks.emplace_back(allocator);
+        size_t num_indices_per_thread = (num_indices - 1 + SHIFT_REDUCE_NUM_THREADS) / SHIFT_REDUCE_NUM_THREADS;
+        for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i)
+            allocators.push_back(allocator.fork(2 * num_indices_per_thread * sizeof(JsonPartialValue)));
+        for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i)
+            stacks.emplace_back(allocators[i]);
         for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i) {
             size_t idx_begin = (num_indices - 1) * (i + 1) / SHIFT_REDUCE_NUM_THREADS;
             size_t idx_end = (num_indices - 1) * (i + 2) / SHIFT_REDUCE_NUM_THREADS;
-            stacks.emplace_back(allocator.fork(2 * (idx_end - idx_begin) * sizeof(JsonPartialValue)));
             shift_reduce_threads[i] = std::thread(&JSON::_thread_shift_reduce_parsing, this,
                                                   indices + idx_begin, indices + idx_end, &stacks[i + 1]);
         }
@@ -1152,7 +1167,7 @@ namespace MercuryJson {
         idx_ptr = indices = static_cast<size_t *>(aligned_malloc(size * sizeof(size_t)));
         num_indices = 0;
 #if ALLOC_PARSED_STR
-        literals = aligned_malloc(size);
+        literals = static_cast<char *>(aligned_malloc(size));
 #endif
 
         if (!manual_construct) {
@@ -1181,17 +1196,12 @@ namespace MercuryJson {
     }
 
     void JSON::exec_stage2() {
-//        std::chrono::time_point<std::chrono::steady_clock> start_time;
-//        std::chrono::duration<double> runtime;
 #if PARSE_STR_NUM_THREADS
-//        start_time = std::chrono::steady_clock::now();
         std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
         for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
             parse_str_threads[i] = std::thread(&JSON::_thread_parse_str, this, i);
-//        runtime = std::chrono::steady_clock::now() - start_time;
-//        printf("thread spawn: %.6lf\n", runtime.count());
 #endif
-//        start_time = std::chrono::steady_clock::now();
+
 #if SHIFT_REDUCE_PARSER
         document = _shift_reduce_parsing();  // final index is '\0'
 #else
@@ -1201,14 +1211,9 @@ namespace MercuryJson {
         char ch;
         peek_char();
         if (ch != 0) error("file end");
-//        runtime = std::chrono::steady_clock::now() - start_time;
-//        printf("parse document: %.6lf\n", runtime.count());
 #if PARSE_STR_NUM_THREADS
-//        start_time = std::chrono::steady_clock::now();
         for (std::thread &thread : parse_str_threads)
             thread.join();
-//        runtime = std::chrono::steady_clock::now() - start_time;
-//        printf("wait join: %.6lf\n", runtime.count());
 #endif
         aligned_free(indices);
         indices = nullptr;
