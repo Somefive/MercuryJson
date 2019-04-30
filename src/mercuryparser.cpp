@@ -773,7 +773,7 @@ namespace MercuryJson {
                 stack_top = 0;
             }
 
-            ParseStack(ParseStack &&other) : allocator(other.allocator) {
+            ParseStack(ParseStack &&other) noexcept : allocator(other.allocator) {
                 stack = other.stack;
                 stack_top = other.stack_top;
                 other.stack = nullptr;
@@ -917,23 +917,21 @@ namespace MercuryJson {
 
             // [ partial-object, "," ], string, ":", value  =>  partial-object
             inline bool reduce_partial_object() {
-                if (check_pos(2, ':')) {
-                    if (check(JsonPartialValue::TYPE_STR, ':', true)) {
-                        // Construct singleton partial object.
-                        auto *key = get(3)->str;
-                        auto *value = get(1);
-                        auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
-                        pop(3);
-                        if (check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
-                            // Merge with previous partial object.
-                            auto *prev_obj = get(2)->partial_object;
-                            prev_obj->final = prev_obj->final->next = partial_obj;
-                            partial_obj = prev_obj;
-                            pop(2);
-                        }
-                        push(partial_obj);
-                        return true;
+                if (check(JsonPartialValue::TYPE_STR, ':', true)) {
+                    // Construct singleton partial object.
+                    auto *key = get(3)->str;
+                    auto *value = get(1);
+                    auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
+                    pop(3);
+                    if (check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
+                        // Merge with previous partial object.
+                        auto *prev_obj = get(2)->partial_object;
+                        prev_obj->final = prev_obj->final->next = partial_obj;
+                        partial_obj = prev_obj;
+                        pop(2);
                     }
+                    push(partial_obj);
+                    return true;
                 }
                 return false;
             }
@@ -1224,13 +1222,12 @@ namespace MercuryJson {
 #undef expect
 #undef error
 
-#if ALLOC_PARSED_STR
     JSON::~JSON() {
+        if (indices != nullptr) aligned_free(indices);
+#if ALLOC_PARSED_STR
         aligned_free(literals);
-    }
-#else
-    JSON::~JSON() = default;
 #endif
+    }
 
     void parse_str_per_bit(const char *src, char *dest, size_t *len, size_t offset) {
         const char *_src = src;
@@ -1274,22 +1271,36 @@ namespace MercuryJson {
     }
 
     void parse_str_avx(const char *src, char *dest, size_t *len, size_t offset) {
+#if PARSE_STR_32BIT
+        typedef __mmask32 mask_t;
+# define tzcnt _tzcnt_u32
+# define blsr _blsr_u32
+#else
+        typedef uint64_t mask_t;
+# define tzcnt _tzcnt_u64
+# define blsr _blsr_u64
+#endif
+
         const char *_src = src;
         src += offset;
         if (dest == nullptr) dest = const_cast<char *>(src);
         char *base = dest;
-        uint64_t prev_odd_backslash_ending_mask = 0ULL;
+        mask_t prev_odd_backslash_ending_mask = 0ULL;
         while (true) {
+#if PARSE_STR_32BIT
+            __m256i input = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(src));
+#else
             Warp input(src);
-            uint64_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
-            uint64_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
+#endif
+            mask_t escape_mask = extract_escape_mask(input, &prev_odd_backslash_ending_mask);
+            mask_t quote_mask = __cmpeq_mask<'"'>(input) & (~escape_mask);
 
-            size_t ending_offset = _tzcnt_u64(quote_mask);
+            size_t ending_offset = tzcnt(quote_mask);
 
-            if (ending_offset < 64) {
+            if (ending_offset < sizeof(mask_t) * 8) {
                 size_t last_offset = 0, length;
                 while (true) {
-                    size_t this_offset = _tzcnt_u64(escape_mask);
+                    size_t this_offset = tzcnt(escape_mask);
                     if (this_offset >= ending_offset) {
                         memmove(dest, src + last_offset, ending_offset - last_offset);
                         dest[ending_offset - last_offset] = '\0';
@@ -1302,11 +1313,11 @@ namespace MercuryJson {
                     dest += length;
                     *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
-                    escape_mask = _blsr_u64(escape_mask);
+                    escape_mask = blsr(escape_mask);
                 }
                 break;
             } else {
-#if PARSE_STR_FULLY_AXV
+#if PARSE_STR_FULLY_AVX
                 /* fully-AVX version */
                 __m256i lo_mask = convert_to_mask(escape_mask);
                 __m256i hi_mask = convert_to_mask(escape_mask >> 32U);
@@ -1325,7 +1336,7 @@ namespace MercuryJson {
 #else
                 size_t last_offset = 0, length;
                 while (true) {
-                    size_t this_offset = _tzcnt_u64(escape_mask);
+                    size_t this_offset = tzcnt(escape_mask);
                     length = this_offset - last_offset;
                     char escaper = src[this_offset];
                     memmove(dest, src + last_offset, length);
@@ -1333,12 +1344,14 @@ namespace MercuryJson {
                     if (this_offset >= ending_offset) break;
                     *(dest - 1) = kEscapeMap[escaper];
                     last_offset = this_offset + 1;
-                    escape_mask = _blsr_u64(escape_mask);
+                    escape_mask = blsr(escape_mask);
                 }
-                src += 64;
+                src += sizeof(mask_t) * 8;
 #endif
             }
         }
+#undef tzcnt
+#undef blsr
     }
 
     inline __m256i convert_to_mask(uint32_t input) {

@@ -118,6 +118,11 @@ void run(int argc, char **argv) {
             total_stage1_time += stage1_time.count();
             total_stage2_time += stage2_time.count();
 
+            if (iterations <= 10) {
+                printf("Iteration %lu: stage 1 runtime: %.6lf s, stage 2 runtime: %.6lf s\n",
+                       i, stage1_time.count(), stage2_time.count());
+            }
+
 #if PRINT_JSON
             if (i == iterations - 1) {
 # if USE_TAPE

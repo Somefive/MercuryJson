@@ -73,10 +73,10 @@ namespace MercuryJson {
 
     struct TapeWriter {
         Tape *tape;
-        char *input;
+        const char *input;
         size_t *idxptr;
 
-        TapeWriter(Tape *_tape, char *_input, size_t *_idxptr) : tape(_tape), input(_input), idxptr(_idxptr) {}
+        TapeWriter(Tape *_tape, const char *_input, size_t *_idxptr) : tape(_tape), input(_input), idxptr(_idxptr) {}
 
         void _parse_value();
         // parse string from input[idx](") and return the index of parsed string in tape literals
