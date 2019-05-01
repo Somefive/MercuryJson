@@ -485,22 +485,22 @@ namespace MercuryJson {
         MercuryJson::__error(stream.str(), input, index);
     }
 
-#define next_char() ({ \
-        idx = *idx_ptr++; \
+#define next_char() ({                                                            \
+        idx = *idx_ptr++;                                                         \
         if (idx >= input_len) throw std::runtime_error("text ended prematurely"); \
+        ch = input[idx];                                                          \
+    })
+
+#define peek_char() ({   \
+        idx = *idx_ptr;  \
         ch = input[idx]; \
     })
 
-#define peek_char() ({ \
-        idx = *idx_ptr; \
-        ch = input[idx]; \
-    })
-
-#define expect(__char) ({ \
+#define expect(__char) ({                             \
         if (ch != (__char)) _error(#__char, ch, idx); \
     })
 
-#define error(__expected) ({ \
+#define error(__expected) ({         \
         _error(__expected, ch, idx); \
     })
 
@@ -566,13 +566,12 @@ namespace MercuryJson {
         //@formatter:off
 #if !PARSE_STR_NUM_THREADS
 # if PARSE_STR_MODE == 2
-        parse_str_per_bit
+        parse_str_per_bit(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 1
-        parse_str_avx
+        parse_str_avx(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 0
-        parse_str_naive
+        parse_str_naive(input, dest, nullptr, idx + 1);
 # endif
-        (input, dest, nullptr, idx + 1);
 #endif
         //@formatter:on
         return dest;
@@ -597,13 +596,12 @@ namespace MercuryJson {
 
                 //@formatter:off
 # if PARSE_STR_MODE == 2
-                parse_str_per_bit
+                parse_str_per_bit(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 1
-                parse_str_avx
+                parse_str_avx(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 0
-                parse_str_naive
+                parse_str_naive(input, dest, nullptr, idx + 1);
 # endif
-                (input, dest, nullptr, idx + 1);
                 //@formatter:on
             }
             ++idx_ptr;
@@ -1040,10 +1038,13 @@ namespace MercuryJson {
     JsonValue *JSON::_shift_reduce_parsing() {
         using shift_reduce_impl::JsonPartialValue;
         using shift_reduce_impl::ParseStack;
+
 #if SHIFT_REDUCE_NUM_THREADS > 1
         std::thread shift_reduce_threads[SHIFT_REDUCE_NUM_THREADS - 1];
         std::vector<BlockAllocator<JsonValue>> allocators;
+        allocators.reserve(SHIFT_REDUCE_NUM_THREADS - 1);
         std::vector<ParseStack> stacks;
+        stacks.reserve(SHIFT_REDUCE_NUM_THREADS);
         stacks.emplace_back(allocator);
         size_t num_indices_per_thread = (num_indices - 1 + SHIFT_REDUCE_NUM_THREADS) / SHIFT_REDUCE_NUM_THREADS;
         for (int i = 0; i < SHIFT_REDUCE_NUM_THREADS - 1; ++i)
@@ -1139,6 +1140,7 @@ namespace MercuryJson {
         assert(main_stack.size() == 1);
         auto *ret = reinterpret_cast<JsonValue *>(main_stack[0]);
         idx_ptr += num_indices - 1;  // Consume the indices to satisfy null ending check.
+
         return ret;
     }
 

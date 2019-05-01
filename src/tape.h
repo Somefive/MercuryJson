@@ -25,9 +25,9 @@ namespace MercuryJson {
         char *literals;
         size_t tape_size, literals_size;
 
-        Tape(size_t string_size, size_t structual_size) {
+        Tape(size_t string_size, size_t structural_size) {
             tape = static_cast<uint64_t *>(
-                    aligned_malloc(2 * sizeof(uint64_t) * (structual_size + ALIGNMENT_SIZE)));
+                    aligned_malloc(2 * sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
             literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
             tape_size = 0;
             literals_size = 0;
@@ -82,6 +82,7 @@ namespace MercuryJson {
         }
 
         inline void write_content(uint64_t content, size_t idx) { tape[idx] = (tape[idx] & TYPE_MASK) | content; }
+
         inline void append_content(uint64_t content, size_t idx) { tape[idx] |= content; }
 
         size_t print_json(size_t tape_idx = 0, size_t indent = 0);
@@ -92,14 +93,13 @@ namespace MercuryJson {
         size_t _parse_str(const char *input, size_t idx);
     };
 
-#define MAXDEPTH 1024
-
     struct TapeWriter {
         Tape *tape;
         const char *input;
         size_t *idxptr;
 
         TapeWriter(Tape *_tape, const char *_input, size_t *_idxptr) : tape(_tape), input(_input), idxptr(_idxptr) {}
+
         void state_machine();
         void _parse_value();
         // parse string from input[idx](") and return the index of parsed string in tape literals
