@@ -1,4 +1,5 @@
 #include <immintrin.h>
+#include <cstdint>
 
 
 namespace MercuryJson {

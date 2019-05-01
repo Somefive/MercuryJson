@@ -351,6 +351,10 @@ namespace MercuryJson {
     }
 
     std::variant<double, long long int> parse_number(const char *input, bool *is_decimal, size_t offset) {
+#if NO_PARSE_NUMBER
+        *is_decimal = false;
+        return 0LL;
+#endif
         const char *s = input + offset;
         long long int integer = 0LL;
         double decimal = 0.0;

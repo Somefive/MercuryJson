@@ -2,6 +2,7 @@
 #define MERCURYJSON_BLOCK_ALLOCATOR_HPP
 
 #include <stdexcept>
+#include <vector>
 
 #include "flags.h"
 #include "utils.h"

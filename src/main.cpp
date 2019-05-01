@@ -10,25 +10,7 @@
 #include "tape.h"
 #include "tests.h"
 #include "utils.h"
-
-#ifndef FORCE_ONE_ITERATION
-#define FORCE_ONE_ITERATION 0
-#endif
-
-#ifndef PRINT_JSON
-#define PRINT_JSON 0
-#endif
-
-#ifndef USE_TAPE
-#define USE_TAPE 0
-#endif
-
-#ifdef __linux__
-#define PERF_EVENTS 1
-#else
-#define PERF_EVENTS 0
-#endif
-
+#include "flags.h"
 
 void run(int argc, char **argv) {
 #if PERF_EVENTS
@@ -56,7 +38,7 @@ void run(int argc, char **argv) {
         char *input = (char *)aligned_malloc(size + 2 * ALIGNMENT_SIZE);
 
         double total_time = 0.0, best_time = 1e10, total_stage1_time = 0.0, total_stage2_time = 0.0;
-        size_t iterations = FORCE_ONE_ITERATION ? 1 : (size < 1 * 1000 * 1000 ? 1000 : 10);
+        size_t iterations = FORCE_ONE_ITERATION ? 1 : (size < 100 * 1000 * 1000 ? 1000 : 10);
 
         for (size_t i = 0; i < iterations; ++i) {
 #if PERF_EVENTS
@@ -97,8 +79,12 @@ void run(int argc, char **argv) {
             unified.start();
 #endif
 #if USE_TAPE
+#if TAPE_STATE_MACHINE
+            tape.state_machine(const_cast<char *>(json.input), json.indices);
+#else
             MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
             tape_writer._parse_value();
+#endif
 #else
             json.exec_stage2();
 #endif
@@ -205,7 +191,7 @@ int main(int argc, char **argv) {
 //        test_tape(argv[1]);
 //    }
 
-    run(argc, argv);
+   run(argc, argv);
 
     return 0;
 }

@@ -67,9 +67,202 @@ namespace MercuryJson {
         }
     }
 
+    void Tape::print_tape() {
+        for (size_t i = 0; i < tape_size; ++i) {
+            printf("[%3lu] ", i);
+            uint64_t section = tape[i];
+            switch (section & TYPE_MASK) {
+                case TYPE_NULL:
+                    printf("null\n");
+                    break;
+                case TYPE_FALSE:
+                    printf("false\n");
+                    break;
+                case TYPE_TRUE:
+                    printf("true\n");
+                    break;
+                case TYPE_STR:
+                    printf("string: \"%s\"\n", literals + (section >> 4U));
+                    break;
+                case TYPE_INT:
+                    printf("integer: %lld\n", static_cast<long long int>(tape[++i]));
+                    break;
+                case TYPE_DEC:
+                    printf("decimal: %lf\n", plain_convert(static_cast<long long int>(tape[++i])));
+                    break;
+                case TYPE_ARR:
+                    printf("array: %lu\n", (section >> 4U));
+                    break;
+                case TYPE_OBJ:
+                    printf("object: %lu\n", (section >> 4U));
+                    break;
+                default:
+                    printf("unknown: %lu, %lu\n", (section & TYPE_MASK), (section >> 4U));
+                    throw std::runtime_error("unexpected element on tape");
+                    break;
+            }
+        }
+    }
+
 #define __expect(__char) ({ \
         if (ch != (__char)) throw std::runtime_error("unexpected character"); \
     })
+
+
+#define MAXDEPTH 1024
+
+    void Tape::state_machine(const char *input, size_t *idxptr) {
+
+        void *ret_address[MAXDEPTH];
+        size_t scope_offset[MAXDEPTH];
+
+        size_t i = 0; // index in structural characters
+        size_t idx; // index in input
+        char ch; // current character
+        size_t depth = 0;
+        ret_address[depth++] = &&succeed;
+        size_t left_tape_idx, right_tape_idx;
+
+        #define NEXT() { idx = idxptr[i++]; ch = input[idx]; }
+        #define PARSE_VALUE(continue_address) {                                 \
+            switch (ch) {                                                       \
+                case '"':                                                       \
+                    write_str(_parse_str(input, idx));                          \
+                    break;                                                      \
+                case 't':                                                       \
+                    parse_true(input, idx);                                     \
+                    write_true();                                               \
+                    break;                                                      \
+                case 'f':                                                       \
+                    parse_false(input, idx);                                    \
+                    write_false();                                              \
+                    break;                                                      \
+                case 'n':                                                       \
+                    parse_null(input, idx);                                     \
+                    write_null();                                               \
+                    break;                                                      \
+                case '0':                                                       \
+                case '1':                                                       \
+                case '2':                                                       \
+                case '3':                                                       \
+                case '4':                                                       \
+                case '5':                                                       \
+                case '6':                                                       \
+                case '7':                                                       \
+                case '8':                                                       \
+                case '9':                                                       \
+                case '-': {                                                     \
+                    bool is_decimal;                                            \
+                    auto ret = parse_number(input, &is_decimal, idx);           \
+                    if (is_decimal) write_decimal(std::get<double>(ret));       \
+                    else write_integer(std::get<long long int>(ret));           \
+                    break;                                                      \
+                }                                                               \
+                case '[': {                                                     \
+                    scope_offset[depth] = tape_size++;                          \
+                    ret_address[depth] = continue_address;                      \
+                    depth++;                                                    \
+                    goto array_begin;                                           \
+                }                                                               \
+                case '{': {                                                     \
+                    scope_offset[depth] = tape_size++;                          \
+                    ret_address[depth] = continue_address;                      \
+                    depth++;                                                    \
+                    goto object_begin;                                          \
+                }                                                               \
+                default:                                                        \
+                    goto fail;                                                  \
+            }                                                                   \
+        }
+
+        #ifdef DEBUG
+        #define __PRINT_INFO(s) { printf("%lu[%c]: %s\n", idx, ch, s); }
+        #else
+        #define __PRINT_INFO(s) {}
+        #endif
+
+        NEXT();
+value_parse:
+        __PRINT_INFO("parse value");
+        PARSE_VALUE(&&start_continue);
+start_continue:
+        goto succeed;
+
+object_begin:
+        __PRINT_INFO("parse object");
+        NEXT();
+        switch (ch) {
+            case '"':
+                write_str(_parse_str(input, idx));
+                goto object_key_state;
+            case '}':
+                goto object_end;
+            default:
+                goto fail;
+        }
+object_key_state:
+        __PRINT_INFO("parse object key");
+        NEXT();
+        __expect(':');
+        NEXT();
+        PARSE_VALUE(&&object_continue);
+object_continue:
+        __PRINT_INFO("parse object continue");
+        NEXT();
+        switch (ch) {
+            case ',':
+                NEXT();
+                __expect('"');
+                write_str(_parse_str(input, idx));
+                goto object_key_state;
+            case '}':
+                goto object_end;
+            default:
+                goto fail;
+        }
+object_end:
+        __PRINT_INFO("parse object end");
+        --depth;
+        left_tape_idx = scope_offset[depth];
+        right_tape_idx = tape_size++;
+        write_object(left_tape_idx, right_tape_idx);
+        goto *ret_address[depth];
+
+array_begin:
+        __PRINT_INFO("parse array");
+        NEXT();
+        if (ch == ']') goto array_end;
+array_value:
+        __PRINT_INFO("parse array value");
+        PARSE_VALUE(&&array_continue);
+array_continue:
+        __PRINT_INFO("parse array continue");
+        NEXT();
+        switch (ch) {
+            case ',':
+                NEXT();
+                goto array_value;
+            case ']':
+                goto array_end;
+            default:
+                goto fail;
+        }
+array_end:
+        __PRINT_INFO("parse array end");
+        --depth;
+        left_tape_idx = scope_offset[depth];
+        right_tape_idx = tape_size++;
+        write_array(left_tape_idx, right_tape_idx);
+        goto *ret_address[depth];
+fail:
+        throw std::runtime_error("unexpected character when parsing value");
+succeed:
+        __PRINT_INFO("parse succeed");
+        if (--depth != 0) goto fail;
+        return;
+    }
+#undef NEXT
+
 
     void TapeWriter::_parse_value() {
         size_t idx = *idxptr++;
@@ -167,10 +360,29 @@ namespace MercuryJson {
         parse_str_per_bit(input, dest, &len, idx + 1);
 #elif PARSE_STR_MODE == 1
         parse_str_avx(input, dest, &len, idx + 1);
-#else
+#elif PARSE_STR_MODE == 0
         parse_str_naive(input, dest, &len, idx + 1);
+#else
+        len = 0;
 #endif
         tape->literals_size += len + 1;
+        return index;
+    }
+
+    size_t Tape::_parse_str(const char *input, size_t idx) {
+        size_t index = literals_size;
+        char *dest = literals + index;
+        size_t len;
+#if PARSE_STR_MODE == 2
+        parse_str_per_bit(input, dest, &len, idx + 1);
+#elif PARSE_STR_MODE == 1
+        parse_str_avx(input, dest, &len, idx + 1);
+#elif PARSE_STR_MODE == 0
+        parse_str_naive(input, dest, &len, idx + 1);
+#else
+        len = 0;
+#endif
+        literals_size += len + 1;
         return index;
     }
 }

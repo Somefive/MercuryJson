@@ -11,15 +11,15 @@
 namespace MercuryJson {
 
     struct Tape {
-        static const uint64_t TYPE_MASK = 0xf;
-        static const uint64_t TYPE_NULL = 0xf;
-        static const uint64_t TYPE_FALSE = 0x0;
-        static const uint64_t TYPE_TRUE = 0x1;
-        static const uint64_t TYPE_STR = 0x2;
-        static const uint64_t TYPE_INT = 0x3;
-        static const uint64_t TYPE_DEC = 0x4;
-        static const uint64_t TYPE_OBJ = 0x5;
-        static const uint64_t TYPE_ARR = 0x6;
+        static const uint64_t TYPE_MASK = 0xf000000000000000;
+        static const uint64_t TYPE_NULL = 0xf000000000000000;
+        static const uint64_t TYPE_FALSE = 0x0000000000000000;
+        static const uint64_t TYPE_TRUE = 0x1000000000000000;
+        static const uint64_t TYPE_STR = 0x2000000000000000;
+        static const uint64_t TYPE_INT = 0x3000000000000000;
+        static const uint64_t TYPE_DEC = 0x4000000000000000;
+        static const uint64_t TYPE_OBJ = 0x5000000000000000;
+        static const uint64_t TYPE_ARR = 0x6000000000000000;
 
         uint64_t *tape;
         char *literals;
@@ -38,38 +38,60 @@ namespace MercuryJson {
             delete[] literals;
         }
 
-        void write_null() { tape[tape_size++] = TYPE_NULL; }
+        inline void write_null() { tape[tape_size++] = TYPE_NULL; }
 
-        void write_true() { tape[tape_size++] = TYPE_TRUE; }
+        inline void write_true() { tape[tape_size++] = TYPE_TRUE; }
 
-        void write_false() { tape[tape_size++] = TYPE_FALSE; }
+        inline void write_false() { tape[tape_size++] = TYPE_FALSE; }
 
-        void write_integer(long long int value) {
+        inline void write_integer(long long int value) {
             tape[tape_size++] = TYPE_INT;
             tape[tape_size++] = value;
         }
 
-        void write_decimal(double value) {
+        inline void write_decimal(double value) {
             tape[tape_size++] = TYPE_DEC;
             tape[tape_size++] = plain_convert(value);
         }
 
-        void write_str(uint64_t literal_idx) { tape[tape_size++] = TYPE_STR | (literal_idx << 4U); }
+        inline void write_number(long long int value, bool is_decimal) {
+            tape[tape_size++] = is_decimal ? TYPE_DEC : TYPE_INT;
+            tape[tape_size++] = value;
+        }
 
-        size_t write_array() {
+        inline void write_str(uint64_t literal_idx) { tape[tape_size++] = TYPE_STR | literal_idx; }
+
+        inline void write_array(size_t idx1, size_t idx2) {
+            tape[idx1] = TYPE_ARR | idx2;
+            tape[idx2] = TYPE_ARR | idx1;
+        }
+
+        inline void write_object(size_t idx1, size_t idx2) {
+            tape[idx1] = TYPE_OBJ | idx2;
+            tape[idx2] = TYPE_OBJ | idx1;
+        }
+
+        inline size_t write_array() {
             tape[tape_size] = TYPE_ARR;
             return tape_size++;
         }
 
-        size_t write_object() {
+        inline size_t write_object() {
             tape[tape_size] = TYPE_OBJ;
             return tape_size++;
         }
 
-        void write_content(uint64_t content, size_t idx) { tape[idx] = (tape[idx] & TYPE_MASK) | (content << 4U); }
+        inline void write_content(uint64_t content, size_t idx) { tape[idx] = (tape[idx] & TYPE_MASK) | content; }
+        inline void append_content(uint64_t content, size_t idx) { tape[idx] |= content; }
 
         size_t print_json(size_t tape_idx = 0, size_t indent = 0);
+        void print_tape();
+
+        void state_machine(const char *input, size_t *idxptr);
+        size_t _parse_str(const char *input, size_t idx);
     };
+
+#define MAXDEPTH 1024
 
     struct TapeWriter {
         Tape *tape;
@@ -77,7 +99,7 @@ namespace MercuryJson {
         size_t *idxptr;
 
         TapeWriter(Tape *_tape, const char *_input, size_t *_idxptr) : tape(_tape), input(_input), idxptr(_idxptr) {}
-
+        void state_machine();
         void _parse_value();
         // parse string from input[idx](") and return the index of parsed string in tape literals
         size_t _parse_str(size_t idx);
