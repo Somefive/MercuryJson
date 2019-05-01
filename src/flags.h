@@ -47,7 +47,7 @@
 
 // Whether to parse number
 #ifndef NO_PARSE_NUMBER
-#define NO_PARSE_NUMBER 1
+#define NO_PARSE_NUMBER 0
 #endif
 
 // Whether to enable vectorized operations for number parsing.

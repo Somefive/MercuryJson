@@ -88,6 +88,7 @@ namespace MercuryJson {
         void print_tape();
 
         void state_machine(const char *input, size_t *idxptr);
+        void _parse_and_write_number(const char *input, size_t offset);
         size_t _parse_str(const char *input, size_t idx);
     };
 

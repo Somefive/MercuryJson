@@ -1,6 +1,7 @@
 #include "tape.h"
 
 #include <string.h>
+#include <math.h>
 
 #include "constants.h"
 #include "flags.h"
@@ -152,10 +153,7 @@ namespace MercuryJson {
                 case '8':                                                       \
                 case '9':                                                       \
                 case '-': {                                                     \
-                    bool is_decimal;                                            \
-                    auto ret = parse_number(input, &is_decimal, idx);           \
-                    if (is_decimal) write_decimal(std::get<double>(ret));       \
-                    else write_integer(std::get<long long int>(ret));           \
+                    _parse_and_write_number(input, idx);                        \
                     break;                                                      \
                 }                                                               \
                 case '[': {                                                     \
@@ -262,6 +260,77 @@ succeed:
         return;
     }
 #undef NEXT
+
+    void Tape::_parse_and_write_number(const char *input, size_t offset) {
+#if NO_PARSE_NUMBER
+        memset(tape+tape_size, 0, sizeof(uint64_t) * 2);
+        tape_size += 2;
+        return;
+#endif
+        const char *s = input + offset;
+        long long int integer = 0LL;
+        double decimal = 0.0;
+        bool negative = false, _is_decimal = false;
+        if (*s == '-') {
+            ++s;
+            negative = true;
+        }
+        if (*s == '0') {
+            ++s;
+            if (*s >= '0' && *s <= '9')
+                throw std::runtime_error("numbers cannot have leading zeros");
+        } else {
+// #if PARSE_NUMBER_AVX
+//             while (_all_digits(s)) {
+//                 integer = integer * 100000000 + _parse_eight_digits(s);
+//                 s += 8;
+//             }
+// #endif
+            while (*s >= '0' && *s <= '9')
+                integer = integer * 10 + (*s++ - '0');
+        }
+        if (*s == '.') {
+            _is_decimal = true;
+            decimal = integer;
+            double multiplier = 0.1;
+            ++s;
+#if PARSE_NUMBER_AVX
+            while (_all_digits(s)) {
+                decimal += _parse_eight_digits(s) * multiplier * 0.0000001;  // 7 digits
+                multiplier *= 0.00000001;  // 8 digits
+                s += 8;
+            }
+#endif
+            while (*s >= '0' && *s <= '9') {
+                decimal += (*s++ - '0') * multiplier;
+                multiplier *= 0.1;
+            }
+        }
+        if (*s == 'e' || *s == 'E') {
+            if (!_is_decimal) {
+                _is_decimal = true;
+                decimal = integer;
+            }
+            ++s;
+            bool negative_exp = false;
+            if (*s == '-') {
+                negative_exp = true;
+                ++s;
+            } else if (*s == '+') ++s;
+            double exponent = 0.0;
+            while (*s >= '0' && *s <= '9')
+                exponent = exponent * 10.0 + (*s++ - '0');
+            if (negative_exp) exponent = -exponent;
+            decimal *= pow(10.0, exponent);
+        }
+        if (_is_decimal) {
+            tape[tape_size++] = TYPE_DEC;
+            tape[tape_size++] = negative ? -decimal : decimal;
+        } else {
+            tape[tape_size++] = TYPE_INT;
+            tape[tape_size++] = negative ? -integer : integer;
+        }
+    }
 
 
     void TapeWriter::_parse_value() {
