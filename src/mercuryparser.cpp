@@ -594,19 +594,31 @@ namespace MercuryJson {
             const char *key;
             JsonPartialValue *value;
             JsonPartialObject *next;
+
+            JsonPartialObject(const char *key, JsonPartialValue *value, JsonPartialObject *next = nullptr)
+                    : key(key), value(value), next(next) {}
+        };
+
+        struct JsonPartialObjectHead : JsonPartialObject {
             JsonPartialObject *final;
 
-            explicit JsonPartialObject(const char *key, JsonPartialValue *value, JsonPartialObject *next = nullptr)
-                    : key(key), value(value), next(next), final(this) {}
+            JsonPartialObjectHead(const char *key, JsonPartialValue *value, JsonPartialObject *next = nullptr)
+                    : JsonPartialObject(key, value, next), final(this) {}
         };
 
         struct JsonPartialArray {
             JsonPartialValue *value;
             JsonPartialArray *next;
-            JsonPartialArray *final;
 
             explicit JsonPartialArray(JsonPartialValue *value, JsonPartialArray *next = nullptr)
-                    : value(value), next(next), final(this) {}
+                    : value(value), next(next) {}
+        };
+
+        struct JsonPartialArrayHead : JsonPartialArray {
+            JsonPartialArray *final;
+
+            JsonPartialArrayHead(JsonPartialValue *value, JsonPartialArray *next = nullptr)
+                    : JsonPartialArray(value, next), final(this) {}
         };
 
         struct JsonPartialValue {
@@ -669,7 +681,7 @@ namespace MercuryJson {
             std::cout << std::endl;
         }
 
-        static const size_t kDefaultStackSize = 4096;
+        static const size_t kDefaultStackSize = 1024;
 
         class ParseStack {
             JsonPartialValue **stack;
@@ -679,7 +691,7 @@ namespace MercuryJson {
         public:
             ParseStack(BlockAllocator<JsonValue> &allocator, size_t max_size = kDefaultStackSize)
                     : allocator(allocator) {
-                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue *)));
+                stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
                 stack_top = 0;
             }
 
@@ -785,7 +797,7 @@ namespace MercuryJson {
                 } else if (check('[', JsonPartialValue::TYPE_PARTIAL_ARR, ',', true)) {
                     // We have to manually match the final element in the array, because we only reduce to partial
                     // array on commas (,).
-                    auto *partial_arr = get(3)->partial_array;
+                    auto *partial_arr = static_cast<JsonPartialArrayHead *>(get(3)->partial_array);
                     partial_arr->final->next = reinterpret_cast<JsonPartialArray *>(
                             allocator.construct<JsonArray>(reinterpret_cast<JsonValue *>(get(1))));
                     auto *arr = reinterpret_cast<JsonArray *>(partial_arr);
@@ -803,19 +815,21 @@ namespace MercuryJson {
                     // Construct a singleton partial array. Note that previous value must be of complete type,
                     // otherwise we might aggressively match partial objects.
                     auto *elem = get(1);
-                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
+                    auto *partial_arr = allocator.construct<JsonPartialArrayHead>(elem);
                     pop(1);
                     push(partial_arr);
                     push(',');
                 } else if (check(',', true)) {
                     // Merge with previous partial array.
                     auto *elem = get(1);
-                    auto *partial_arr = allocator.construct<JsonPartialArray>(elem, nullptr);
+                    JsonPartialArray *partial_arr;
                     if (check_pos(3, JsonPartialValue::TYPE_PARTIAL_ARR)) {
-                        auto *prev_arr = get(3)->partial_array;
+                        partial_arr = allocator.construct<JsonPartialArray>(elem);
+                        auto *prev_arr = static_cast<JsonPartialArrayHead *>(get(3)->partial_array);
                         prev_arr->final = prev_arr->final->next = partial_arr;
                         pop(1);  // No need to push ',' --- just re-use the previous one.
                     } else {
+                        partial_arr = allocator.construct<JsonPartialArrayHead>(elem);
                         pop(1);
                         push(partial_arr);
                         push(',');
@@ -831,14 +845,17 @@ namespace MercuryJson {
                     // Construct singleton partial object.
                     auto *key = get(3)->str;
                     auto *value = get(1);
-                    auto *partial_obj = allocator.construct<JsonPartialObject>(key, value, nullptr);
+                    JsonPartialObject *partial_obj;
                     pop(3);
                     if (check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
                         // Merge with previous partial object.
-                        auto *prev_obj = get(2)->partial_object;
+                        partial_obj = allocator.construct<JsonPartialObject>(key, value);
+                        auto *prev_obj = static_cast<JsonPartialObjectHead *>(get(2)->partial_object);
                         prev_obj->final = prev_obj->final->next = partial_obj;
                         partial_obj = prev_obj;
                         pop(2);
+                    } else {
+                        partial_obj = allocator.construct<JsonPartialObjectHead>(key, value);
                     }
                     push(partial_obj);
                     return true;
@@ -964,6 +981,8 @@ namespace MercuryJson {
 
     JsonValue *JSON::_shift_reduce_parsing() {
         using shift_reduce_impl::JsonPartialValue;
+        using shift_reduce_impl::JsonPartialObjectHead;
+        using shift_reduce_impl::JsonPartialArrayHead;
         using shift_reduce_impl::ParseStack;
 
 #if SHIFT_REDUCE_NUM_THREADS > 1
@@ -1008,9 +1027,9 @@ namespace MercuryJson {
                     case JsonPartialValue::TYPE_PARTIAL_OBJ:
                         if (main_stack.check(JsonPartialValue::TYPE_PARTIAL_OBJ, ',')) {
                             // Merge with partial object from previous stack.
-                            auto *prev_obj = main_stack.get(2)->partial_object;
+                            auto *prev_obj = static_cast<JsonPartialObjectHead *>(main_stack.get(2)->partial_object);
                             prev_obj->final->next = value->partial_object;
-                            prev_obj->final = value->partial_object->final;
+                            prev_obj->final = static_cast<JsonPartialObjectHead *>(value->partial_object)->final;
                             main_stack.pop(1);
                         } else {
                             main_stack.push(value);
@@ -1019,9 +1038,9 @@ namespace MercuryJson {
                     case JsonPartialValue::TYPE_PARTIAL_ARR:
                         if (main_stack.check(JsonPartialValue::TYPE_PARTIAL_ARR, ',')) {
                             // Merge with partial array from previous stack.
-                            auto *prev_arr = main_stack.get(2)->partial_array;
+                            auto *prev_arr = static_cast<JsonPartialArrayHead *>(main_stack.get(2)->partial_array);
                             prev_arr->final->next = value->partial_array;
-                            prev_arr->final = value->partial_array->final;
+                            prev_arr->final = static_cast<JsonPartialArrayHead *>(value->partial_array)->final;
                             main_stack.pop(1);
                         } else {
                             main_stack.push(value);

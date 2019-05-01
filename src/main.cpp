@@ -175,7 +175,7 @@ void run(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    
+
 //    test_extract_warp_mask();
 //    test_tfn_value();
 
