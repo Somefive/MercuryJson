@@ -181,6 +181,25 @@ namespace MercuryJson {
 #endif
         return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, vec_c)));
     }
+
+    inline bool _all_digits(const char *s) {
+        uint64_t val = *reinterpret_cast<const uint64_t *>(s);
+        return (((val & 0xf0f0f0f0f0f0f0f0)
+                 | (((val + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0) >> 4U)) == 0x3333333333333333);
+    }
+
+    inline uint32_t _parse_eight_digits(const char *s) {
+        const __m128i ascii0 = _mm_set1_epi8('0');
+        const __m128i mul_1_10 = _mm_setr_epi8(10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+        const __m128i mul_1_100 = _mm_setr_epi16(100, 1, 100, 1, 100, 1, 100, 1);
+        const __m128i mul_1_10000 = _mm_setr_epi16(10000, 1, 10000, 1, 10000, 1, 10000, 1);
+        __m128i in = _mm_sub_epi8(_mm_loadu_si128(reinterpret_cast<const __m128i *>(s)), ascii0);
+        __m128i t1 = _mm_maddubs_epi16(in, mul_1_10);
+        __m128i t2 = _mm_madd_epi16(t1, mul_1_100);
+        __m128i t3 = _mm_packus_epi32(t2, t2);
+        __m128i t4 = _mm_madd_epi16(t3, mul_1_10000);
+        return _mm_cvtsi128_si32(t4);
+    }
 }
 
 #endif // MERCURYJSON_MERCURYPARSER_H

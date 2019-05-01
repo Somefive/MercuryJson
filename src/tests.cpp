@@ -298,13 +298,15 @@ void test_parse_float() {
 #define FLOAT_VAL 0.00001234556
     double expected = FLOAT_VAL;
     const char *s = xstr(FLOAT_VAL);
-    bool is_decimal;
-    auto ret = parse_number(s, &is_decimal);
-    if (!is_decimal) printf("test_parse_float: is_decimal flag incorrect\n");
+    // bool is_decimal;
+    // auto ret = parse_number(s, &is_decimal);
+    Tape tape(0, 0);
+    tape._parse_and_write_number(s, 0);
+    if (!tape.tape[0] == Tape::TYPE_DEC) printf("test_parse_float: is_decimal flag incorrect\n");
     else {
-        auto val = std::get<double>(ret);
+        auto val = plain_convert(static_cast<long long int>(tape.tape[1]));
         if (fabs(val - 0.00001234556) > 1e-10) {
-            printf("test_parse_float: expected %.10lf, received %.10lf\n", expected, val);
+            printf("test_parse_float: expected %.12lf, received %.12lf\n", expected, val);
         } else printf("test_parse_float: passed\n");
     }
 #undef FLOAT_VAL
@@ -342,7 +344,12 @@ void test_tape(const char *filename) {
     auto json = MercuryJson::JSON(input, size, true);
     json.exec_stage1();
     Tape tape(size, size);
+#if TAPE_STATE_MACHINE
+    tape.state_machine(const_cast<char *>(json.input), json.indices);
+#else
     TapeWriter tape_writer(&tape, const_cast<char *>(json.input), json.indices);
     tape_writer._parse_value();
+#endif
+    // tape.print_tape();
     tape.print_json();
 }
