@@ -166,9 +166,11 @@ namespace MercuryJson {
     }
 
     inline bool _all_digits(const char *s) {
-        uint64_t val = *reinterpret_cast<const uint64_t *>(s);
-        return (((val & 0xf0f0f0f0f0f0f0f0)
-                 | (((val + 0x0606060606060606) & 0xf0f0f0f0f0f0f0f0) >> 4U)) == 0x3333333333333333);
+        __m64 val;
+        memcpy(&val, s, 8);
+        __m64 base = _mm_sub_pi8(val, _mm_set1_pi8('0'));
+        __m64 basecmp = _mm_subs_pu8(base, _mm_set1_pi8(9));
+        return _mm_cvtm64_si64(basecmp) == 0;
     }
 
     inline uint32_t _parse_eight_digits(const char *s) {

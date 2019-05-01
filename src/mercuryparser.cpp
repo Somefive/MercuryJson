@@ -1111,19 +1111,23 @@ namespace MercuryJson {
         uint64_t prev_escape_mask = 0;
         uint64_t prev_quote_mask = 0;
         uint64_t prev_pseudo_mask = 0;
-        for (size_t offset = 0; offset < input_len; offset += 64) {
-            __m256i _input1 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset));
-            __m256i _input2 = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(input + offset + 32));
-            Warp warp(_input2, _input1);
+        uint64_t quote_mask, structural_mask, whitespace_mask;
+        uint64_t pseudo_mask = 0;
+        size_t offset = 0;
+        for (; offset < input_len; offset += 64) {
+            Warp warp(input + offset);
             uint64_t escape_mask = extract_escape_mask(warp, &prev_escape_mask);
-            uint64_t quote_mask = 0;
             uint64_t literal_mask = extract_literal_mask(warp, escape_mask, &prev_quote_mask, &quote_mask);
-            uint64_t structural_mask = 0, whitespace_mask = 0;
+
+            // Dump pointers for *previous* iteration.
+            construct_structural_character_pointers(pseudo_mask, offset - 64, indices, &num_indices);
+
             extract_structural_whitespace_characters(warp, literal_mask, &structural_mask, &whitespace_mask);
-            uint64_t pseudo_mask = extract_pseudo_structural_mask(
+            pseudo_mask = extract_pseudo_structural_mask(
                     structural_mask, whitespace_mask, quote_mask, literal_mask, &prev_pseudo_mask);
-            construct_structural_character_pointers(pseudo_mask, offset, indices, &num_indices);
         }
+        // Dump pointers for the final iteration.
+        construct_structural_character_pointers(pseudo_mask, offset - 64, indices, &num_indices);
     }
 
     void JSON::exec_stage2() {
