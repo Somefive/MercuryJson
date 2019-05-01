@@ -25,17 +25,17 @@ namespace MercuryJson {
         char *literals;
         size_t tape_size, literals_size;
 
-        Tape(size_t string_size, size_t structual_size) {
+        Tape(size_t string_size, size_t structural_size) {
             tape = static_cast<uint64_t *>(
-                    aligned_malloc(2 * sizeof(uint64_t) * (structual_size + ALIGNMENT_SIZE)));
-            literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
+                    aligned_malloc(2 * sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
+            // literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
             tape_size = 0;
             literals_size = 0;
         }
 
         ~Tape() {
             delete[] tape;
-            delete[] literals;
+            // delete[] literals;
         }
 
         inline void write_null() { tape[tape_size++] = TYPE_NULL; }
@@ -87,9 +87,10 @@ namespace MercuryJson {
         size_t print_json(size_t tape_idx = 0, size_t indent = 0);
         void print_tape();
 
-        void state_machine(const char *input, size_t *idxptr);
+        void state_machine(char *input, size_t *idxptr, size_t structural_size);
         void _parse_and_write_number(const char *input, size_t offset);
-        size_t _parse_str(const char *input, size_t idx);
+        size_t _parse_str(char *input, size_t idx);
+        void _thread_parse_str(size_t pid, char *input, size_t *idxptr, size_t structural_size);
     };
 
 #define MAXDEPTH 1024

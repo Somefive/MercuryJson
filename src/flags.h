@@ -8,7 +8,7 @@
 
 // Mode for string parsing. -1 for disable, 0 for naive, 1 for AVX, 2 for per_bit (simdjson-style).
 #ifndef PARSE_STR_MODE
-# define PARSE_STR_MODE -1
+# define PARSE_STR_MODE 1
 #endif
 
 // Whether to allocate new memory for parsed strings. Set to 0 to do in-place parsing.

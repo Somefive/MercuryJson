@@ -80,7 +80,7 @@ void run(int argc, char **argv) {
 #endif
 #if USE_TAPE
 #if TAPE_STATE_MACHINE
-            tape.state_machine(const_cast<char *>(json.input), json.indices);
+            tape.state_machine(const_cast<char *>(json.input), json.indices, json.num_indices);
 #else
             MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
             tape_writer._parse_value();

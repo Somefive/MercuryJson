@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <thread>
 
 #include "constants.h"
 #include "flags.h"
@@ -55,7 +56,7 @@ namespace MercuryJson {
                     if (first) first = false; else printf(",");
                     printf("\n");
                     print_indent(indent + 2);
-                    printf("\"%s\": ", literals + (tape[elem_idx++] >> 4U));
+                    printf("\"%s\": ", literals + (tape[elem_idx++] & ~TYPE_MASK));
                     elem_idx += print_json(elem_idx, indent + 2);
                 }
                 printf("\n");
@@ -83,7 +84,7 @@ namespace MercuryJson {
                     printf("true\n");
                     break;
                 case TYPE_STR:
-                    printf("string: \"%s\"\n", literals + (section >> 4U));
+                    printf("string: \"%s\"\n", literals + (section & ~TYPE_MASK));
                     break;
                 case TYPE_INT:
                     printf("integer: %lld\n", static_cast<long long int>(tape[++i]));
@@ -92,13 +93,13 @@ namespace MercuryJson {
                     printf("decimal: %lf\n", plain_convert(static_cast<long long int>(tape[++i])));
                     break;
                 case TYPE_ARR:
-                    printf("array: %lu\n", (section >> 4U));
+                    printf("array: %lu\n", (section & ~TYPE_MASK));
                     break;
                 case TYPE_OBJ:
-                    printf("object: %lu\n", (section >> 4U));
+                    printf("object: %lu\n", (section & ~TYPE_MASK));
                     break;
                 default:
-                    printf("unknown: %lu, %lu\n", (section & TYPE_MASK), (section >> 4U));
+                    printf("unknown: %lu, %lu\n", (section & TYPE_MASK), (section & ~TYPE_MASK));
                     throw std::runtime_error("unexpected element on tape");
                     break;
             }
@@ -112,7 +113,15 @@ namespace MercuryJson {
 
 #define MAXDEPTH 1024
 
-    void Tape::state_machine(const char *input, size_t *idxptr) {
+    void Tape::state_machine(char *input, size_t *idxptr, size_t structural_size) {
+#if PARSE_STR_NUM_THREADS
+        std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
+        for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
+            parse_str_threads[i] = std::thread(&Tape::_thread_parse_str, this, i, input, idxptr, structural_size);
+#endif
+
+
+        literals = input;
 
         void *ret_address[MAXDEPTH];
         size_t scope_offset[MAXDEPTH];
@@ -257,6 +266,10 @@ fail:
 succeed:
         __PRINT_INFO("parse succeed");
         if (--depth != 0) goto fail;
+#if PARSE_STR_NUM_THREADS
+        for (std::thread &thread : parse_str_threads)
+            thread.join();
+#endif
         return;
     }
 #undef NEXT
@@ -425,9 +438,14 @@ succeed:
         return index;
     }
 
-    size_t Tape::_parse_str(const char *input, size_t idx) {
-        size_t index = literals_size;
-        char *dest = literals + index;
+    size_t Tape::_parse_str(char *input, size_t idx) {
+#if PARSE_STR_NUM_THREADS
+        return idx + 1;
+#endif
+        // size_t index = literals_size;
+        // char *dest = literals + index;
+        size_t index = idx;
+        char *dest = input + idx + 1;
         size_t len;
 #if PARSE_STR_MODE == 2
         parse_str_per_bit(input, dest, &len, idx + 1);
@@ -439,6 +457,34 @@ succeed:
         len = 0;
 #endif
         literals_size += len + 1;
-        return index;
+        return index + 1;
+    }
+
+    void Tape::_thread_parse_str(size_t pid, char *input, size_t *idxptr, size_t structural_size) {
+#if PARSE_STR_NUM_THREADS
+        size_t idx;
+        size_t begin = pid * structural_size / PARSE_STR_NUM_THREADS;
+        size_t end = (pid + 1) * structural_size / PARSE_STR_NUM_THREADS;
+        if (end > structural_size) end = structural_size;
+        for (size_t i = begin; i < end; ++i) {
+            idx = idxptr[i];
+            char *dest = input + idx + 1;
+            if (input[idx] == '"') {
+                //@formatter:off
+# if PARSE_STR_MODE == 2
+                parse_str_per_bit
+# elif PARSE_STR_MODE == 1
+                parse_str_avx
+# elif PARSE_STR_MODE == 0
+                parse_str_naive
+# endif
+                (input, dest, nullptr, idx + 1);
+                // printf("%s\n", input+idx+1);
+                //@formatter:on
+            }
+        }
+//        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
+//        printf("parse str thread: %.6lf\n", runtime.count());
+# endif
     }
 }
