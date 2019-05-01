@@ -93,13 +93,13 @@ namespace MercuryJson {
                     printf("decimal: %lf\n", plain_convert(static_cast<long long int>(tape[++i])));
                     break;
                 case TYPE_ARR:
-                    printf("array: %lu\n", (section & ~TYPE_MASK));
+                    printf("array: %llu\n", (section & ~TYPE_MASK));
                     break;
                 case TYPE_OBJ:
-                    printf("object: %lu\n", (section & ~TYPE_MASK));
+                    printf("object: %llu\n", (section & ~TYPE_MASK));
                     break;
                 default:
-                    printf("unknown: %lu, %lu\n", (section & TYPE_MASK), (section & ~TYPE_MASK));
+                    printf("unknown: %llu, %llu\n", (section & TYPE_MASK), (section & ~TYPE_MASK));
                     throw std::runtime_error("unexpected element on tape");
                     break;
             }
@@ -111,7 +111,7 @@ namespace MercuryJson {
     })
 
 
-#define MAXDEPTH 1024
+#define MAX_DEPTH 1024
 
     void Tape::state_machine(char *input, size_t *idxptr, size_t structural_size) {
 #if PARSE_STR_NUM_THREADS
@@ -123,8 +123,8 @@ namespace MercuryJson {
 
         literals = input;
 
-        void *ret_address[MAXDEPTH];
-        size_t scope_offset[MAXDEPTH];
+        void *ret_address[MAX_DEPTH];
+        size_t scope_offset[MAX_DEPTH];
 
         size_t i = 0; // index in structural characters
         size_t idx; // index in input
@@ -133,8 +133,8 @@ namespace MercuryJson {
         ret_address[depth++] = &&succeed;
         size_t left_tape_idx, right_tape_idx;
 
-        #define NEXT() { idx = idxptr[i++]; ch = input[idx]; }
-        #define PARSE_VALUE(continue_address) {                                 \
+#define NEXT() ({ idx = idxptr[i++]; ch = input[idx]; })
+#define PARSE_VALUE(continue_address) ({                                        \
             switch (ch) {                                                       \
                 case '"':                                                       \
                     write_str(_parse_str(input, idx));                          \
@@ -180,13 +180,13 @@ namespace MercuryJson {
                 default:                                                        \
                     goto fail;                                                  \
             }                                                                   \
-        }
+        })
 
-        #ifdef DEBUG
-        #define __PRINT_INFO(s) { printf("%lu[%c]: %s\n", idx, ch, s); }
-        #else
-        #define __PRINT_INFO(s) {}
-        #endif
+#ifdef DEBUG
+# define __PRINT_INFO(s) ({ printf("%lu[%c]: %s\n", idx, ch, s); })
+#else
+# define __PRINT_INFO(s) ({})
+#endif
 
         NEXT();
 value_parse:
@@ -271,12 +271,13 @@ succeed:
             thread.join();
 #endif
         return;
-    }
 #undef NEXT
+#undef PARSE_VALUE
+    }
 
     void Tape::_parse_and_write_number(const char *input, size_t offset) {
 #if NO_PARSE_NUMBER
-        memset(tape+tape_size, 0, sizeof(uint64_t) * 2);
+        memset(tape + tape_size, 0, sizeof(uint64_t) * 2);
         tape_size += 2;
         return;
 #endif
@@ -315,10 +316,10 @@ succeed:
                 negative_exp = true;
                 ++s;
             } else if (*s == '+') ++s;
-            int64_t expo = 1LL;
+            int64_t expo = 0LL;
             while (*s >= '0' && *s <= '9')
                 expo = expo * 10 + (*s++ - '0');
-            exponent += negative_exp ? expo : -expo;
+            exponent += negative_exp ? -expo : expo;
         }
         if (exponent == 0) {
             tape[tape_size++] = TYPE_INT;
@@ -326,7 +327,7 @@ succeed:
         } else {
             if (exponent < -308 || exponent > 308) throw new std::runtime_error("number out of range");
             double decimal = negative ? -integer : integer;
-            decimal *= power_of_ten[308+exponent];
+            decimal *= kPowerOfTen[308 + exponent];
             tape[tape_size++] = TYPE_DEC;
             tape[tape_size++] = plain_convert(decimal);
         }

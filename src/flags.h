@@ -27,7 +27,7 @@
 
 // Number of threads to use for shift-reduce parsing
 #ifndef SHIFT_REDUCE_NUM_THREADS
-# define SHIFT_REDUCE_NUM_THREADS 2
+# define SHIFT_REDUCE_NUM_THREADS 4
 #endif
 
 
@@ -47,7 +47,7 @@
 
 // Whether to parse number
 #ifndef NO_PARSE_NUMBER
-#define NO_PARSE_NUMBER 0
+# define NO_PARSE_NUMBER 0
 #endif
 
 // Whether to enable vectorized operations for number parsing.
@@ -57,29 +57,29 @@
 
 // Number of extra dedicated threads for string parsing. Set to 0 to disable.
 #ifndef PARSE_STR_NUM_THREADS
-# define PARSE_STR_NUM_THREADS 4
+# define PARSE_STR_NUM_THREADS 3
 #endif
 
 // Whether to use only one iteration
 #ifndef FORCE_ONE_ITERATION
-#define FORCE_ONE_ITERATION 0
+# define FORCE_ONE_ITERATION 0
 #endif
 
 // Whether to print json
 #ifndef PRINT_JSON
-#define PRINT_JSON 0
+# define PRINT_JSON 0
 #endif
 
 // Whether to use tape
 #ifndef USE_TAPE
-#define USE_TAPE 1
+# define USE_TAPE 1
 #endif
 
 // Whether to perf evenets
 #ifdef __linux__
-#define PERF_EVENTS 1
+# define PERF_EVENTS 1
 #else
-#define PERF_EVENTS 0
+# define PERF_EVENTS 0
 #endif
 
 #if USE_TAPE == 1

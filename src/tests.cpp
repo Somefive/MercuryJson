@@ -295,19 +295,26 @@ void test_parse_string() {
 #define ___str___(x) #x
 
 void test_parse_float() {
-#define FLOAT_VAL 0.00001234556
+#define FLOAT_VAL 0.00001234556e-2
     double expected = FLOAT_VAL;
     const char *s = xstr(FLOAT_VAL);
-    // bool is_decimal;
-    // auto ret = parse_number(s, &is_decimal);
-    Tape tape(0, 0);
-    tape._parse_and_write_number(s, 0);
-    if (!tape.tape[0] == Tape::TYPE_DEC) printf("test_parse_float: is_decimal flag incorrect\n");
+    bool is_decimal;
+    auto ret = parse_number(s, &is_decimal);
+    if (!is_decimal) printf("test_parse_float: is_decimal flag incorrect\n");
     else {
-        auto val = plain_convert(static_cast<long long int>(tape.tape[1]));
-        if (fabs(val - 0.00001234556) > 1e-10) {
+        auto val = std::get<double>(ret);
+        if (fabs(val - FLOAT_VAL) > 1e-10) {
             printf("test_parse_float: expected %.12lf, received %.12lf\n", expected, val);
         } else printf("test_parse_float: passed\n");
+    }
+    Tape tape(0, 0);
+    tape._parse_and_write_number(s, 0);
+    if (tape.tape[0] != Tape::TYPE_DEC) printf("test_parse_float (tape): is_decimal flag incorrect\n");
+    else {
+        auto val = plain_convert(static_cast<long long int>(tape.tape[1]));
+        if (fabs(val - FLOAT_VAL) > 1e-10) {
+            printf("test_parse_float (tape): expected %.12lf, received %.12lf\n", expected, val);
+        } else printf("test_parse_float (tape): passed\n");
     }
 #undef FLOAT_VAL
 }
