@@ -473,13 +473,12 @@ succeed:
             if (input[idx] == '"') {
                 //@formatter:off
 # if PARSE_STR_MODE == 2
-                parse_str_per_bit
+                parse_str_per_bit(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 1
-                parse_str_avx
+                parse_str_avx(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 0
-                parse_str_naive
+                parse_str_naive(input, dest, nullptr, idx + 1);
 # endif
-                (input, dest, nullptr, idx + 1);
                 // printf("%s\n", input+idx+1);
                 //@formatter:on
             }

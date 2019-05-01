@@ -55,7 +55,7 @@ namespace MercuryJson {
         }
 
         ~BlockAllocator() {
-            for (void *p : all_memory)
+            for (char *p : all_memory)
                 aligned_free(p);
         }
 

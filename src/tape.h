@@ -34,7 +34,7 @@ namespace MercuryJson {
         }
 
         ~Tape() {
-            delete[] tape;
+            aligned_free(tape);
             // delete[] literals;
         }
 

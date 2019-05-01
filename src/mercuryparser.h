@@ -38,17 +38,6 @@ namespace MercuryJson {
     void construct_structural_character_pointers(
             uint64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base);
 
-    __mmask32 extract_escape_mask(__m256i raw, __mmask32 *prev_odd_backslash_ending_mask);
-    __mmask32 extract_literal_mask(
-            __m256i raw, __mmask32 escape_mask, __mmask32 *prev_literal_ending, __mmask32 *quote_mask);
-    void extract_structural_whitespace_characters(
-            __m256i raw, __mmask32 literal_mask, __mmask32 *structural_mask, __mmask32 *whitespace_mask);
-    __mmask32 extract_pseudo_structural_mask(
-            __mmask32 structural_mask, __mmask32 whitespace_mask, __mmask32 quote_mask, __mmask32 literal_mask,
-            __mmask32 *prev_pseudo_structural_end_mask);
-    void construct_structural_character_pointers(
-            __mmask32 pseudo_structural_mask, size_t offset, size_t *indices, size_t *base);
-
     /* Stage 2 */
     struct JsonValue;
 
@@ -157,28 +146,22 @@ namespace MercuryJson {
     void __printChar_m256i(__m256i raw);
     void __printChar(Warp &raw);
 
-    template <char c>
-    inline uint64_t __cmpeq_mask(const Warp &raw) {
-#if STATIC_CMPEQ_MASK
-        static const __m256i vec_c = _mm256_set1_epi8(c);
-#else
+    inline uint64_t __cmpeq_mask(const __m256i raw_hi, const __m256i raw_lo, char c) {
         const __m256i vec_c = _mm256_set1_epi8(c);
-#endif
-        uint64_t hi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.hi, vec_c)));
-        uint64_t lo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw.lo, vec_c)));
+        uint64_t hi = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw_hi, vec_c)));
+        uint64_t lo = static_cast<uint32_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw_lo, vec_c)));
         return (hi << 32U) | lo;
+    }
+
+    inline uint64_t __cmpeq_mask(const Warp &raw, char c) {
+        return __cmpeq_mask(raw.hi, raw.lo, c);
     }
 
     const __mmask32 __even_mask = 0x55555555U;
     const __mmask32 __odd_mask = ~__even_mask;
 
-    template <char c>
-    inline __mmask32 __cmpeq_mask(__m256i raw) {
-#if STATIC_CMPEQ_MASK
-        static __m256i vec_c = _mm256_set1_epi8(c);
-#else
+    inline __mmask32 __cmpeq_mask(__m256i raw, char c) {
         __m256i vec_c = _mm256_set1_epi8(c);
-#endif
         return static_cast<__mmask32>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(raw, vec_c)));
     }
 
