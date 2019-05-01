@@ -24,7 +24,7 @@ namespace MercuryJson {
                 printf("true");
                 return 1;
             case TYPE_STR:
-                printf("\"%s\"", literals + (section >> 4U));
+                printf("\"%s\"", literals + (section & ~TYPE_MASK));
                 return 1;
             case TYPE_INT:
                 printf("%lld", static_cast<long long int>(tape[tape_idx + 1]));
@@ -36,7 +36,7 @@ namespace MercuryJson {
                 size_t elem_idx = tape_idx + 1;
                 bool first = true;
                 printf("[");
-                while (elem_idx < (section >> 4U)) {
+                while (elem_idx < (section & ~TYPE_MASK)) {
                     if (first) first = false; else printf(",");
                     printf("\n");
                     print_indent(indent + 2);
@@ -51,7 +51,7 @@ namespace MercuryJson {
                 size_t elem_idx = tape_idx + 1;
                 bool first = true;
                 printf("{");
-                while (elem_idx < (section >> 4U)) {
+                while (elem_idx < (section & ~TYPE_MASK)) {
                     if (first) first = false; else printf(",");
                     printf("\n");
                     print_indent(indent + 2);
