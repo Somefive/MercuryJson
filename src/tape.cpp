@@ -268,9 +268,9 @@ succeed:
         return;
 #endif
         const char *s = input + offset;
-        long long int integer = 0LL;
-        double decimal = 0.0;
-        bool negative = false, _is_decimal = false;
+        uint64_t integer = 0ULL;
+        bool negative = false;
+        int64_t exponent = 0LL;
         if (*s == '-') {
             ++s;
             negative = true;
@@ -280,55 +280,42 @@ succeed:
             if (*s >= '0' && *s <= '9')
                 throw std::runtime_error("numbers cannot have leading zeros");
         } else {
-// #if PARSE_NUMBER_AVX
-//             while (_all_digits(s)) {
-//                 integer = integer * 100000000 + _parse_eight_digits(s);
-//                 s += 8;
-//             }
-// #endif
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
         }
         if (*s == '.') {
-            _is_decimal = true;
-            decimal = integer;
-            double multiplier = 0.1;
-            ++s;
+            const char *const base = ++s;
 #if PARSE_NUMBER_AVX
-            while (_all_digits(s)) {
-                decimal += _parse_eight_digits(s) * multiplier * 0.0000001;  // 7 digits
-                multiplier *= 0.00000001;  // 8 digits
+            if (_all_digits(s)) {
+                integer += integer * 100000000 + _parse_eight_digits(s);
                 s += 8;
             }
 #endif
-            while (*s >= '0' && *s <= '9') {
-                decimal += (*s++ - '0') * multiplier;
-                multiplier *= 0.1;
-            }
+            while (*s >= '0' && *s <= '9')
+                integer = integer * 10 + (*s++ - '0');
+            exponent = base - s;
         }
         if (*s == 'e' || *s == 'E') {
-            if (!_is_decimal) {
-                _is_decimal = true;
-                decimal = integer;
-            }
             ++s;
             bool negative_exp = false;
             if (*s == '-') {
                 negative_exp = true;
                 ++s;
             } else if (*s == '+') ++s;
-            double exponent = 0.0;
+            int64_t expo = 1LL;
             while (*s >= '0' && *s <= '9')
-                exponent = exponent * 10.0 + (*s++ - '0');
-            if (negative_exp) exponent = -exponent;
-            decimal *= pow(10.0, exponent);
+                expo = expo * 10 + (*s++ - '0');
+            exponent += negative_exp ? expo : -expo;
         }
-        if (_is_decimal) {
-            tape[tape_size++] = TYPE_DEC;
-            tape[tape_size++] = negative ? -decimal : decimal;
-        } else {
+        if (exponent == 0) {
             tape[tape_size++] = TYPE_INT;
             tape[tape_size++] = negative ? -integer : integer;
+        } else {
+            if (exponent < -308 || exponent > 308) throw new std::runtime_error("number out of range");
+            double decimal = negative ? -integer : integer;
+            decimal *= power_of_ten[308+exponent];
+            tape[tape_size++] = TYPE_DEC;
+            tape[tape_size++] = plain_convert(decimal);
         }
     }
 
