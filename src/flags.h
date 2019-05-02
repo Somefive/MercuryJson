@@ -60,9 +60,9 @@
 # define PARSE_STR_NUM_THREADS 4
 #endif
 
-// Whether to parse numbers in parallel
-#ifndef PARSE_NUMBER_THREADS
-# define PARSE_NUMBER_THREADS 0
+// Number of extra dedicated threads for number parsing. Set to 0 to disable.
+#ifndef PARSE_NUM_NUM_THREADS
+# define PARSE_NUM_NUM_THREADS 4
 #endif
 
 // Whether to use only one iteration

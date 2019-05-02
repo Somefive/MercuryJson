@@ -26,7 +26,6 @@ namespace MercuryJson {
         uint64_t *numeric;
         char *literals;
         size_t tape_size, literals_size, numeric_size;
-        std::atomic_uint_fast64_t numeric_processed;
 
         Tape(size_t string_size, size_t structural_size) {
             tape = static_cast<uint64_t *>(
@@ -97,6 +96,7 @@ namespace MercuryJson {
         size_t _parse_str(char *input, size_t idx);
         std::atomic_bool reap;
         void _thread_parse_str(size_t pid, char *input, size_t *idxptr, size_t structural_size);
+        void _thread_parse_num(size_t pid, char *input);
     };
 
     struct TapeWriter {
