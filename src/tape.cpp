@@ -28,11 +28,11 @@ namespace MercuryJson {
                 printf("\"%s\"", literals + (section & ~TYPE_MASK));
                 return 1;
             case TYPE_INT:
-                printf("%lld", static_cast<long long int>(tape[tape_idx + 1]));
-                return 2;
+                printf("%lld", static_cast<long long int>(numeric[section & ~TYPE_MASK]));
+                return 1;
             case TYPE_DEC:
-                printf("%lf", plain_convert(static_cast<long long int>(tape[tape_idx + 1])));
-                return 2;
+                printf("%lf", plain_convert(static_cast<long long int>(numeric[section & ~TYPE_MASK])));
+                return 1;
             case TYPE_ARR: {
                 size_t elem_idx = tape_idx + 1;
                 bool first = true;
@@ -87,10 +87,10 @@ namespace MercuryJson {
                     printf("string: \"%s\"\n", literals + (section & ~TYPE_MASK));
                     break;
                 case TYPE_INT:
-                    printf("integer: %lld\n", static_cast<long long int>(tape[++i]));
+                    printf("integer: %lld\n", static_cast<long long int>(numeric[section & ~TYPE_MASK]));
                     break;
                 case TYPE_DEC:
-                    printf("decimal: %lf\n", plain_convert(static_cast<long long int>(tape[++i])));
+                    printf("decimal: %lf\n", plain_convert(static_cast<long long int>(numeric[section & ~TYPE_MASK])));
                     break;
                 case TYPE_ARR:
                     printf("array: %llu\n", (section & ~TYPE_MASK));
@@ -115,6 +115,7 @@ namespace MercuryJson {
 
     void Tape::state_machine(char *input, size_t *idxptr, size_t structural_size) {
 #if PARSE_STR_NUM_THREADS
+        reap.store(false);
         std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
         for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
             parse_str_threads[i] = std::thread(&Tape::_thread_parse_str, this, i, input, idxptr, structural_size);
@@ -267,6 +268,7 @@ succeed:
         __PRINT_INFO("parse succeed");
         if (--depth != 0) goto fail;
 #if PARSE_STR_NUM_THREADS
+        reap.store(true);
         for (std::thread &thread : parse_str_threads)
             thread.join();
 #endif
@@ -275,12 +277,7 @@ succeed:
 #undef PARSE_VALUE
     }
 
-    void Tape::_parse_and_write_number(const char *input, size_t offset) {
-#if NO_PARSE_NUMBER
-        memset(tape + tape_size, 0, sizeof(uint64_t) * 2);
-        tape_size += 2;
-        return;
-#endif
+    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
         const char *s = input + offset;
         uint64_t integer = 0ULL;
         bool negative = false;
@@ -322,15 +319,32 @@ succeed:
             exponent += negative_exp ? -expo : expo;
         }
         if (exponent == 0) {
-            tape[tape_size++] = TYPE_INT;
-            tape[tape_size++] = negative ? -integer : integer;
+            tape[tape_idx] = TYPE_INT | numeric_idx;
+            numeric[numeric_idx] = negative ? -integer : integer;
         } else {
             if (exponent < -308 || exponent > 308) throw new std::runtime_error("number out of range");
             double decimal = negative ? -integer : integer;
             decimal *= kPowerOfTen[308 + exponent];
-            tape[tape_size++] = TYPE_DEC;
-            tape[tape_size++] = plain_convert(decimal);
+            tape[tape_idx] = TYPE_DEC | numeric_idx;
+            numeric[numeric_idx] = plain_convert(decimal);
         }
+    }
+
+    void Tape::_parse_and_write_number(const char *input, size_t offset) {
+#if NO_PARSE_NUMBER
+        tape[tape_size++] = 0;
+        return;
+#endif
+#if PARSE_STR_NUM_THREADS && PARSE_NUMBER_THREADS
+        tape[tape_size] = offset;
+        numeric[numeric_size] = tape_size;
+        tape_size++;
+        numeric_size++;
+        return;
+#endif
+        __parse_and_write_number(input, offset, tape_size, numeric_size);
+        tape_size++;
+        numeric_size++;
     }
 
 
@@ -471,21 +485,29 @@ succeed:
             idx = idxptr[i];
             char *dest = input + idx + 1;
             if (input[idx] == '"') {
-                //@formatter:off
 # if PARSE_STR_MODE == 2
-                parse_str_per_bit
+                parse_str_per_bit(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 1
-                parse_str_avx
+                parse_str_avx(input, dest, nullptr, idx + 1);
 # elif PARSE_STR_MODE == 0
-                parse_str_naive
+                parse_str_naive(input, dest, nullptr, idx + 1);
 # endif
-                (input, dest, nullptr, idx + 1);
-                // printf("%s\n", input+idx+1);
-                //@formatter:on
             }
         }
-//        std::chrono::duration<double> runtime = std::chrono::steady_clock::now() - start_time;
-//        printf("parse str thread: %.6lf\n", runtime.count());
+# if NO_PARSE_NUMBER
+        return;
+# endif
+# if PARSE_NUMBER_THREADS
+        size_t numeric_idx = pid;
+        while (reap.load() == false || numeric_idx < numeric_size) {
+            while (numeric_idx < numeric_size) {
+                size_t tape_idx = numeric[numeric_idx];
+                size_t offset = tape[tape_idx];
+                __parse_and_write_number(input, offset, tape_idx, numeric_idx);
+                numeric_idx += PARSE_STR_NUM_THREADS;
+            }
+        }
+# endif
 # endif
     }
 }

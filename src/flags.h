@@ -57,7 +57,12 @@
 
 // Number of extra dedicated threads for string parsing. Set to 0 to disable.
 #ifndef PARSE_STR_NUM_THREADS
-# define PARSE_STR_NUM_THREADS 3
+# define PARSE_STR_NUM_THREADS 4
+#endif
+
+// Whether to parse numbers in parallel
+#ifndef PARSE_NUMBER_THREADS
+# define PARSE_NUMBER_THREADS 0
 #endif
 
 // Whether to use only one iteration

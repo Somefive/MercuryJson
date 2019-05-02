@@ -3,6 +3,7 @@
 
 #include <immintrin.h>
 #include <stdio.h>
+#include <atomic>
 
 #include "mercuryparser.h"
 #include "utils.h"
@@ -22,20 +23,27 @@ namespace MercuryJson {
         static const uint64_t TYPE_ARR = 0x6000000000000000;
 
         uint64_t *tape;
+        uint64_t *numeric;
         char *literals;
-        size_t tape_size, literals_size;
+        size_t tape_size, literals_size, numeric_size;
+        std::atomic_uint_fast64_t numeric_processed;
 
         Tape(size_t string_size, size_t structural_size) {
             tape = static_cast<uint64_t *>(
                     aligned_malloc(2 * sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
+            numeric = static_cast<uint64_t *>(
+                    aligned_malloc(sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
             // literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
             tape_size = 0;
             literals_size = 0;
+            numeric_size = 0;
+            numeric_processed = 0;
         }
 
         ~Tape() {
-            delete[] tape;
-            // delete[] literals;
+            aligned_free(tape);
+            // aligned_free(literals);
+            aligned_free(numeric);
         }
 
         inline void write_null() { tape[tape_size++] = TYPE_NULL; }
@@ -45,18 +53,13 @@ namespace MercuryJson {
         inline void write_false() { tape[tape_size++] = TYPE_FALSE; }
 
         inline void write_integer(long long int value) {
-            tape[tape_size++] = TYPE_INT;
-            tape[tape_size++] = value;
+            tape[tape_size++] = TYPE_INT | numeric_size;
+            numeric[numeric_size++] = static_cast<uint64_t>(value);
         }
 
         inline void write_decimal(double value) {
-            tape[tape_size++] = TYPE_DEC;
-            tape[tape_size++] = plain_convert(value);
-        }
-
-        inline void write_number(long long int value, bool is_decimal) {
-            tape[tape_size++] = is_decimal ? TYPE_DEC : TYPE_INT;
-            tape[tape_size++] = value;
+            tape[tape_size++] = TYPE_DEC | numeric_size;
+            numeric[numeric_size++] = static_cast<uint64_t>(plain_convert(value));
         }
 
         inline void write_str(uint64_t literal_idx) { tape[tape_size++] = TYPE_STR | literal_idx; }
@@ -90,7 +93,9 @@ namespace MercuryJson {
 
         void state_machine(char *input, size_t *idxptr, size_t structural_size);
         void _parse_and_write_number(const char *input, size_t offset);
+        void __parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
         size_t _parse_str(char *input, size_t idx);
+        std::atomic_bool reap;
         void _thread_parse_str(size_t pid, char *input, size_t *idxptr, size_t structural_size);
     };
 
