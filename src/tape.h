@@ -36,7 +36,6 @@ namespace MercuryJson {
             tape_size = 0;
             literals_size = 0;
             numeric_size = 0;
-            numeric_processed = 0;
         }
 
         ~Tape() {

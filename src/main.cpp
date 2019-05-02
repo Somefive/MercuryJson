@@ -5,12 +5,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "linux-perf-events.h"
+#include "flags.h"
 #include "mercuryparser.h"
 #include "tape.h"
 #include "tests.h"
 #include "utils.h"
-#include "flags.h"
+
+#if PERF_EVENTS
+# include "linux-perf-events.h"
+#endif
 
 void run(int argc, char **argv) {
 #if PERF_EVENTS
@@ -173,7 +176,6 @@ void run(int argc, char **argv) {
 
 int main(int argc, char **argv) {
 
-//    test_extract_mask();
 //    test_extract_warp_mask();
 //    test_tfn_value();
 

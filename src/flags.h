@@ -1,11 +1,6 @@
 #ifndef MERCURYJSON_FLAGS_H
 #define MERCURYJSON_FLAGS_H
 
-// Whether to use static variables in __cmpeq_mask.
-#ifndef STATIC_CMPEQ_MASK
-# define STATIC_CMPEQ_MASK 0
-#endif
-
 // Mode for string parsing. -1 for disable, 0 for naive, 1 for AVX, 2 for per_bit (simdjson-style).
 #ifndef PARSE_STR_MODE
 # define PARSE_STR_MODE 1

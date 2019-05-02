@@ -497,6 +497,8 @@ succeed:
 # elif PARSE_STR_MODE == 0
                 parse_str_naive(input, dest, nullptr, idx + 1);
 # endif
+                // printf("%s\n", input+idx+1);
+                //@formatter:on
             }
         }
 # endif
