@@ -32,7 +32,9 @@ namespace MercuryJson {
                     aligned_malloc(2 * sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
             numeric = static_cast<uint64_t *>(
                     aligned_malloc(sizeof(uint64_t) * (structural_size + ALIGNMENT_SIZE)));
-            // literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
+#if !TAPE_STATE_MACHINE
+            literals = static_cast<char *>(aligned_malloc(string_size + ALIGNMENT_SIZE));
+#endif
             tape_size = 0;
             literals_size = 0;
             numeric_size = 0;
@@ -40,7 +42,9 @@ namespace MercuryJson {
 
         ~Tape() {
             aligned_free(tape);
-            // aligned_free(literals);
+#if !TAPE_STATE_MACHINE
+            aligned_free(literals);
+#endif
             aligned_free(numeric);
         }
 

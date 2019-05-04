@@ -2,6 +2,8 @@
 
 #include <string.h>
 #include <math.h>
+
+#include <sstream>
 #include <thread>
 
 #include "constants.h"
@@ -11,6 +13,16 @@
 
 
 namespace MercuryJson {
+
+    [[noreturn]] void _error(const char *expected, const char *input, char encountered, size_t index) {
+        std::stringstream stream;
+        char _encounter[3];
+        size_t len = 0;
+        __error_maybe_escape(_encounter, &len, encountered);
+        _encounter[len] = 0;
+        stream << "expected " << expected << " at index " << index << ", but encountered '" << _encounter << "'";
+        MercuryJson::__error(stream.str(), input, index);
+    }
 
     size_t Tape::print_json(size_t tape_idx, size_t indent) {
         uint64_t section = tape[tape_idx];
@@ -106,12 +118,22 @@ namespace MercuryJson {
         }
     }
 
-#define __expect(__char) ({ \
-        if (ch != (__char)) throw std::runtime_error("unexpected character"); \
+#define next_char() ({   \
+        idx = *idxptr++; \
+        ch = input[idx]; \
+    })
+
+#define peek_char() ({   \
+        idx = *idxptr;   \
+        ch = input[idx]; \
+    })
+
+#define expect(__char) ({                                    \
+        if (ch != (__char)) _error(#__char, input, ch, idx); \
     })
 
 
-#define MAX_DEPTH 1024
+    static const size_t kMaxDepth = 1024;
 
     void Tape::state_machine(char *input, size_t *idxptr, size_t structural_size) {
 #if PARSE_STR_NUM_THREADS
@@ -123,17 +145,15 @@ namespace MercuryJson {
 
         literals = input;
 
-        void *ret_address[MAX_DEPTH];
-        size_t scope_offset[MAX_DEPTH];
+        void *ret_address[kMaxDepth];
+        size_t scope_offset[kMaxDepth];
 
-        size_t i = 0; // index in structural characters
         size_t idx; // index in input
         char ch; // current character
         size_t depth = 0;
         ret_address[depth++] = &&succeed;
         size_t left_tape_idx, right_tape_idx;
 
-#define NEXT() ({ idx = idxptr[i++]; ch = input[idx]; })
 #define PARSE_VALUE(continue_address) ({                                        \
             switch (ch) {                                                       \
                 case '"':                                                       \
@@ -188,7 +208,7 @@ namespace MercuryJson {
 # define __PRINT_INFO(s) ({})
 #endif
 
-        NEXT();
+        next_char();
 value_parse:
         __PRINT_INFO("parse value");
         PARSE_VALUE(&&start_continue);
@@ -197,7 +217,7 @@ start_continue:
 
 object_begin:
         __PRINT_INFO("parse object");
-        NEXT();
+        next_char();
         switch (ch) {
             case '"':
                 write_str(_parse_str(input, idx));
@@ -209,17 +229,17 @@ object_begin:
         }
 object_key_state:
         __PRINT_INFO("parse object key");
-        NEXT();
-        __expect(':');
-        NEXT();
+        next_char();
+        expect(':');
+        next_char();
         PARSE_VALUE(&&object_continue);
 object_continue:
         __PRINT_INFO("parse object continue");
-        NEXT();
+        next_char();
         switch (ch) {
             case ',':
-                NEXT();
-                __expect('"');
+                next_char();
+                expect('"');
                 write_str(_parse_str(input, idx));
                 goto object_key_state;
             case '}':
@@ -237,17 +257,17 @@ object_end:
 
 array_begin:
         __PRINT_INFO("parse array");
-        NEXT();
+        next_char();
         if (ch == ']') goto array_end;
 array_value:
         __PRINT_INFO("parse array value");
         PARSE_VALUE(&&array_continue);
 array_continue:
         __PRINT_INFO("parse array continue");
-        NEXT();
+        next_char();
         switch (ch) {
             case ',':
-                NEXT();
+                next_char();
                 goto array_value;
             case ']':
                 goto array_end;
@@ -277,8 +297,7 @@ succeed:
         for (std::thread &thread : parse_str_threads)
             thread.join();
 #endif
-        return;
-#undef NEXT
+
 #undef PARSE_VALUE
     }
 
@@ -343,19 +362,18 @@ succeed:
 #if PARSE_NUM_NUM_THREADS
         tape[tape_size] = offset;
         numeric[numeric_size] = tape_size;
-        tape_size++;
-        numeric_size++;
-        return;
-#endif
+#else
         __parse_and_write_number(input, offset, tape_size, numeric_size);
+#endif
         tape_size++;
         numeric_size++;
     }
 
 
     void TapeWriter::_parse_value() {
-        size_t idx = *idxptr++;
-        char ch = input[idx];
+        size_t idx;
+        char ch;
+        next_char();
         switch (ch) {
             case '"':
                 tape->write_str(_parse_str(idx));
@@ -409,37 +427,41 @@ succeed:
     }
 
     size_t TapeWriter::_parse_array() {
-        char ch = input[*idxptr];
+        size_t idx;
+        char ch;
+        peek_char();
         if (ch == ']') {
-            idxptr++;
+            next_char();
             return tape->write_array();
         }
         while (true) {
             _parse_value();
-            ch = input[*idxptr++];
+            next_char();
             if (ch == ']') return tape->write_array();
-            __expect(',');
+            expect(',');
         }
     }
 
     size_t TapeWriter::_parse_object() {
-        size_t idx = *idxptr++;
-        char ch = input[idx];
+        size_t idx;
+        char ch;
+        next_char();
         if (ch == '}') return tape->write_object();
         while (true) {
-            __expect('"');
+            expect('"');
             tape->write_str(_parse_str(idx));
-            ch = input[*idxptr++];
-            __expect(':');
+            next_char();
+            expect(':');
             _parse_value();
-            ch = input[*idxptr++];
+            next_char();
             if (ch == '}') return tape->write_object();
-            __expect(',');
-            ch = input[idx = *idxptr++];
+            expect(',');
+            next_char();
         }
     }
 
-#undef __expect
+#undef next_char
+#undef expect
 
     size_t TapeWriter::_parse_str(size_t idx) {
         size_t index = tape->literals_size;
@@ -499,11 +521,11 @@ succeed:
 # endif
             }
         }
-# endif
+#endif
     }
 
     void Tape::_thread_parse_num(size_t pid, char *input) {
-# if PARSE_NUM_NUM_THREADS
+#if PARSE_NUM_NUM_THREADS
         size_t begin = pid * numeric_size / PARSE_NUM_NUM_THREADS;
         size_t end = (pid + 1) * numeric_size / PARSE_NUM_NUM_THREADS;
         if (end > numeric_size) end = numeric_size;
@@ -512,6 +534,6 @@ succeed:
             size_t offset = tape[tape_idx];
             __parse_and_write_number(input, offset, tape_idx, numeric_idx);
         }
-# endif
+#endif
     }
 }

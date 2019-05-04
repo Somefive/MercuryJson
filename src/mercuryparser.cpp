@@ -67,7 +67,7 @@ namespace MercuryJson {
         }
     }
 
-    inline void __error_maybe_escape(char *context, size_t *length, char ch) {
+    void __error_maybe_escape(char *context, size_t *length, char ch) {
         if (ch == '\t' || ch == '\n' || ch == '\b' || ch == '\0') {
             context[(*length)++] = '\\';
 //            context[(*length)++] = '[';

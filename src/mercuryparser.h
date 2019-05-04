@@ -101,6 +101,9 @@ namespace MercuryJson {
         //@formatter:on
     };
 
+    void __error_maybe_escape(char *context, size_t *length, char ch);
+    [[noreturn]] void __error(const std::string &message, const char *input, size_t offset);
+
     namespace shift_reduce_impl { struct ParseStack; }
 
     class JSON {
