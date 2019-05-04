@@ -2,13 +2,11 @@
 #define MERCURYJSON_MERCURYPARSER_H
 
 #include <immintrin.h>
+#include <string.h>
 
-#include <map>
 #include <string>
-#include <string_view>
 #include <variant>
 #include <vector>
-#include <cstring>
 
 #include "block_allocator.hpp"
 #include "flags.h"
@@ -40,11 +38,30 @@ namespace MercuryJson {
             uint64_t pseudo_structural_mask, size_t offset, size_t *indices, size_t *base);
 
     /* Stage 2 */
+
+    /* EBNF of JSON:
+     *
+     * json            = value
+     *
+     * value           = string | number | object | array | "true" | "false" | "null"
+     *
+     * object          = "{" , object-elements, "}"
+     * object-elements = string, ":", value, [ ",", object-elements ]
+     *
+     * array           = "[", array-elements, "]"
+     * array-elements  = value, [ ",", array-elements ]
+     *
+     * string          = '"', { character }, '"'
+     *
+     * character       = "\", ( '"' | "\" | "/" | "b" | "f" | "n" | "r" | "t" | "u", digit, digit, digit, digit ) | unicode
+     *
+     * digit           = "0" | digit-1-9
+     * digit-1-9       = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+     * number          = [ "-" ], ( "0" | digit-1-9, { digit } ), [ ".", { digit } ], [ ( "e" | "E" ), ( "+" | "-" ), { digit } ]
+     */
+
     struct JsonValue;
 
-//    typedef std::map<std::string_view, JsonValue> JsonObject;
-//    typedef std::vector<std::pair<std::string_view, JsonValue *>> JsonObject;
-//    typedef std::vector<JsonValue *> JsonArray;
     struct JsonObject {
         const char *key;
         JsonValue *value;
@@ -129,6 +146,25 @@ namespace MercuryJson {
         ~JSON();
     };
 
+    inline char *JSON::_parse_str(size_t idx) {
+#if ALLOC_PARSED_STR
+        char *dest = literals + idx + 1;
+#else
+        char *dest = input + idx + 1;
+#endif
+
+#if !PARSE_STR_NUM_THREADS
+        # if PARSE_STR_MODE == 2
+        parse_str_per_bit(input, dest, nullptr, idx + 1);
+# elif PARSE_STR_MODE == 1
+        parse_str_avx(input, dest, nullptr, idx + 1);
+# elif PARSE_STR_MODE == 0
+        parse_str_naive(input, dest, nullptr, idx + 1);
+# endif
+#endif
+        return dest;
+    }
+
     void print_json(MercuryJson::JsonValue *value, int indent = 0);
 
     bool parse_true(const char *s, size_t offset = 0U);
@@ -157,9 +193,6 @@ namespace MercuryJson {
     inline uint64_t __cmpeq_mask(const Warp &raw, char c) {
         return __cmpeq_mask(raw.hi, raw.lo, c);
     }
-
-    const __mmask32 __even_mask = 0x55555555U;
-    const __mmask32 __odd_mask = ~__even_mask;
 
     inline __mmask32 __cmpeq_mask(__m256i raw, char c) {
         __m256i vec_c = _mm256_set1_epi8(c);

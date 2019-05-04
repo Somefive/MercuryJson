@@ -93,7 +93,7 @@ namespace MercuryJson {
         void _parse_and_write_number(const char *input, size_t offset);
         void __parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
         size_t _parse_str(char *input, size_t idx);
-        std::atomic_bool reap;
+
         void _thread_parse_str(size_t pid, char *input, size_t *idxptr, size_t structural_size);
         void _thread_parse_num(size_t pid, char *input);
     };
@@ -105,7 +105,6 @@ namespace MercuryJson {
 
         TapeWriter(Tape *_tape, const char *_input, size_t *_idxptr) : tape(_tape), input(_input), idxptr(_idxptr) {}
 
-        void state_machine();
         void _parse_value();
         // parse string from input[idx](") and return the index of parsed string in tape literals
         size_t _parse_str(size_t idx);

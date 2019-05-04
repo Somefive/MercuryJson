@@ -23,11 +23,14 @@ endif ()
 message("Compile flags: ${CMAKE_CXX_FLAGS}")
 
 set(SOURCE_FILES
+        src/find_structurals.cpp
         src/main.cpp
         src/mercuryparser.cpp
+        src/recursive_descent_parser.cpp
+        src/shift_reduce_parser.cpp
+        src/tape.cpp
         src/tests.cpp
         src/utils.cpp
-        src/tape.cpp
         )
 
 add_executable(main ${SOURCE_FILES})
