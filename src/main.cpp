@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iomanip>
 #include <vector>
 
 #include <immintrin.h>
@@ -34,6 +35,8 @@ void run(int argc, char **argv) {
 #endif
 
     if (argc > 1) {
+
+        std::cout << std::fixed << std::setprecision(10);
 
         size_t size;
         char *buf = read_file(argv[1], &size);
@@ -86,7 +89,7 @@ void run(int argc, char **argv) {
             tape.state_machine(const_cast<char *>(json.input), json.indices, json.num_indices);
 #else
             MercuryJson::TapeWriter tape_writer(&tape, json.input, json.indices);
-            tape_writer._parse_value();
+            tape_writer.parse_value();
 #endif
 #else
             json.exec_stage2();

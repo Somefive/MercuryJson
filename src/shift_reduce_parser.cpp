@@ -438,6 +438,7 @@ namespace MercuryJson {
         }
         size_t idx_end = (num_indices - 1) / SHIFT_REDUCE_NUM_THREADS;
         _thread_shift_reduce_parsing(indices, indices + idx_end, &stacks[0]);
+
         // Join threads and merge.
         ParseStack &main_stack = stacks[0];
 //        main_stack.print();

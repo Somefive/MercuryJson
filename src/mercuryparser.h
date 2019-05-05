@@ -149,25 +149,6 @@ namespace MercuryJson {
         ~JSON();
     };
 
-    inline char *JSON::_parse_str(size_t idx) {
-#if ALLOC_PARSED_STR
-        char *dest = literals + idx + 1;
-#else
-        char *dest = input + idx + 1;
-#endif
-
-#if !PARSE_STR_NUM_THREADS
-        # if PARSE_STR_MODE == 2
-        parse_str_per_bit(input, dest, nullptr, idx + 1);
-# elif PARSE_STR_MODE == 1
-        parse_str_avx(input, dest, nullptr, idx + 1);
-# elif PARSE_STR_MODE == 0
-        parse_str_naive(input, dest, nullptr, idx + 1);
-# endif
-#endif
-        return dest;
-    }
-
     void print_json(MercuryJson::JsonValue *value, int indent = 0);
 
     bool parse_true(const char *s, size_t offset = 0U);
@@ -180,6 +161,25 @@ namespace MercuryJson {
     void parse_str_avx(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);
     __m256i translate_escape_characters(__m256i input);
     void deescape(Warp &input, uint64_t escaper_mask);
+
+    inline char *JSON::_parse_str(size_t idx) {
+#if ALLOC_PARSED_STR
+        char *dest = literals + idx + 1;
+#else
+        char *dest = input + idx + 1;
+#endif
+
+#if !PARSE_STR_NUM_THREADS
+# if PARSE_STR_MODE == 2
+        parse_str_per_bit(input, dest, nullptr, idx + 1);
+# elif PARSE_STR_MODE == 1
+        parse_str_avx(input, dest, nullptr, idx + 1);
+# elif PARSE_STR_MODE == 0
+        parse_str_naive(input, dest, nullptr, idx + 1);
+# endif
+#endif
+        return dest;
+    }
 
     inline __m256i convert_to_mask(uint32_t input);
 

@@ -13,6 +13,10 @@
 #include <string>
 #include <vector>
 
+// Ugly workaround to test private methods.
+#define private public
+#define class struct
+
 #include "mercuryparser.h"
 #include "tape.h"
 #include "utils.h"
@@ -135,8 +139,6 @@ using namespace MercuryJson;
 
 void test_parse(bool print) {
     size_t size;
-//    char *buf = read_file("data/test_extract_escape_mask.json", &size);
-//    char *buf = read_file("data/pp.json", &size);
     char *buf = read_file("data/non-ascii.json", &size);
     auto json = JSON(buf, size);
     if (print) print_json(json.document);
@@ -154,7 +156,6 @@ void test_parse_str_naive() {
 void test_parse_str_avx() {
     char text[256] = R"("something\tto parse\nnextLine here with lots of escape\\\\;\n)"
                      R"(this is a cross boundary test!\\!!!!", this should be invisible\tOh!)";
-    // char text[512] = "\"fLA[/wsxV\\r&Io#`G\\t5XBZM|;/|HvoxPWE\\n0Rf%K:\\tOcaRD)DWag/0aJ<\\\\o3Lia!,P2^84(O)T4g'UpK*O0:\\\\\\raxOR\"!";
     std::cout << "Original:" << std::endl << text << std::endl;
     parse_str_avx(text + 1);
     char *p = text + 1;
@@ -258,10 +259,10 @@ void test_parse_float() {
         } else printf("test_parse_float: passed\n");
     }
     Tape tape(0, 0);
-    tape._parse_and_write_number(s, 0);
+    tape._parse_and_write_number(s, 0, 0);
     if (tape.tape[0] != Tape::TYPE_DEC) printf("test_parse_float (tape): is_decimal flag incorrect\n");
     else {
-        auto val = plain_convert(static_cast<long long int>(tape.tape[1]));
+        auto val = plain_convert(static_cast<long long int>(tape.numeric[0]));
         if (fabs(val - FLOAT_VAL) > 1e-10) {
             printf("test_parse_float (tape): expected %.12lf, received %.12lf\n", expected, val);
         } else printf("test_parse_float (tape): passed\n");
@@ -305,7 +306,7 @@ void test_tape(const char *filename) {
     tape.state_machine(const_cast<char *>(json.input), json.indices, json.num_indices);
 #else
     TapeWriter tape_writer(&tape, const_cast<char *>(json.input), json.indices);
-    tape_writer._parse_value();
+    tape_writer.parse_value();
 #endif
     // tape.print_tape();
     tape.print_json();
