@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     double total_time = 0.0, best_time = 1e10;
     for (size_t i = 0; i < REPEAT; ++i) {
-        char *input = (char *)aligned_malloc(size + 2 * ALIGNMENT_SIZE);
+        char *input = aligned_malloc(size + 2 * kAlignmentSize);
         memcpy(input, buf, size);
         rapidjson::Document d;
         auto start_time = std::chrono::steady_clock::now();

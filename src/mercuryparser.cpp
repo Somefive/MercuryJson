@@ -319,7 +319,7 @@ namespace MercuryJson {
         input_len = size;
         this->document = nullptr;
 
-        idx_ptr = indices = static_cast<size_t *>(aligned_malloc(size * sizeof(size_t)));
+        idx_ptr = indices = aligned_malloc<size_t>(size);
         num_indices = 0;
 #if ALLOC_PARSED_STR
         literals = static_cast<char *>(aligned_malloc(size));

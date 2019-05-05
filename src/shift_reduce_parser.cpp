@@ -113,7 +113,7 @@ namespace MercuryJson::shift_reduce_impl {
     public:
         ParseStack(BlockAllocator<JsonValue> &allocator, size_t max_size = kDefaultStackSize)
                 : allocator(allocator) {
-            stack = static_cast<JsonPartialValue **>(aligned_malloc(max_size * sizeof(JsonPartialValue * )));
+            stack = aligned_malloc<JsonPartialValue *>(max_size);
             stack_top = 0;
         }
 

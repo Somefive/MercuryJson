@@ -173,7 +173,7 @@ void test_parse_str_per_bit() {
 }
 
 char *generate_random_string(size_t length) {
-    char *text = reinterpret_cast<char *>(aligned_malloc(length));
+    char *text = aligned_malloc(length);
     char *base = text;
     *base++ = '"';
     for (size_t i = 0; i < length - 4; ++i) {
@@ -206,8 +206,8 @@ void test_parse_string() {
     for (int i = 0; i < 10; ++i) {
         auto length = static_cast<size_t>(1e8);
         char *text_naive = generate_random_string(length);
-        char *text_avx = reinterpret_cast<char *>(aligned_malloc(length));
-        char *p_per_bit = reinterpret_cast<char *>(aligned_malloc(length));
+        char *text_avx = aligned_malloc(length);
+        char *p_per_bit = aligned_malloc(length);
         strcpy(text_avx, text_naive);
         printf("test[%d]: ", i);
         fflush(stdout);

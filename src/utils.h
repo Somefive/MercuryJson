@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 
-static const size_t ALIGNMENT_SIZE = 64;
+static const size_t kAlignmentSize = 64;
 
 char *read_file(const char *filename, size_t *size);
 
@@ -15,11 +15,12 @@ inline constexpr size_t round_up(size_t size, size_t alignment) {
     return (size + alignment - 1) / alignment * alignment;
 }
 
-static inline void *aligned_malloc(size_t size, size_t alignment = ALIGNMENT_SIZE) {
+template <typename T = char>
+static inline T *aligned_malloc(size_t size, size_t alignment = kAlignmentSize) {
     void *p;
-    size = round_up(size, alignment);
+    size = round_up(size * sizeof(T), alignment);
     if (posix_memalign(&p, alignment, size) != 0) { return nullptr; }
-    return p;
+    return static_cast<T *>(p);
 }
 
 template <typename T>

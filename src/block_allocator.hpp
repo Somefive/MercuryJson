@@ -23,7 +23,7 @@ namespace MercuryJson {
         inline void check_alloc(size_t size) {
             if (allocated + size > block_size) {
                 allocated = 0;
-                ptr = reinterpret_cast<char *>(aligned_malloc(block_size, kAlignment));
+                ptr = aligned_malloc(block_size, kAlignment);
                 if (parent != nullptr) parent->all_memory.push_back(ptr);  // TODO: Make this thread-safe.
                 else all_memory.push_back(ptr);
             }
@@ -31,7 +31,7 @@ namespace MercuryJson {
 
         BlockAllocator(size_t block_size, BlockAllocator *parent) : parent(parent) {
             block_size = round_up(block_size, kAlignment);
-            ptr = reinterpret_cast<char *>(aligned_malloc(block_size, kAlignment));
+            ptr = aligned_malloc(block_size, kAlignment);
             parent->all_memory.push_back(ptr);
             allocated = 0;
             this->block_size = block_size;
@@ -40,7 +40,7 @@ namespace MercuryJson {
     public:
         explicit BlockAllocator(size_t block_size) : parent(nullptr) {
             block_size = round_up(block_size, kAlignment);
-            ptr = reinterpret_cast<char *>(aligned_malloc(block_size, kAlignment));
+            ptr = aligned_malloc(block_size, kAlignment);
             all_memory.push_back(ptr);
             allocated = 0;
             this->block_size = block_size;

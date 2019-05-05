@@ -38,7 +38,7 @@ void run(int argc, char **argv) {
         size_t size;
         char *buf = read_file(argv[1], &size);
         printf("File size: %lu\n", size);
-        char *input = (char *)aligned_malloc(size + 2 * ALIGNMENT_SIZE);
+        char *input = aligned_malloc(size + 2 * kAlignmentSize);
 
         double total_time = 0.0, best_time = 1e10, total_stage1_time = 0.0, total_stage2_time = 0.0;
         size_t iterations = FORCE_ONE_ITERATION ? 1 : (size < 100 * 1000 * 1000 ? 1000 : 10);
