@@ -62,7 +62,8 @@ namespace MercuryJson {
                         elem_idx += tape[elem_idx] & VALUE_MASK;
                     }
                 }
-                assert(elem_idx == (section & VALUE_MASK) && tape_idx == (tape[elem_idx] & VALUE_MASK) && (tape[elem_idx] & TYPE_MASK) == TYPE_ARR);
+                assert(elem_idx == (section & VALUE_MASK) && tape_idx == (tape[elem_idx] & VALUE_MASK)
+                       && (tape[elem_idx] & TYPE_MASK) == TYPE_ARR);
                 printf("\n");
                 print_indent(indent);
                 printf("]");
@@ -86,7 +87,8 @@ namespace MercuryJson {
                         elem_idx += tape[elem_idx] & VALUE_MASK;
                     }
                 }
-                assert(elem_idx == (section & VALUE_MASK) && tape_idx == (tape[elem_idx] & VALUE_MASK) && (tape[elem_idx] & TYPE_MASK) == TYPE_OBJ);
+                assert(elem_idx == (section & VALUE_MASK) && tape_idx == (tape[elem_idx] & VALUE_MASK)
+                       && (tape[elem_idx] & TYPE_MASK) == TYPE_OBJ);
                 printf("\n");
                 print_indent(indent);
                 printf("}");
@@ -398,6 +400,22 @@ succeed:
 #undef PARSE_VALUE
     }
 
+    inline bool __is_num_or_str(char ch) {
+        return ch == '"' || ch == '-' || (ch >= '0' && ch <= '9');
+    }
+
+    inline bool __is_opening_bracket(char ch) {
+        return ch == '{' || ch == '[';
+    }
+
+    inline bool __is_closing_bracket(char ch) {
+        return ch == '}' || ch == ']';
+    }
+
+    inline bool __is_separator(char ch) {
+        return ch == ',' || ch == ':';
+    }
+
     void Tape::state_machine(char *input, size_t *idx_ptr, size_t structural_size) {
 #if PARSE_STR_NUM_THREADS
         std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
@@ -414,20 +432,22 @@ succeed:
         TapeStack stack[TAPE_STATE_MACHINE_NUM_THREADS];
         std::future<void> parse_threads[TAPE_STATE_MACHINE_NUM_THREADS - 1];
         size_t tape_ends[TAPE_STATE_MACHINE_NUM_THREADS];
+        size_t idx_splits[TAPE_STATE_MACHINE_NUM_THREADS + 1];
+        for (int i = 0; i <= TAPE_STATE_MACHINE_NUM_THREADS; ++i)
+            idx_splits[i] = (structural_size - 1) * i / TAPE_STATE_MACHINE_NUM_THREADS;
         for (int i = 1; i < TAPE_STATE_MACHINE_NUM_THREADS; ++i) {
-            size_t idx_begin = (structural_size - 1) * i / TAPE_STATE_MACHINE_NUM_THREADS;
-            size_t idx_end = (structural_size - 1) * (i + 1) / TAPE_STATE_MACHINE_NUM_THREADS;
+            size_t idx_begin = idx_splits[i];
+            size_t idx_end = idx_splits[i + 1];
             parse_threads[i - 1] = std::async(std::launch::async, &Tape::_thread_state_machine, this, input, idx_ptr,
                                               idx_begin, idx_end, &stack[i], &tape_ends[i], /*start_unknown=*/true);
 //            parse_threads[i - 1].get();
         }
-        size_t idx_end = (structural_size - 1) / TAPE_STATE_MACHINE_NUM_THREADS;
-        _thread_state_machine(input, idx_ptr, 0, idx_end, &stack[0], &tape_ends[0]);
+        _thread_state_machine(input, idx_ptr, idx_splits[0], idx_splits[1], &stack[0], &tape_ends[0]);
 
 //        for (int pid = 1; pid < TAPE_STATE_MACHINE_NUM_THREADS; ++pid)
 //            parse_threads[pid - 1].get();
 //        for (int i = 0; i < TAPE_STATE_MACHINE_NUM_THREADS; ++i) {
-//            size_t idx_begin = (structural_size - 1) * i / TAPE_STATE_MACHINE_NUM_THREADS;
+//            size_t idx_begin = idx_splits[i];
 //            printf("Segment #%d: tape span = [%lu, %lu), stack size = %lu, extra brackets = %lu\n",
 //                   i, idx_begin, tape_ends[i], stack[i].depth, stack[i].extra_closing_count);
 //            printf("  Extra: ");
@@ -452,11 +472,40 @@ succeed:
         for (int i = 0; i < stack[0].depth; ++i)
             merge_stack[top++] = stack[0].scope_offset[i];
         for (int pid = 1; pid < TAPE_STATE_MACHINE_NUM_THREADS; ++pid) {
-            try {
-                parse_threads[pid - 1].get();
-            } catch (const std::exception &e) {
-                throw e;
+            parse_threads[pid - 1].get();
+
+            // Verify grammar correctness checks for cross-boundary input.
+            // This is to make sure structural characters that are not stored on tape (, and :) are properly inserted
+            // between segments, i.e. the following cases should fail when running with 2 threads:
+            //  No.  Reason                    1st Thread         2nd Thread
+            //   1.  Missing colon (:)         { "1": 2, "3"      4, "5": 6 }
+            //   2.  Missing comma (,)         [ 1, 2             3, 4]
+            //   3.  Missing comma (,)         [ [ 1, 2 ]         [ 3, 4 ] ]
+            //   4.  Extra colon (:)           { "1": 2, "3":     : 4, "5": 6 }
+            //   5.  Extra comma (,)           [ 1, 2,            , 3, 4 ]
+            //   6.  Extra kv-pair in object   { "1": 2, "3":     "4": 5, "5": 6 }
+            //   7.  Array value in object     { "1": 2,          "3", "5": 6 }
+            size_t pos = idx_splits[pid];
+            size_t idx = idx_ptr[pos];
+            if (pos - 1 >= 0 && pos < structural_size) {
+                char left_char = input[idx_ptr[pos - 1]], right_char = input[idx];
+                if ((__is_num_or_str(left_char) && __is_num_or_str(right_char))  // cases 1 & 2
+                    || (__is_closing_bracket(left_char) && __is_opening_bracket(right_char)))  // case 3
+                    MercuryJson::__error("expected separator", input, idx);
+                if (__is_separator(left_char) && __is_separator(right_char))  // cases 4 & 5
+                    MercuryJson::__error("extra separator", input, idx);
             }
+            bool in_object = (tape[merge_stack[top - 1]] & TYPE_MASK) == TYPE_OBJ;
+            for (size_t right_pos = pos; right_pos <= pos + 1; ++right_pos) {
+                if (right_pos - 2 >= 0 && right_pos < structural_size) {
+                    char left_char = input[idx_ptr[right_pos - 2]], right_char = input[idx_ptr[right_pos]];
+                    if (left_char == ':' && right_char == ':')  // case 6
+                        MercuryJson::__error("extra colon (:)", input, idx_ptr[right_pos]);
+                    if (in_object && left_char == ',' && right_char == ',')
+                        MercuryJson::__error("non key-value pair in object", input, idx_ptr[right_pos]);
+                }
+            }
+
             TapeStack &cur_stack = stack[pid];
             for (int i = 0; i < cur_stack.extra_closing_count; ++i) {
                 size_t right_tape_idx = cur_stack.extra_closing_offset[i];
@@ -473,7 +522,7 @@ succeed:
         }
         if (top > 0) throw std::runtime_error("unmatched opening brackets");
         for (int i = 0; i < TAPE_STATE_MACHINE_NUM_THREADS - 1; ++i) {
-            size_t idx_begin_next = (structural_size - 1) * (i + 1) / TAPE_STATE_MACHINE_NUM_THREADS;
+            size_t idx_begin_next = idx_splits[i + 1];
             if (tape_ends[i] < idx_begin_next) write_jump(tape_ends[i], idx_begin_next);
         }
         tape_size = tape_ends[TAPE_STATE_MACHINE_NUM_THREADS - 1];

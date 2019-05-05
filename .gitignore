@@ -6,5 +6,4 @@ CMakeCache.txt
 main
 CMakeFiles/
 Makefile
-data/*/*.json
 output/
