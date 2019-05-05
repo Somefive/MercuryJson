@@ -29,7 +29,7 @@ set(SOURCE_FILES
         src/recursive_descent_parser.cpp
         src/shift_reduce_parser.cpp
         src/tape.cpp
-        src/tests.cpp
+#        src/tests.cpp
         src/utils.cpp
         )
 

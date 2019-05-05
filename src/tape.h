@@ -123,7 +123,6 @@ namespace MercuryJson {
         Tape(size_t string_size, size_t structural_size) {
             tape = aligned_malloc<uint64_t>(structural_size);
             numeric = aligned_malloc<uint64_t>(structural_size);
-            memset(tape, 0, sizeof(uint64_t) * structural_size);
 #if !TAPE_STATE_MACHINE
             literals = static_cast<char *>(aligned_malloc(string_size + kAlignmentSize));
 #endif
