@@ -125,7 +125,7 @@ namespace MercuryJson {
         throw std::runtime_error(stream.str());
     }
 
-    std::variant<double, long long int> parse_number(const char *input, bool *is_decimal, size_t offset) {
+    long long int parse_number(const char *input, bool *is_decimal, size_t offset) {
 #if NO_PARSE_NUMBER
         *is_decimal = false;
         return 0LL;
@@ -188,10 +188,10 @@ namespace MercuryJson {
         }
         *is_decimal = _is_decimal;
         if (negative) {
-            if (_is_decimal) return -decimal;
+            if (_is_decimal) return plain_convert(-decimal);
             else return -integer;
         } else {
-            if (_is_decimal) return decimal;
+            if (_is_decimal) return plain_convert(decimal);
             else return integer;
         }
     }

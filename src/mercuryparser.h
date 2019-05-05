@@ -154,7 +154,7 @@ namespace MercuryJson {
     bool parse_true(const char *s, size_t offset = 0U);
     bool parse_false(const char *s, size_t offset = 0U);
     void parse_null(const char *s, size_t offset = 0U);
-    std::variant<double, long long int> parse_number(const char *s, bool *is_decimal, size_t offset = 0U);
+    long long int parse_number(const char *s, bool *is_decimal, size_t offset = 0U);
 
     void parse_str_per_bit(const char *src, char *dest, size_t *len = nullptr, size_t offset = 0U);
     void parse_str_naive(const char *src, char *dest = nullptr, size_t *len = nullptr, size_t offset = 0U);

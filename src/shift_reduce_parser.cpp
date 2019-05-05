@@ -367,11 +367,11 @@ namespace MercuryJson {
                 case '9':
                 case '-': {
                     bool is_decimal;
-                    auto ret = parse_number(input, &is_decimal, idx);
+                    long long int ret = parse_number(input, &is_decimal, idx);
                     if (is_decimal) {
-                        stack->push(std::get<double>(ret));
+                        stack->push(plain_convert(ret));
                     } else {
-                        stack->push(std::get<long long int>(ret));
+                        stack->push(ret);
                     }
                     break;
                 }

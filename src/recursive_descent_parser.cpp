@@ -104,9 +104,9 @@ namespace MercuryJson {
             case '9':
             case '-': {
                 bool is_decimal;
-                auto ret = parse_number(input, &is_decimal, idx);
-                if (is_decimal) value = allocator.construct(std::get<double>(ret));
-                else value = allocator.construct(std::get<long long int>(ret));
+                long long int ret = parse_number(input, &is_decimal, idx);
+                if (is_decimal) value = allocator.construct(plain_convert(ret));
+                else value = allocator.construct(ret);
                 break;
             }
             case '[':

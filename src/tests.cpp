@@ -253,7 +253,7 @@ void test_parse_float() {
     auto ret = parse_number(s, &is_decimal);
     if (!is_decimal) printf("test_parse_float: is_decimal flag incorrect\n");
     else {
-        auto val = std::get<double>(ret);
+        auto val = plain_convert(ret);
         if (fabs(val - FLOAT_VAL) > 1e-10) {
             printf("test_parse_float: expected %.12lf, received %.12lf\n", expected, val);
         } else printf("test_parse_float: passed\n");

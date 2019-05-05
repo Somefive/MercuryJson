@@ -501,12 +501,10 @@ succeed:
         auto ret = parse_number(input, &is_decimal, offset);
         if (is_decimal) {
             tape[tape_idx] = TYPE_DEC | numeric_idx;
-            auto value = std::get<double>(ret);
-            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&value);
+            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
         } else {
             tape[tape_idx] = TYPE_INT | numeric_idx;
-            auto value = std::get<long long int>(ret);
-            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&value);
+            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
         }
     }
 
@@ -612,9 +610,9 @@ succeed:
             case '9':
             case '-': {
                 bool is_decimal;
-                auto ret = parse_number(input, &is_decimal, idx);
-                if (is_decimal) tape->write_decimal(std::get<double>(ret));
-                else tape->write_integer(std::get<long long int>(ret));
+                long long int ret = parse_number(input, &is_decimal, idx);
+                if (is_decimal) tape->write_decimal(plain_convert(ret));
+                else tape->write_integer(ret);
                 break;
             }
             case '[': {
