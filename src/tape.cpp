@@ -1,5 +1,6 @@
 #include "tape.h"
 
+#include <assert.h>
 #include <string.h>
 #include <math.h>
 
@@ -546,70 +547,70 @@ succeed:
 //        printf("\n");
     }
 
-    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
-        bool is_decimal;
-        auto ret = parse_number(input, &is_decimal, offset);
-        if (is_decimal) {
-            tape[tape_idx] = TYPE_DEC | numeric_idx;
-            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
-        } else {
-            tape[tape_idx] = TYPE_INT | numeric_idx;
-            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
-        }
-    }
-
 //    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
-//        const char *s = input + offset;
-//        uint64_t integer = 0ULL;
-//        bool negative = false;
-//        int64_t exponent = 0LL;
-//        if (*s == '-') {
-//            ++s;
-//            negative = true;
-//        }
-//        if (*s == '0') {
-//            ++s;
-//            if (*s >= '0' && *s <= '9')
-//                throw std::runtime_error("numbers cannot have leading zeros");
-//        } else {
-//            while (*s >= '0' && *s <= '9')
-//                integer = integer * 10 + (*s++ - '0');
-//        }
-//        if (*s == '.') {
-//            const char *const base = ++s;
-//#if PARSE_NUMBER_AVX
-//            if (_all_digits(s)) {
-//                integer += integer * 100000000 + _parse_eight_digits(s);
-//                s += 8;
-//            }
-//#endif
-//            while (*s >= '0' && *s <= '9')
-//                integer = integer * 10 + (*s++ - '0');
-//            exponent = base - s;
-//        }
-//        if (*s == 'e' || *s == 'E') {
-//            ++s;
-//            bool negative_exp = false;
-//            if (*s == '-') {
-//                negative_exp = true;
-//                ++s;
-//            } else if (*s == '+') ++s;
-//            int64_t expo = 0LL;
-//            while (*s >= '0' && *s <= '9')
-//                expo = expo * 10 + (*s++ - '0');
-//            exponent += negative_exp ? -expo : expo;
-//        }
-//        if (exponent == 0) {
-//            tape[tape_idx] = TYPE_INT | numeric_idx;
-//            numeric[numeric_idx] = negative ? -integer : integer;
-//        } else {
-//            if (exponent < -308 || exponent > 308) throw std::runtime_error("number out of range");
-//            double decimal = negative ? -integer : integer;
-//            decimal *= kPowerOfTen[308 + exponent];
+//        bool is_decimal;
+//        auto ret = parse_number(input, &is_decimal, offset);
+//        if (is_decimal) {
 //            tape[tape_idx] = TYPE_DEC | numeric_idx;
-//            numeric[numeric_idx] = plain_convert(decimal);
+//            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
+//        } else {
+//            tape[tape_idx] = TYPE_INT | numeric_idx;
+//            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
 //        }
 //    }
+
+    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
+        const char *s = input + offset;
+        uint64_t integer = 0ULL;
+        bool negative = false;
+        int64_t exponent = 0LL;
+        if (*s == '-') {
+            ++s;
+            negative = true;
+        }
+        if (*s == '0') {
+            ++s;
+            if (*s >= '0' && *s <= '9')
+                throw std::runtime_error("numbers cannot have leading zeros");
+        } else {
+            while (*s >= '0' && *s <= '9')
+                integer = integer * 10 + (*s++ - '0');
+        }
+        if (*s == '.') {
+            const char *const base = ++s;
+#if PARSE_NUMBER_AVX
+            if (_all_digits(s)) {
+                integer += integer * 100000000 + _parse_eight_digits(s);
+                s += 8;
+            }
+#endif
+            while (*s >= '0' && *s <= '9')
+                integer = integer * 10 + (*s++ - '0');
+            exponent = base - s;
+        }
+        if (*s == 'e' || *s == 'E') {
+            ++s;
+            bool negative_exp = false;
+            if (*s == '-') {
+                negative_exp = true;
+                ++s;
+            } else if (*s == '+') ++s;
+            int64_t expo = 0LL;
+            while (*s >= '0' && *s <= '9')
+                expo = expo * 10 + (*s++ - '0');
+            exponent += negative_exp ? -expo : expo;
+        }
+        if (exponent == 0) {
+            tape[tape_idx] = TYPE_INT | numeric_idx;
+            numeric[numeric_idx] = negative ? -integer : integer;
+        } else {
+            if (exponent < -308 || exponent > 308) throw std::runtime_error("number out of range");
+            double decimal = negative ? -integer : integer;
+            decimal *= kPowerOfTen[308 + exponent];
+            tape[tape_idx] = TYPE_DEC | numeric_idx;
+            numeric[numeric_idx] = plain_convert(decimal);
+        }
+    }
 
     void Tape::_parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
 #if NO_PARSE_NUMBER
