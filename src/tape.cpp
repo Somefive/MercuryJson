@@ -11,6 +11,7 @@
 #include "flags.h"
 #include "mercuryparser.h"
 #include "utils.h"
+#include <cassert>
 
 
 namespace MercuryJson {
@@ -793,5 +794,22 @@ succeed:
             __parse_and_write_number(input, offset, tape_idx, numeric_idx);
         }
 #endif
+    }
+
+    void Tape::components_analysis() {
+        uint64_t stats[16];
+        for (size_t i = 0; i < 16; ++i) stats[i] = 0;
+        for (size_t i = 0; i < tape_size; ++i) {
+            uint64_t section = tape[i];
+            stats[(section & TYPE_MASK) >> 60]++;
+        }
+        printf("integer: %10llu\n", stats[TYPE_INT   >> 60]);
+        printf("decimal: %10llu\n", stats[TYPE_DEC   >> 60]);
+        printf("string:  %10llu\n", stats[TYPE_STR   >> 60]);
+        printf("object:  %10llu\n", stats[TYPE_OBJ   >> 60] / 2);
+        printf("array:   %10llu\n", stats[TYPE_ARR   >> 60] / 2);
+        printf("null:    %10llu\n", stats[TYPE_NULL  >> 60]);
+        printf("true:    %10llu\n", stats[TYPE_TRUE  >> 60]);
+        printf("false:   %10llu\n", stats[TYPE_FALSE >> 60]);
     }
 }

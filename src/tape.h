@@ -146,6 +146,8 @@ namespace MercuryJson {
         void print_tape();
 
         void state_machine(char *input, size_t *idx_ptr, size_t structural_size);
+
+        void components_analysis();
     };
 
     class TapeWriter {

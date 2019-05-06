@@ -125,6 +125,10 @@ void run(int argc, char **argv) {
             }
 #endif
 #if PERF_EVENTS
+            if (i == iterations - 1) {
+                printf("filename: %s\n", argv[1]);
+                tape.components_analysis();
+            }
             unified.start();
             unified.end(results);
             cy0 += results[0];
@@ -170,8 +174,9 @@ void run(int argc, char **argv) {
 
         printf("Average runtime: %.6lf s, speed: %.2lf MB/s\n",
                total_time / iterations, (size * iterations / 1024.0 / 1024.0) / total_time);
-        printf("Average stage 1 runtime: %.6lf s, stage 2 runtime: %.6lf s\n",
-               total_stage1_time / iterations, total_stage2_time / iterations);
+        printf("Average stage 1 runtime: %.6lf s (%.2lf \%), stage 2 runtime: %.6lf s (%.2lf \%)\n",
+               total_stage1_time / iterations, total_stage1_time * 100 / (total_stage1_time + total_stage2_time),
+               total_stage2_time / iterations, total_stage2_time * 100 / (total_stage1_time + total_stage2_time));
         printf("Best runtime: %.6lf s, speed: %.2lf MB/s\n",
                best_time, (size / 1024.0 / 1024.0) / best_time);
     }
