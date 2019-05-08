@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <math.h>
+#include <cassert>
 
 #include <sstream>
 #include <thread>
@@ -12,7 +13,7 @@
 #include "flags.h"
 #include "mercuryparser.h"
 #include "utils.h"
-#include <cassert>
+#include "parsestring.h"
 
 
 namespace MercuryJson {
@@ -726,16 +727,8 @@ succeed:
     size_t TapeWriter::_parse_str(size_t idx) {
         size_t index = tape->literals_size;
         char *dest = tape->literals + index;
-        size_t len;
-#if PARSE_STR_MODE == 2
-        parse_str_per_bit(input, dest, &len, idx + 1);
-#elif PARSE_STR_MODE == 1
-        parse_str_avx(input, dest, &len, idx + 1);
-#elif PARSE_STR_MODE == 0
-        parse_str_naive(input, dest, &len, idx + 1);
-#else
-        len = 0;
-#endif
+        size_t len = 0;
+        parse_str(input, dest, &len, idx + 1);
         tape->literals_size += len + 1;
         return index;
     }
@@ -748,16 +741,8 @@ succeed:
         // char *dest = literals + index;
         size_t index = idx;
         char *dest = input + idx + 1;
-        size_t len;
-#if PARSE_STR_MODE == 2
-        parse_str_per_bit(input, dest, &len, idx + 1);
-#elif PARSE_STR_MODE == 1
-        parse_str_avx(input, dest, &len, idx + 1);
-#elif PARSE_STR_MODE == 0
-        parse_str_naive(input, dest, &len, idx + 1);
-#else
-        len = 0;
-#endif
+        size_t len = 0;
+        parse_str(input, dest, &len, idx + 1);
         literals_size += len + 1;
         return index + 1;
     }
@@ -772,13 +757,7 @@ succeed:
             idx = idx_ptr[i];
             char *dest = input + idx + 1;
             if (input[idx] == '"') {
-# if PARSE_STR_MODE == 2
-                parse_str_per_bit(input, dest, nullptr, idx + 1);
-# elif PARSE_STR_MODE == 1
-                parse_str_avx(input, dest, nullptr, idx + 1);
-# elif PARSE_STR_MODE == 0
-                parse_str_naive(input, dest, nullptr, idx + 1);
-# endif
+                parse_str(input, dest, nullptr, idx + 1);
             }
         }
 #endif
