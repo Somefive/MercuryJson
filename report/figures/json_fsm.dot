@@ -1,0 +1,58 @@
+digraph G {
+	graph [rankdir=LR, newrank=true, fontname="CMU Sans Serif", fontsize=16]
+	node [shape=box, fontname="CMU Sans Serif"]
+	edge [fontname="Courier"]
+
+	start -> success      [label="<value>"]
+	start -> array_begin  [label="["]
+	start -> object_begin [label="{"]
+
+	object_begin -> object_key [label="ε"]
+	object_begin -> object_end [label="}"]
+
+	object_key -> object_pair [label="\""]
+
+	object_pair -> object_value [label=":"]
+
+	object_value -> object_continue [label="<value>"]
+	object_value -> array_begin  [label="["]
+	object_value -> object_begin [label="{"]
+
+	object_continue -> object_key [label=","]
+	object_continue -> object_end [label="}"]
+	
+	array_begin -> array_value [label="ε"]
+	array_begin -> array_end   [label="]"]
+
+	array_value -> array_continue [label="<value>"]
+	array_value -> array_begin    [label="["]
+	array_value -> object_begin   [label="{"]
+
+	array_continue -> array_value [label=","]
+	array_continue -> array_end   [label="]"]
+	
+	subgraph cluster_object {
+		label = "Object";
+		style = dashed;
+		object_begin; object_key; object_pair; object_value; object_continue; object_end
+	}
+
+	subgraph cluster_array {
+		label = "Array";
+		style = dashed;
+		array_begin; array_value; array_continue; array_end
+	}
+
+    start        [style="filled,rounded"]
+    success      [style="filled,rounded"]
+    array_begin  [style="diagonals"]
+    object_begin [style="diagonals"]
+    object_end   [shape="box3d"]
+    array_end    [shape="box3d"]
+
+	{ rank=source; start; success }
+	{ rank=same; object_begin; array_begin }
+	// { rank=same; object_end; array_end }
+	// { rank=same; object_continue; array_continue }
+	// { rank=same; object_value; array_value }
+}

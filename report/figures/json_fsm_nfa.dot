@@ -1,0 +1,96 @@
+digraph G {
+	graph [rankdir=LR, newrank=true, fontname="CMU Sans Serif", fontsize=16]
+	node [shape=box, fontname="CMU Sans Serif"]
+	edge [fontname="Courier"]
+
+	unknown_start -> unknown_str_1    [label="\""]
+	// unknown_start -> array_end        [label="]"]
+	// unknown_start -> object_end       [label="}"]
+	// unknown_start -> object_value     [label=":"]
+	unknown_start -> unknown_value    [label=","]
+	unknown_start -> unknown_continue [label="<value>"]
+	// unknown_start -> array_begin      [label="["]
+	// unknown_start -> array_begin     [label="{"]
+
+	unknown_str_1 -> object_value     [label=":"]
+	unknown_str_1 -> unknown_continue [label="ε"]
+
+	unknown_continue -> unknown_value [label=","]
+	unknown_continue -> array_end     [label="]"]
+	unknown_continue -> object_end    [label="}"]
+
+	unknown_value -> unknown_str_2 [label="\""]
+	unknown_value -> array_value   [label="ε"]
+
+	unknown_str_2 -> object_value   [label=":"]
+	unknown_str_2 -> array_continue [label=","]
+	unknown_str_2 -> array_end      [label="]"]
+
+	start -> success      [label="<value>"]
+	start -> array_begin  [label="["]
+	start -> object_begin [label="{"]
+
+	object_begin -> object_key [label="ε"]
+	object_begin -> object_end [label="}"]
+
+	object_key -> object_pair [label="\""]
+
+	object_pair -> object_value [label=":"]
+
+	object_value -> object_continue [label="<value>"]
+	object_value -> array_begin  [label="["]
+	object_value -> object_begin [label="{"]
+
+	object_continue -> object_key [label=","]
+	object_continue -> object_end [label="}"]
+	
+	array_begin -> array_value [label="ε"]
+	array_begin -> array_end   [label="]"]
+
+	array_value -> array_continue [label="<value>"]
+	array_value -> array_begin    [label="["]
+	array_value -> object_begin   [label="{"]
+
+	array_continue -> array_value [label=","]
+	array_continue -> array_end   [label="]"]
+
+	subgraph cluster_object {
+		label = "Object";
+		style = dashed;
+		object_begin; object_key; object_pair; object_value; object_continue; object_end
+	}
+
+	subgraph cluster_array {
+		label = "Array";
+		style = dashed;
+		array_begin; array_value; array_continue; array_end
+	}
+
+	subgraph cluster_unknown_states {
+		label = "Unknown";
+		style = dotted;
+		unknown_start; unknown_continue; unknown_value; unknown_str_1; unknown_str_2
+	}
+
+	unknown_continue [style="dashed"]
+	unknown_value    [style="dashed"]
+	unknown_str_1    [style="dashed"]
+	unknown_str_2    [style="dashed"]
+	unknown_start    [style="filled,rounded,dashed"]
+    
+    start        [style="filled,rounded"]
+    success      [style="filled,rounded"]
+    array_begin  [style="diagonals"]
+    object_begin [style="diagonals"]
+    object_end   [shape="box3d"]
+    array_end    [shape="box3d"]
+
+    { rank=source; start; unknown_start; success }
+	// { rank=same; unknown_continue; unknown_value; unknown_str_1; unknown_str_2 }
+	{ rank=same; object_begin; array_begin; unknown_str_1 }
+	// { rank=same; object_continue; array_continue; unknown_value }
+	{ rank=same; array_value; unknown_continue }
+	// { rank=same; array_continue; unknown_value }
+	// { rank=sink; object_end; array_end }
+	// { rank=same; object_continue; object_value }
+}
