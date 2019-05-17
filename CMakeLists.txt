@@ -23,7 +23,6 @@ endif ()
 message("Compile flags: ${CMAKE_CXX_FLAGS}")
 
 set(SOURCE_FILES
-        src/find_structurals.cpp
         src/mercuryparser.cpp
         src/recursive_descent_parser.cpp
         src/shift_reduce_parser.cpp
@@ -34,7 +33,6 @@ set(SOURCE_FILES
         )
 
 add_executable(main src/main.cpp ${SOURCE_FILES})
-add_executable(benchmark_parsestring src/benchmark/parsestring ${SOURCE_FILES})
 
 include(benchmark/CMakeLists.txt)
 

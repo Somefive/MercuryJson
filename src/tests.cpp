@@ -18,8 +18,11 @@
 #define class struct
 
 #include "mercuryparser.h"
+#include "parsestring.h"
 #include "tape.h"
 #include "utils.h"
+
+using namespace MercuryJson;
 
 
 template <typename T>
@@ -135,7 +138,6 @@ void test_tfn_value() {
     if (ok) printf("test_tfn_value: passed\n");
 }
 
-using namespace MercuryJson;
 
 void test_parse(bool print) {
     size_t size;

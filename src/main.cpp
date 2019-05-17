@@ -50,7 +50,7 @@ void run(int argc, char **argv) {
 #if PERF_EVENTS
             unified.start();
 #endif
-            memcpy(input, buf, size);
+            memcpy(input, buf, size + 1);  // include the null terminator
             auto json = MercuryJson::JSON(input, size, true);
 #if USE_TAPE
             MercuryJson::Tape tape(size, size);
@@ -122,6 +122,7 @@ void run(int argc, char **argv) {
 # else
                 print_json(json.document);
 # endif
+                printf("\n");
             }
 #endif
 #if PERF_EVENTS
@@ -174,7 +175,7 @@ void run(int argc, char **argv) {
 
         printf("Average runtime: %.6lf s, speed: %.2lf MB/s\n",
                total_time / iterations, (size * iterations / 1024.0 / 1024.0) / total_time);
-        printf("Average stage 1 runtime: %.6lf s (%.2lf \%), stage 2 runtime: %.6lf s (%.2lf \%)\n",
+        printf("Average stage 1 runtime: %.6lf s (%.2lf %%), stage 2 runtime: %.6lf s (%.2lf %%)\n",
                total_stage1_time / iterations, total_stage1_time * 100 / (total_stage1_time + total_stage2_time),
                total_stage2_time / iterations, total_stage2_time * 100 / (total_stage1_time + total_stage2_time));
         printf("Best runtime: %.6lf s, speed: %.2lf MB/s\n",

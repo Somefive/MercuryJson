@@ -23,6 +23,7 @@ char *read_file(const char *filename, size_t *size) {
         throw std::runtime_error("read data failed");
     }
     std::fclose(pfile);
+    buffer[_size] = '\0';
     *size = _size;
     return buffer;
 }

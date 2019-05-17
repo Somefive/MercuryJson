@@ -101,7 +101,8 @@ namespace MercuryJson {
         }
 
         void _parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
-        void __parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
+        void __parse_and_write_number_backoff(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
+        void __parse_and_write_number_fast(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx);
         size_t _parse_str(char *input, size_t idx);
 
         void _thread_parse_str(size_t pid, char *input, const size_t *idx_ptr, size_t structural_size);

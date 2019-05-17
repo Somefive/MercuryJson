@@ -254,7 +254,7 @@ start_value:
         PARSE_VALUE(&&start_continue);
         goto succeed;
 start_continue:
-        next_char();  // strip off the extra closing bracket at end
+//        next_char();  // strip off the extra closing bracket at end
         goto succeed;
 
 unknown_start:
@@ -403,10 +403,6 @@ succeed:
 #undef PARSE_VALUE
     }
 
-    inline bool __is_num_or_str(char ch) {
-        return ch == '"' || ch == '-' || (ch >= '0' && ch <= '9');
-    }
-
     inline bool __is_opening_bracket(char ch) {
         return ch == '{' || ch == '[';
     }
@@ -419,7 +415,14 @@ succeed:
         return ch == ',' || ch == ':';
     }
 
+    inline bool __is_non_structural(char ch) {
+        return !(__is_opening_bracket(ch) || __is_closing_bracket(ch) || __is_separator(ch));
+    }
+
     void Tape::state_machine(char *input, size_t *idx_ptr, size_t structural_size) {
+        if (structural_size == 1)
+            __error("emtpy string is not valid JSON", input, 0);
+
 #if PARSE_STR_NUM_THREADS
         std::thread parse_str_threads[PARSE_STR_NUM_THREADS];
         for (size_t i = 0; i < PARSE_STR_NUM_THREADS; ++i)
@@ -436,9 +439,13 @@ succeed:
         std::future<void> parse_threads[TAPE_STATE_MACHINE_NUM_THREADS - 1];
         size_t tape_ends[TAPE_STATE_MACHINE_NUM_THREADS];
         size_t idx_splits[TAPE_STATE_MACHINE_NUM_THREADS + 1];
-        for (int i = 0; i <= TAPE_STATE_MACHINE_NUM_THREADS; ++i)
-            idx_splits[i] = (structural_size - 1) * i / TAPE_STATE_MACHINE_NUM_THREADS;
-        for (int i = 1; i < TAPE_STATE_MACHINE_NUM_THREADS; ++i) {
+
+        // Choose a reasonable number of threads such that each split contains more than 1 character.
+        size_t num_threads = std::min(static_cast<size_t>(TAPE_STATE_MACHINE_NUM_THREADS),
+                                      std::max(1UL, (structural_size - 1) / 2));
+        for (int i = 0; i <= num_threads; ++i)
+            idx_splits[i] = (structural_size - 1) * i / num_threads;
+        for (int i = 1; i < num_threads; ++i) {
             size_t idx_begin = idx_splits[i];
             size_t idx_end = idx_splits[i + 1];
             parse_threads[i - 1] = std::async(std::launch::async, &Tape::_thread_state_machine, this, input, idx_ptr,
@@ -474,7 +481,7 @@ succeed:
         size_t top = 0;
         for (int i = 0; i < stack[0].depth; ++i)
             merge_stack[top++] = stack[0].scope_offset[i];
-        for (int pid = 1; pid < TAPE_STATE_MACHINE_NUM_THREADS; ++pid) {
+        for (int pid = 1; pid < num_threads; ++pid) {
             parse_threads[pid - 1].get();
 
             // Verify grammar correctness checks for cross-boundary input.
@@ -490,22 +497,24 @@ succeed:
             //   7.  Array value in object     { "1": 2,          "3", "5": 6 }
             size_t pos = idx_splits[pid];
             size_t idx = idx_ptr[pos];
-            if (pos - 1 >= 0 && pos < structural_size) {
+            if (pos >= 1 && pos < structural_size) {
                 char left_char = input[idx_ptr[pos - 1]], right_char = input[idx];
-                if ((__is_num_or_str(left_char) && __is_num_or_str(right_char))  // cases 1 & 2
-                    || (__is_closing_bracket(left_char) && __is_opening_bracket(right_char)))  // case 3
+                if ((__is_non_structural(left_char) || __is_closing_bracket(left_char))
+                    && (__is_non_structural(right_char) || __is_opening_bracket(right_char)))  // case 1, 2, 3
                     MercuryJson::__error("expected separator", input, idx);
                 if (__is_separator(left_char) && __is_separator(right_char))  // cases 4 & 5
                     MercuryJson::__error("extra separator", input, idx);
             }
-            bool in_object = (tape[merge_stack[top - 1]] & TYPE_MASK) == TYPE_OBJ;
-            for (size_t right_pos = pos; right_pos <= pos + 1; ++right_pos) {
-                if (right_pos - 2 >= 0 && right_pos < structural_size) {
-                    char left_char = input[idx_ptr[right_pos - 2]], right_char = input[idx_ptr[right_pos]];
-                    if (left_char == ':' && right_char == ':')  // case 6
-                        MercuryJson::__error("extra colon (:)", input, idx_ptr[right_pos]);
-                    if (in_object && left_char == ',' && right_char == ',')
-                        MercuryJson::__error("non key-value pair in object", input, idx_ptr[right_pos]);
+            if (top > 0) {
+                bool in_object = (tape[merge_stack[top - 1]] & TYPE_MASK) == TYPE_OBJ;
+                for (size_t right_pos = pos; right_pos <= pos + 1; ++right_pos) {
+                    if (right_pos >= 2 && right_pos < structural_size) {
+                        char left_char = input[idx_ptr[right_pos - 2]], right_char = input[idx_ptr[right_pos]];
+                        if (left_char == ':' && right_char == ':')  // case 6
+                            MercuryJson::__error("extra colon (:)", input, idx_ptr[right_pos]);
+                        if (in_object && left_char == ',' && right_char == ',')
+                            MercuryJson::__error("non key-value pair in object", input, idx_ptr[right_pos]);
+                    }
                 }
             }
 
@@ -524,11 +533,13 @@ succeed:
                 merge_stack[top++] = cur_stack.scope_offset[i];
         }
         if (top > 0) throw std::runtime_error("unmatched opening brackets");
-        for (int i = 0; i < TAPE_STATE_MACHINE_NUM_THREADS - 1; ++i) {
+        if (size_t pos = idx_ptr[idx_splits[num_threads] - 1]; input[pos] == ',')
+            MercuryJson::__error("extra separator", input, pos);
+        for (int i = 0; i < num_threads - 1; ++i) {
             size_t idx_begin_next = idx_splits[i + 1];
             if (tape_ends[i] < idx_begin_next) write_jump(tape_ends[i], idx_begin_next);
         }
-        tape_size = tape_ends[TAPE_STATE_MACHINE_NUM_THREADS - 1];
+        tape_size = tape_ends[num_threads - 1];
 
 #endif
 
@@ -548,19 +559,19 @@ succeed:
 //        printf("\n");
     }
 
-//    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
-//        bool is_decimal;
-//        auto ret = parse_number(input, &is_decimal, offset);
-//        if (is_decimal) {
-//            tape[tape_idx] = TYPE_DEC | numeric_idx;
-//            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
-//        } else {
-//            tape[tape_idx] = TYPE_INT | numeric_idx;
-//            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
-//        }
-//    }
+    void Tape::__parse_and_write_number_backoff(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
+        bool is_decimal;
+        auto ret = parse_number(input, &is_decimal, offset);
+        if (is_decimal) {
+            tape[tape_idx] = TYPE_DEC | numeric_idx;
+            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
+        } else {
+            tape[tape_idx] = TYPE_INT | numeric_idx;
+            numeric[numeric_idx] = *reinterpret_cast<uint64_t *>(&ret);
+        }
+    }
 
-    void Tape::__parse_and_write_number(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
+    void Tape::__parse_and_write_number_fast(const char *input, size_t offset, size_t tape_idx, size_t numeric_idx) {
         const char *s = input + offset;
         uint64_t integer = 0ULL;
         bool negative = false;
@@ -572,10 +583,13 @@ succeed:
         if (*s == '0') {
             ++s;
             if (*s >= '0' && *s <= '9')
-                throw std::runtime_error("numbers cannot have leading zeros");
+                MercuryJson::__error("numbers cannot have leading zeros", input, offset);
         } else {
-            while (*s >= '0' && *s <= '9')
+            if (*s < '0' || *s > '9')
+                MercuryJson::__error("numbers must have integer parts", input, offset);
+            do {
                 integer = integer * 10 + (*s++ - '0');
+            } while (*s >= '0' && *s <= '9');
         }
         if (*s == '.') {
             const char *const base = ++s;
@@ -588,6 +602,13 @@ succeed:
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
             exponent = base - s;
+            if (exponent == 0)
+                __error("excessive characters at end of number", input, s - input - 1);
+        }
+        if (s - input - offset >= 18) {
+            // use the slower back-off method
+            __parse_and_write_number_backoff(input, offset, tape_idx, numeric_idx);
+            return;
         }
         if (*s == 'e' || *s == 'E') {
             ++s;
@@ -597,15 +618,21 @@ succeed:
                 ++s;
             } else if (*s == '+') ++s;
             int64_t expo = 0LL;
-            while (*s >= '0' && *s <= '9')
+            if (*s < '0' || *s > '9')
+                MercuryJson::__error("numbers must not have null exponents", input, s - input);
+            do {
                 expo = expo * 10 + (*s++ - '0');
+            } while (*s >= '0' && *s <= '9');
             exponent += negative_exp ? -expo : expo;
         }
+        if (!kStructuralOrWhitespace[*s])
+            __error("excessive characters at end of number", input, s - input);
         if (exponent == 0) {
             tape[tape_idx] = TYPE_INT | numeric_idx;
             numeric[numeric_idx] = negative ? -integer : integer;
         } else {
-            if (exponent < -308 || exponent > 308) throw std::runtime_error("number out of range");
+            if (exponent < -308 || exponent > 308)
+                MercuryJson::__error("decimal exponent out of range", input, offset);
             double decimal = negative ? -integer : integer;
             decimal *= kPowerOfTen[308 + exponent];
             tape[tape_idx] = TYPE_DEC | numeric_idx;
@@ -620,7 +647,7 @@ succeed:
         tape[tape_idx] = numeric_idx;
         numeric[numeric_idx] = tape_idx;
 #else
-        __parse_and_write_number(input, offset, tape_idx, numeric_idx);
+        __parse_and_write_number_fast(input, offset, tape_idx, numeric_idx);
 #endif
     }
 
@@ -783,13 +810,13 @@ succeed:
             uint64_t section = tape[i];
             stats[(section & TYPE_MASK) >> 60]++;
         }
-        printf("integer: %10llu\n", stats[TYPE_INT   >> 60]);
-        printf("decimal: %10llu\n", stats[TYPE_DEC   >> 60]);
-        printf("string:  %10llu\n", stats[TYPE_STR   >> 60]);
-        printf("object:  %10llu\n", stats[TYPE_OBJ   >> 60] / 2);
-        printf("array:   %10llu\n", stats[TYPE_ARR   >> 60] / 2);
-        printf("null:    %10llu\n", stats[TYPE_NULL  >> 60]);
-        printf("true:    %10llu\n", stats[TYPE_TRUE  >> 60]);
+        printf("integer: %10llu\n", stats[TYPE_INT >> 60]);
+        printf("decimal: %10llu\n", stats[TYPE_DEC >> 60]);
+        printf("string:  %10llu\n", stats[TYPE_STR >> 60]);
+        printf("object:  %10llu\n", stats[TYPE_OBJ >> 60] / 2);
+        printf("array:   %10llu\n", stats[TYPE_ARR >> 60] / 2);
+        printf("null:    %10llu\n", stats[TYPE_NULL >> 60]);
+        printf("true:    %10llu\n", stats[TYPE_TRUE >> 60]);
         printf("false:   %10llu\n", stats[TYPE_FALSE >> 60]);
     }
 }

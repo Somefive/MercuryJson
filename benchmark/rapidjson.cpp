@@ -10,14 +10,13 @@
 using namespace rapidjson;
 
 
-const size_t REPEAT = 1000;
-
 int main(int argc, char **argv) {
     size_t size;
     char *buf = read_file(argv[1], &size);
     printf("File size: %lu\n", size);
 
     double total_time = 0.0, best_time = 1e10;
+    size_t REPEAT = size < 100LL * 1000 * 1000 ? 1000 : 10;
     for (size_t i = 0; i < REPEAT; ++i) {
         char *input = aligned_malloc(size + 2 * kAlignmentSize);
         memcpy(input, buf, size);

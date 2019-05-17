@@ -241,6 +241,8 @@ namespace MercuryJson {
             if (*s >= '0' && *s <= '9')
                 __error("numbers cannot have leading zeros", input, offset);
         } else {
+            if (*s < '0' || *s > '9')
+                MercuryJson::__error("numbers must have integer parts", input, offset);
 #if PARSE_NUMBER_AVX
             while (_all_digits(s)) {
                 integer = integer * 100000000 + _parse_eight_digits(s);
@@ -250,6 +252,8 @@ namespace MercuryJson {
             while (*s >= '0' && *s <= '9')
                 integer = integer * 10 + (*s++ - '0');
         }
+        if (s - input - offset > 18)
+            __error("integer part too large", input, offset);
         if (*s == '.') {
             _is_decimal = true;
             decimal = integer;
@@ -265,7 +269,8 @@ namespace MercuryJson {
             while (*s >= '0' && *s <= '9') {
                 decimal += (*s++ - '0') * multiplier;
                 multiplier *= 0.1;
-            }
+            }if (multiplier == 0.1)
+                __error("excessive characters at end of number", input, s - input - 1);
         }
         if (*s == 'e' || *s == 'E') {
             if (!_is_decimal) {
@@ -279,11 +284,18 @@ namespace MercuryJson {
                 ++s;
             } else if (*s == '+') ++s;
             double exponent = 0.0;
-            while (*s >= '0' && *s <= '9')
+            if (*s < '0' || *s > '9')
+                MercuryJson::__error("numbers must not have null exponents", input, s - input);
+            do {
                 exponent = exponent * 10.0 + (*s++ - '0');
+            } while (*s >= '0' && *s <= '9');
             if (negative_exp) exponent = -exponent;
+            if (exponent < -308 || exponent > 308)
+                __error("decimal exponent out of range", input, offset);
             decimal *= pow(10.0, exponent);
         }
+        if (!kStructuralOrWhitespace[*s])
+            __error("excessive characters at end of number", input, s - input);
         *is_decimal = _is_decimal;
         if (negative) {
             if (_is_decimal) return plain_convert(-decimal);
@@ -384,7 +396,7 @@ namespace MercuryJson {
     void JSON::exec_stage1() {
         uint64_t prev_escape_mask = 0;
         uint64_t prev_quote_mask = 0;
-        uint64_t prev_pseudo_mask = 0;
+        uint64_t prev_pseudo_mask = 1;  // initial value set to 1 to allow literals at beginning of input
         uint64_t quote_mask, structural_mask, whitespace_mask;
         uint64_t pseudo_mask = 0;
         size_t offset = 0;
@@ -402,6 +414,10 @@ namespace MercuryJson {
         }
         // Dump pointers for the final iteration.
         construct_structural_character_pointers(pseudo_mask, offset - 64, indices, &num_indices);
+        if (num_indices == 0 || input[indices[num_indices - 1]] != '\0')  // Ensure '\0' is added to indices.
+            indices[num_indices++] = offset - 64 + strlen(input + offset - 64);
+        if (prev_quote_mask != 0)
+            throw std::runtime_error("unclosed quotation marks");
     }
 
     void JSON::exec_stage2() {

@@ -2,6 +2,9 @@
 #define MERCURY_PARSESTRING_H
 
 #include <cstddef>
+#include <immintrin.h>
+
+#include "mercuryparser.h"
 
 namespace MercuryJson {
 
@@ -20,6 +23,8 @@ namespace MercuryJson {
         #define parse_str parse_str_none
     #endif
 
+    __m256i translate_escape_characters(__m256i input);
+    void deescape(Warp &input, uint64_t escaper_mask);
 }
 
 #endif

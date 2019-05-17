@@ -16,3 +16,4 @@ set(SUPPORT_FILES
         )
 
 add_executable(rapidjson benchmark/rapidjson.cpp ${SUPPORT_FILES})
+set_target_properties(rapidjson PROPERTIES EXCLUDE_FROM_ALL 1)
