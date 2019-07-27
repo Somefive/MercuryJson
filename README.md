@@ -6,11 +6,11 @@ The project is still a proof-of-concept. The currently supported functions are p
 
 ## (Brief) Introduction
 
-MercuryJson is a fast JSON parser optimized for parsing very large documents. The idea is largely based on the two-stage parsing framework of [simdjson](https://github.com/lemire/simdjson). Our main contribution is that we parallelized the second stage using multi-threading.
+MercuryJson is a fast JSON parser optimized for parsing very large documents. The idea is based mainly on the two-stage parsing framework of [simdjson](https://github.com/lemire/simdjson). Our main contribution is that we parallelized the second stage using multi-threading.
 
-Benchmarks show that we achieve considerable speedup on large (> 500MB) documents, and comparable performance on most small (< 3MB) document.s
+Benchmarks show that we achieve considerable speedup on large (> 500MB) documents and comparable performance on most small (< 3MB) documents.
 
-For detailed description of the algorithms and benchmarks, please refer to our [report](https://github.com/Somefive/MercuryJson/blob/master/report/report.pdf).
+For a detailed description of the algorithms and benchmarks, please refer to our [report](https://github.com/Somefive/MercuryJson/blob/master/report/report.pdf).
 
 ## Installation
 
@@ -52,17 +52,17 @@ Average stage 1 runtime: 0.199528 s (53.59 %), stage 2 runtime: 0.172816 s (46.4
 Best runtime: 0.361431 s, speed: 500.75 MB/s
 ```
 
-All configurable flags are stored in `src/flags.h`. Note that the number of threads to use are hard coded at compile time.
+All configurable flags are stored in `src/flags.h`. Note that the number of threads to use is hardcoded at compile time.
 
 ## Caveats
 
 The following features are not yet supported by our parser:
 
-- Null characters (`'\0'`) within strings; currently we use null terminated C-style strings.
+- Null characters (`'\0'`) within strings; currently we use null-terminated C-style strings.
 - Conversion & validation of escaped Unicode characters.
 - Comments (`/**/`).
 
-The following incorrect JSON fragments will be accepted by our parser:
+The following incorrect JSON fragments are accepted by our parser:
 
 - Unescaped control characters within strings.
 - Invalid escape sequences.
